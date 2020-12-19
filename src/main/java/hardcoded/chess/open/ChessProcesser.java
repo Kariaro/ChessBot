@@ -61,38 +61,38 @@ public class ChessProcesser {
 		
 		if(!board.hasPiece(index + 8)) {
 			if(rank == 6) {
-				set.add(new Move(QUEEN, index, index + 8, Action.PROMOTE));
-				set.add(new Move(ROOK, index, index + 8, Action.PROMOTE));
-				set.add(new Move(KNIGHT, index, index + 8, Action.PROMOTE));
-				set.add(new Move(BISHOP, index, index + 8, Action.PROMOTE));
+				set.add(Move.of(QUEEN, index, index + 8, Action.PROMOTE));
+				set.add(Move.of(ROOK, index, index + 8, Action.PROMOTE));
+				set.add(Move.of(KNIGHT, index, index + 8, Action.PROMOTE));
+				set.add(Move.of(BISHOP, index, index + 8, Action.PROMOTE));
 			} else {
-				set.add(new Move(pieceId, index, index + 8));
+				set.add(Move.of(pieceId, index, index + 8));
 			}
 			
 			if(rank == 1 && !board.hasPiece(index + 16)) {
-				set.add(new Move(pieceId, index, index + 16, Action.PAWN_JUMP));
+				set.add(Move.of(pieceId, index, index + 16, Action.PAWN_JUMP));
 			}
 		}
 		
 		if(xpos > 0) {
 			if(board.canTake(index + 7, false)) {
-				set.add(new Move(pieceId, index, index + 7));
+				set.add(Move.of(pieceId, index, index + 7));
 			}
 		}
 		
 		if(xpos < 7) {
 			if(board.canTake(index + 9, false)) {
-				set.add(new Move(pieceId, index, index + 9));
+				set.add(Move.of(pieceId, index, index + 9));
 			}
 		}
 		
 		if(board.last_move.action() == Action.PAWN_JUMP && board.last_move.id() == -PAWN) {
 			if(xpos > 0 && board.last_move.to() == index - 1) {
-				set.add(new Move(pieceId, index, index + 7, Action.EN_PASSANT));
+				set.add(Move.of(pieceId, index, index + 7, Action.EN_PASSANT));
 			}
 			
 			if(xpos < 7 && board.last_move.to() == index + 1) {
-				set.add(new Move(pieceId, index, index + 9, Action.EN_PASSANT));
+				set.add(Move.of(pieceId, index, index + 9, Action.EN_PASSANT));
 			}
 		}
 	}
@@ -105,38 +105,38 @@ public class ChessProcesser {
 		
 		if(!board.hasPiece(index - 8)) {
 			if(rank == 1) {
-				set.add(new Move(-QUEEN, index, index - 8, Action.PROMOTE));
-				set.add(new Move(-ROOK, index, index - 8, Action.PROMOTE));
-				set.add(new Move(-KNIGHT, index, index - 8, Action.PROMOTE));
-				set.add(new Move(-BISHOP, index, index - 8, Action.PROMOTE));
+				set.add(Move.of(-QUEEN, index, index - 8, Action.PROMOTE));
+				set.add(Move.of(-ROOK, index, index - 8, Action.PROMOTE));
+				set.add(Move.of(-KNIGHT, index, index - 8, Action.PROMOTE));
+				set.add(Move.of(-BISHOP, index, index - 8, Action.PROMOTE));
 			} else {
-				set.add(new Move(pieceId, index, index - 8));
+				set.add(Move.of(pieceId, index, index - 8));
 			}
 			
 			if(rank == 6 && !board.hasPiece(index - 16)) {
-				set.add(new Move(pieceId, index, index - 16, Action.PAWN_JUMP));
+				set.add(Move.of(pieceId, index, index - 16, Action.PAWN_JUMP));
 			}
 		}
 		
 		if(xpos > 0) {
 			if(board.canTake(index - 9, false)) {
-				set.add(new Move(pieceId, index, index - 9));
+				set.add(Move.of(pieceId, index, index - 9));
 			}
 		}
 		
 		if(xpos < 7) {
 			if(board.canTake(index - 7, false)) {
-				set.add(new Move(pieceId, index, index - 7));
+				set.add(Move.of(pieceId, index, index - 7));
 			}
 		}
 		
 		if(board.last_move.action() == Action.PAWN_JUMP && board.last_move.id() == PAWN) {
 			if(xpos > 0 && board.last_move.to() == index - 1) {
-				set.add(new Move(pieceId, index, index - 9, Action.EN_PASSANT));
+				set.add(Move.of(pieceId, index, index - 9, Action.EN_PASSANT));
 			}
 			
 			if(xpos < 7 && board.last_move.to() == index + 1) {
-				set.add(new Move(pieceId, index, index - 7, Action.EN_PASSANT));
+				set.add(Move.of(pieceId, index, index - 7, Action.EN_PASSANT));
 			}
 		}
 	}
@@ -160,7 +160,7 @@ public class ChessProcesser {
 			int idx = xp + yp * 8;
 			
 			if(board.canTake(idx, true)) {
-				set.add(new Move(pieceId, index, idx));
+				set.add(Move.of(pieceId, index, idx));
 			}
 		}
 	}
@@ -183,7 +183,7 @@ public class ChessProcesser {
 				int idx = xp + yp * 8;
 				
 				if(!board.canTake(idx, true)) break;
-				set.add(new Move(pieceId, index, idx));
+				set.add(Move.of(pieceId, index, idx));
 				
 				if(board.hasPiece(idx)) break;
 			}
@@ -209,7 +209,7 @@ public class ChessProcesser {
 				int idx = xp + yp * 8;
 				
 				if(!board.canTake(idx, true)) break;
-				set.add(new Move(pieceId, index, idx));
+				set.add(Move.of(pieceId, index, idx));
 				
 				if(board.hasPiece(idx)) break;
 			}
@@ -231,29 +231,45 @@ public class ChessProcesser {
 			int idx = x + y * 8;
 			
 			if(board.canTake(idx, true)) {
-				set.add(new Move(pieceId, index, idx));
+				set.add(Move.of(pieceId, index, idx));
 			}
 		}
 		
 		// To castle we need to check if the squares inbetween
 		// are not checked and that our king and rooks have not
 		// previously moved.
-		if(pieceId > 0) {
-			if(board.isFlagSet(Flags.CASTLE_WQ)) {
-				if(!(board.hasPiece(1) || board.hasPiece(2) || board.hasPiece(3)) && board.getPieceAt(0) == ROOK) {
-					set.add(new Move(pieceId, index, 2, Action.QUEENSIDE_CASTLE));
-				}
-			}
-			
-			if(board.isFlagSet(Flags.CASTLE_WK)) {
-				if(!(board.hasPiece(5) || board.hasPiece(6)) && board.getPieceAt(7) == ROOK) {
-					set.add(new Move(pieceId, index, 6, Action.KINGSIDE_CASTLE));
-				}
-			}
-		} else {
-			
-		}
 		
-		// TODO: Castling
+		// FIXME: No castling if the king is checked.
+		//if(!board.isAttacked(pieceId > 0)) {
+			if(pieceId > 0) {
+				if(board.isFlagSet(Flags.CASTLE_WQ)) {
+					if(!(board.hasPiece(1) || board.hasPiece(2) || board.hasPiece(3)) && board.getPieceAt(0) == ROOK) {
+						if(!(board.isAttacked(1, true) || board.isAttacked(2, true) || board.isAttacked(3, true))) {
+							set.add(Move.of(pieceId, index, 2, Action.QUEENSIDE_CASTLE));
+						}
+					}
+				}
+				
+				if(board.isFlagSet(Flags.CASTLE_WK)) {
+					if(!(board.hasPiece(5) || board.hasPiece(6)) && board.getPieceAt(7) == ROOK) {
+						if(!(board.isAttacked(5, true) || board.isAttacked(6, true))) {
+							set.add(Move.of(pieceId, index, 6, Action.KINGSIDE_CASTLE));
+						}
+					}
+				}
+			} else {
+				if(board.isFlagSet(Flags.CASTLE_BQ)) {
+					if(!(board.hasPiece(57) || board.hasPiece(58) || board.hasPiece(59)) && board.getPieceAt(56) == -ROOK) {
+						set.add(Move.of(pieceId, index, 58, Action.QUEENSIDE_CASTLE));
+					}
+				}
+				
+				if(board.isFlagSet(Flags.CASTLE_BK)) {
+					if(!(board.hasPiece(61) || board.hasPiece(62)) && board.getPieceAt(63) == -ROOK) {
+						set.add(Move.of(pieceId, index, 62, Action.KINGSIDE_CASTLE));
+					}
+				}
+			}
+		//}
 	}
 }

@@ -188,6 +188,7 @@ public class Analyser {
 		 */
 		public List<Move0> branches = new ArrayList<>();
 		
+		List<Move> behind = new ArrayList<>();
 		public List<Move0> follow = new ArrayList<>();
 		
 		

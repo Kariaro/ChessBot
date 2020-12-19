@@ -1,11 +1,8 @@
 package hardcoded.chess.decoder;
 
-import hardcoded.chess.open.State;
 import static hardcoded.chess.open.Pieces.*;
-import static hardcoded.chess.open.Flags.*;
 
-import hardcoded.chess.open.ChessUtils;
-import hardcoded.chess.open.Flags;
+import hardcoded.chess.open.*;
 
 public class BoardUtils {
 	
@@ -36,7 +33,7 @@ public class BoardUtils {
 			for(int i = 0; i < 8; i++) {
 				String rank = str_ranks[i];
 				
-				int offset = i * 8;
+				int offset = (7 - i) * 8;
 				
 				for(int x = 0; x < rank.length(); x++) {
 					char c = rank.charAt(x);
@@ -105,12 +102,12 @@ public class BoardUtils {
 				}
 			}
 			
-			String str_surn = parts[1];
-			String str_castl = parts[2];
-			String str_lmove = parts[3];
+//			String str_surn = parts[1];
+//			String str_castl = parts[2];
+//			String str_lmove = parts[3];
 			
-			
-			return State.of(board, flags, null);
+			// FIXME: Last move is different!!!!
+			return State.of(board, flags, Move.INVALID);
 		}
 		
 		public static String encode(State state) {

@@ -12,16 +12,21 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-import hardcoded.chess.open.Analyser;
+import hardcoded.chess.open.*;
 import hardcoded.chess.open.Analyser.Move0;
 import hardcoded.chess.open.Analyser.Scan0;
-import hardcoded.chess.open.Chessboard;
-import hardcoded.chess.open.Move;
 
 public class ChessPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-
+	private static final String[] buttons = {
+		"Force Computer",
+		"Hide Arrows",
+		"Restart Game",
+		"Flip Board"
+	};
+	
 	private final BufferedImage[] pieces = new BufferedImage[12];
+	
 	private boolean flipBoard;
 	private boolean promoting;
 	private Set<Move> moves;
@@ -35,13 +40,21 @@ public class ChessPanel extends JPanel {
 	
 	private int promoteIdx = -1;
 	private int selectedIdx = -1;
+	private int buttonIdx = -1;
 	
 	private MouseAdapter adapter = new MouseAdapter() {
 		public void mouseMoved(MouseEvent e) {
 			promoteIdx = toPromoteIndex(e.getPoint());
+			buttonIdx = toButtonIndex(e.getPoint());
 		}
 		
 		public void mousePressed(MouseEvent e) {
+			buttonIdx = toButtonIndex(e.getPoint());
+			if(buttonIdx != -1) {
+				onButtonPressed(buttonIdx);
+				return;
+			}
+			
 			if(promoting) {
 				promoteIdx = toPromoteIndex(e.getPoint());
 				
@@ -69,16 +82,51 @@ public class ChessPanel extends JPanel {
 			}
 		}
 		
+		public void mouseDragged(MouseEvent e) {
+			// TODO:
+		}
+		
+		
+		private void onButtonPressed(int idx) {
+			if(idx < 0 || idx >= buttons.length) return;
+			String text = buttons[idx];
+			
+			switch(text) {
+				case "Force Computer": {
+					if(listener != null) {
+						listener.onForceMove();
+					}
+					break;
+				}
+				case "Hide Arrows": {
+					
+					break;
+				}
+				case "Restart Game": {
+					scan = null;
+					board.setState(Chessboard.DEFAULT);
+					break;
+				}
+				
+				case "Flip Board": {
+					flipBoard = !flipBoard;
+					break;
+				}
+			}
+		}
+		
 		int toIndex(Point point) {
 			int x = (point.x - 15) / size;
 			int y = (point.y - 15) / size;
 			if(x >= 0 && x < 8 && y >= 0 && y < 8) {
-				int idx = x + y * 8;
 				
-				if(!flipBoard) {
-					idx = x + (7 - y) * 8;
+				if(flipBoard) {
+					x = 7 - x;
+				} else {
+					y = 7 - y;
 				}
 				
+				int idx = x + y * 8;
 				return idx;
 			}
 			
@@ -89,6 +137,21 @@ public class ChessPanel extends JPanel {
 			int x = (point.x - 15) / size;
 			if(x > 1 && x < 7 && point.y > (15 + size * 3.5) && point.y <= (15 + size * 4.5)) {
 				return x - 2;
+			}
+			
+			return -1;
+		}
+		
+		int toButtonIndex(Point point) {
+			int start = buttons.length * 30 - 30;
+			for(int i = 0; i < buttons.length; i++) {
+				Rectangle rect = new Rectangle(
+					size * 8 + 30 + 16,
+					size * 8 - start + 30 * i + 3,
+					142,
+					28
+				);
+				if(rect.contains(point)) return i;
 			}
 			
 			return -1;
@@ -189,33 +252,48 @@ public class ChessPanel extends JPanel {
 			g.setColor(Color.darkGray);
 			g.fillRect(0, 0, 14, size * 8 + 30);
 			
-			g.setColor(Color.white);
-			g.fillRect(2, 2, 10, size * 8 + 26);
-			
-			double p = -baseline / 16.0;
-			p += 0.5;
-			if(p < 0) p = 0;
-			if(p > 1) p = 1;
-			
-			p *= (size * 8 + 26.0);
-			
-			g.setColor(Color.black);
-			g.fillRect(2, 2, 10, (int)p);
+			if(flipBoard) {
+				g.setColor(Color.black);
+				g.fillRect(2, 2, 10, size * 8 + 26);
+				
+				double p = baseline / 16.0;
+				p += 0.5;
+				if(p < 0) p = 0;
+				if(p > 1) p = 1;
+				
+				p *= (size * 8 + 26.0);
+				
+				g.setColor(Color.white);
+				g.fillRect(2, 2, 10, (int)p);
+			} else {
+				g.setColor(Color.white);
+				g.fillRect(2, 2, 10, size * 8 + 26);
+				
+				double p = -baseline / 16.0;
+				p += 0.5;
+				if(p < 0) p = 0;
+				if(p > 1) p = 1;
+				
+				p *= (size * 8 + 26.0);
+				
+				g.setColor(Color.black);
+				g.fillRect(2, 2, 10, (int)p);
+			}
 		}
 		
 		{
-			String[] array = {
-				"Hide Arrows",
-				"Restart Game",
-				"Flip Board"
-			};
-			int start = array.length * 30 - 30;
-			for(int i = 0; i < array.length; i++) {
-				g.setColor(Color.darkGray);
+			int start = buttons.length * 30 - 30;
+			for(int i = 0; i < buttons.length; i++) {
+				
+				if(buttonIdx == i) {
+					g.setColor(Color.black);
+				} else {
+					g.setColor(Color.darkGray);
+				}
 				g.fillRect(16, size * 8 - start + 30 * i, 142, 28);
 				
 				g.setColor(Color.white);
-				String text = array[i];
+				String text = buttons[i];
 				Rectangle rect = new Rectangle(16, size * 8 - start + 30 * i + 3, 142, 28);
 				
 				drawCenteredString(g, text, rect);
@@ -230,6 +308,11 @@ public class ChessPanel extends JPanel {
 			drawVCenteredString(g, String.format("Score %.2f", baseline), rect);
 		}
 	}
+	
+	
+	
+	
+	
 	
 	private void paintBackground(Graphics2D g) {
 		g.setColor(Color.darkGray);
@@ -261,13 +344,23 @@ public class ChessPanel extends JPanel {
 		// Drawing the rows and ranks
 		Rectangle rect;
 		for(int i = 0; i < 8; i++) {
-			String text = Character.toString('a' + i);
+			
+			String row;
+			String rank;
+			
+			if(flipBoard) {
+				row = Character.toString('a' + (7 - i));
+				rank = Integer.toString(i + 1);
+			} else {
+				row = Character.toString('a' + i);
+				rank = Integer.toString(8 - i);
+			}
 			
 			rect = new Rectangle(size * i, size * 8 + 2, size, 15);
-			drawCenteredString(g, text, rect);
+			drawCenteredString(g, row, rect);
 			
 			rect = new Rectangle(size * 8, size * i + 3, 15, size);
-			drawCenteredString(g, Integer.toString(8 - i), rect);
+			drawCenteredString(g, rank, rect);
 		}
 		
 		if(!promoting) {
@@ -287,7 +380,9 @@ public class ChessPanel extends JPanel {
 			int x = selectedIdx & 7;
 			int y = selectedIdx / 8;
 			
-			if(!flipBoard) {
+			if(flipBoard) {
+				x = 7 - x;
+			} else {
 				y = 7 - y;
 			}
 			g.fillRect(x * size, y * size, size, size);
@@ -299,7 +394,9 @@ public class ChessPanel extends JPanel {
 				for(Move move : moves) {
 					x = move.to() & 7;
 					y = move.to() / 8;
-					if(!flipBoard) {
+					if(flipBoard) {
+						x = 7 - x;
+					} else {
 						y = 7 - y;
 					}
 					
@@ -344,16 +441,19 @@ public class ChessPanel extends JPanel {
 //			}
 			
 			if(sc != null) {
-				double material = Analyser.getMaterial(board);
+				double material = Analyser2.getMaterial(board);
 				Stroke old = g.getStroke();
 				g.setColor(Color.black);
 				
 				for(int i = 0; i < Math.min(5, sc.branches.size()); i++) {
 					Move0 dmove = sc.branches.get(i);
 					
-					float mat = (float)(dmove.material - material) * 3;
-					if(mat < 0 && mat > -3) mat = -3;
-					if(mat > 0 && mat <  3) mat =  3;
+					float mat = (float)(dmove.material - material);
+					if(mat < -0.05 && mat > -3) mat = -3;
+					else if(mat >  0.05 && mat <  3) mat =  3;
+					else {
+						mat = -3;
+					}
 					
 					if(board.isWhiteTurn() && false) {
 						g.setColor(mat < 0 ? scan_red:scan_blue);
@@ -365,7 +465,7 @@ public class ChessPanel extends JPanel {
 					
 					float size = (Math.abs(mat) + 0.5f) * 2.0f;
 					if(size > this.size / 5) size = this.size / 5;
-					drawMove(g, dmove.move, size);
+					drawMoveDebug(g, dmove.move, size, dmove.material);
 				}
 				
 				g.setStroke(old);
@@ -376,9 +476,9 @@ public class ChessPanel extends JPanel {
 			Scan0 sc = scan;
 			if(sc != null) {
 				java.util.List<Move0> list = sc.follow;
-				g.setColor(new Color(255, 255, 0, 60));
 				for(int i = 0; i < list.size(); i++) {
 					Move0 m = list.get(i);
+					g.setColor(new Color(255, 255, 0, 60));
 					drawMove(g, m.move, (list.size() - i) * 5);
 				}
 			}
@@ -433,6 +533,31 @@ public class ChessPanel extends JPanel {
 		x1 = x1 * size + size / 2;
 		y1 = y1 * size + size / 2;
 		drawArrow(g, x0, y0, x1, y1, scale);
+	}
+	
+	private void drawMoveDebug(Graphics2D g, Move move, float scale, double mat) {
+		int a = move.from();
+		int b = move.to();
+		
+		if(a == b) return;
+		
+		int x0 = a & 7;
+		int y0 = a / 8;
+		if(!flipBoard) y0 = 7 - y0; else x0 = 7 - x0;
+		
+		int x1 = b & 7;
+		int y1 = b / 8;
+		if(!flipBoard) y1 = 7 - y1; else x1 = 7 - x1;
+		
+		x0 = x0 * size + size / 2;
+		y0 = y0 * size + size / 2;
+		x1 = x1 * size + size / 2;
+		y1 = y1 * size + size / 2;
+		drawArrow(g, x0, y0, x1, y1, scale);
+		
+		g.setColor(Color.white);
+		Rectangle rect = new Rectangle(x0, y0, x1 - x0, y1 - y0);
+		drawCenteredString(g, String.format("%.2f", mat), rect);
 	}
 	
 	private void drawArrow(Graphics2D g, int x0, int y0, int x1, int y1, double size) {

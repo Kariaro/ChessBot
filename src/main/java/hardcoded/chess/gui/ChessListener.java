@@ -8,4 +8,8 @@ public abstract class ChessListener {
 	public void onPromoting(int idx) {
 		
 	}
+	
+	public void onForceMove() {
+		
+	}
 }

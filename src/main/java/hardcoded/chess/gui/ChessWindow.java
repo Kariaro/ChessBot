@@ -1,8 +1,6 @@
 package hardcoded.chess.gui;
 
 import java.awt.*;
-import java.awt.image.BufferStrategy;
-import java.awt.image.BufferedImage;
 import java.util.Set;
 
 import javax.swing.JFrame;
@@ -10,15 +8,10 @@ import javax.swing.JFrame;
 import hardcoded.chess.open.*;
 import hardcoded.chess.open.Analyser.Scan0;
 
-public class ChessWindow extends Canvas implements Runnable {
-	private static final long serialVersionUID = -2335621836971586662L;
-
-	private final int size = 80;
-	private boolean force;
-	
+public class ChessWindow implements Runnable {
+	private static final int size = 80;
 	
 	private JFrame frame;
-	private BufferStrategy bs;
 	private boolean running;
 	
 	private Chessboard board;
@@ -51,7 +44,6 @@ public class ChessWindow extends Canvas implements Runnable {
 			}
 			
 			board.doMove(move);
-			scan = Analyser.analyse(board);
 			moves = null;
 		}
 		
@@ -74,11 +66,22 @@ public class ChessWindow extends Canvas implements Runnable {
 					panel.setPromoting(true);
 				} else {
 					board.doMove(move);
-					scan = Analyser.analyse(board);
 					moves = null;
 					selectedIndex = -1;
 				}
 			}
+		}
+		
+		public void onForceMove() {
+			Thread thread = new Thread(() -> {
+				scan = Analyser2.analyse(board);
+				if(scan.best != null) {
+					board.doMove(scan.best.move);
+					panel.setScan(scan);
+				}
+			});
+			thread.setDaemon(true);
+			thread.start();
 		}
 		
 		private Move getMove(int index) {
@@ -131,7 +134,7 @@ public class ChessWindow extends Canvas implements Runnable {
 				last += ((now - last) / 1000) * 1000;
 				// System.out.println("fps: " + frame);
 				
-				doMove();
+				// doMove();
 				
 				frame = 0;
 				times++;
@@ -150,23 +153,30 @@ public class ChessWindow extends Canvas implements Runnable {
 		frame.repaint(20);
 	}
 	
-	public void doMove() {
-		if(!board.isWhiteTurn()) {
-			scan = Analyser.analyse(board);
-			if(scan.best != null) {
-				Move move = scan.best.move;
-				board.doMove(move);
-				tick();
-				
-				System.out.println("Moving: " + move);
-			} else {
-				System.out.println("Stalemate or checkmate!!!");
-			}
-			
-			force = false;
-			panel.setScan(scan);
-		}
-	}
+//	public void doMove() {
+//		boolean hasMove = false;
+//		if(board.isWhiteTurn()) {
+//			//scan = Analyser.analyse(board);
+//			//hasMove = true;
+//		} else {
+//			scan = Analyser2.analyse(board);
+//			hasMove = true;
+//		}
+//		
+//		if(hasMove) {
+//			if(scan.best != null) {
+//				Move move = scan.best.move;
+//				board.doMove(move);
+//				tick();
+//				
+//				System.out.println("Moving: " + move);
+//			} else {
+//				System.out.println("Stalemate or checkmate!!!");
+//			}
+//			
+//			panel.setScan(scan);
+//		}
+//	}
 	
 	public void paintDetails(Graphics2D g) {
 		double baseline = 0;
@@ -200,15 +210,6 @@ public class ChessWindow extends Canvas implements Runnable {
 			g.fillRect(2, 2, 10, (int)p);
 			
 			g.translate(-size * 8, 0);
-		}
-	}
-	
-	@Override
-	public void paint(Graphics g) {
-		if(bs == null) {
-			createBufferStrategy(2);
-			bs = getBufferStrategy();
-			return;
 		}
 	}
 	

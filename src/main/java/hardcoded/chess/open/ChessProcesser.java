@@ -218,29 +218,14 @@ public class ChessProcesser {
 	
 	static void getKingMoves(Chessboard board, Set<Move> set, int index) {
 		int pieceId = board.getPieceAt(index);
-		
-		int ypos = index / 8;
-		int xpos = index & 7;
-		
-		for(int j = 0; j < 9; j++) {
-			if(j == 4) continue; // Middle
-			
-			int x = xpos + (j % 3) - 1;
-			int y = ypos + (j / 3) - 1;
-			if(x < 0 || x > 7 || y < 0 || y > 7) continue;
-			int idx = x + y * 8;
-			
-			if(board.canTake(idx, true)) {
-				set.add(Move.of(pieceId, index, idx));
-			}
-		}
+		getKingMovesBasic(board, set, index);
 		
 		// To castle we need to check if the squares inbetween
 		// are not checked and that our king and rooks have not
 		// previously moved.
 		
 		// FIXME: No castling if the king is checked.
-		//if(!board.isAttacked(pieceId > 0)) {
+		if(!board.isChecked()) {
 			if(pieceId > 0) {
 				if(board.isFlagSet(Flags.CASTLE_WQ)) {
 					if(!(board.hasPiece(1) || board.hasPiece(2) || board.hasPiece(3)) && board.getPieceAt(0) == ROOK) {
@@ -270,6 +255,26 @@ public class ChessProcesser {
 					}
 				}
 			}
-		//}
+		}
+	}
+	
+	static void getKingMovesBasic(Chessboard board, Set<Move> set, int index) {
+		int pieceId = board.getPieceAt(index);
+		
+		int ypos = index / 8;
+		int xpos = index & 7;
+		
+		for(int j = 0; j < 9; j++) {
+			if(j == 4) continue; // Middle
+			
+			int x = xpos + (j % 3) - 1;
+			int y = ypos + (j / 3) - 1;
+			if(x < 0 || x > 7 || y < 0 || y > 7) continue;
+			int idx = x + y * 8;
+			
+			if(board.canTake(idx, true)) {
+				set.add(Move.of(pieceId, index, idx));
+			}
+		}
 	}
 }

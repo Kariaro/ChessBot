@@ -44,6 +44,8 @@ public class ChessWindow implements Runnable {
 			}
 			
 			board.doMove(move);
+			onMovePlayed(move, idx);
+			panel.getAudio().playChessMove();
 			moves = null;
 		}
 		
@@ -66,19 +68,33 @@ public class ChessWindow implements Runnable {
 					panel.setPromoting(true);
 				} else {
 					board.doMove(move);
+					onMovePlayed(move, idx);
+					
+					panel.getAudio().playChessMove();
 					moves = null;
 					selectedIndex = -1;
 				}
 			}
 		}
 		
+		public void onMovePlayed(Move move, int idx) {
+			onForceMove();
+		}
+		
+		private boolean hasMove = false;
 		public void onForceMove() {
+			if(hasMove) return;
+			hasMove = true;
+			
 			Thread thread = new Thread(() -> {
 				scan = Analyser2.analyse(board);
 				if(scan.best != null) {
 					board.doMove(scan.best.move);
 					panel.setScan(scan);
+					panel.getAudio().playChessMove();
 				}
+				
+				hasMove = false;
 			});
 			thread.setDaemon(true);
 			thread.start();
@@ -117,7 +133,7 @@ public class ChessWindow implements Runnable {
 		frame.add(panel);
 		frame.pack();
 	}
-	
+
 	private Scan0 scan;
 	
 	@SuppressWarnings("unused")

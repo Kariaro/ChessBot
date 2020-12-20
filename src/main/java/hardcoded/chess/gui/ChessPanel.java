@@ -10,6 +10,8 @@ import java.util.Locale;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JPanel;
 
 import hardcoded.chess.open.*;
@@ -27,11 +29,13 @@ public class ChessPanel extends JPanel {
 	
 	private final BufferedImage[] pieces = new BufferedImage[12];
 	
+	private boolean hideArrows = true;
 	private boolean flipBoard;
 	private boolean promoting;
 	private Set<Move> moves;
 	private Scan0 scan;
 	private int size;
+	private ChessAudio audio;
 	
 	private ChessListener listener;
 	private Chessboard board;
@@ -99,7 +103,7 @@ public class ChessPanel extends JPanel {
 					break;
 				}
 				case "Hide Arrows": {
-					
+					hideArrows = !hideArrows;
 					break;
 				}
 				case "Restart Game": {
@@ -171,6 +175,12 @@ public class ChessPanel extends JPanel {
 		setBackground(Color.gray);
 		
 		try {
+			audio = new ChessAudio();
+		} catch(UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+			e.printStackTrace();
+		}
+		
+		try {
 			BufferedImage img = ImageIO.read(ChessPanel.class.getResourceAsStream("/chess_pieces.png"));
 			
 			double width = img.getWidth() / 6.0;
@@ -204,12 +214,17 @@ public class ChessPanel extends JPanel {
 		this.scan = scan;
 	}
 	
+	public ChessAudio getAudio() {
+		return audio;
+	}
+	
 	private static final Color dark = new Color(181, 136, 99);
 	private static final Color light = new Color(240, 217, 181);
 	private static final Color select = new Color(170, 162, 58);
 	private static final Color select_press = new Color(0, 0, 0, 80);
 	private static final Color scan_blue = new Color(0, 0, 128, 128);
 	private static final Color scan_red = new Color(128, 0, 0, 128);
+	private static final Color checked = new Color(240, 0, 0);
 	
 	public void paint(Graphics gr) {
 		Graphics2D g = (Graphics2D)gr;
@@ -349,11 +364,11 @@ public class ChessPanel extends JPanel {
 			String rank;
 			
 			if(flipBoard) {
-				row = Character.toString('a' + (7 - i));
-				rank = Integer.toString(i + 1);
+				row = String.valueOf((char)('a' + i));
+				rank = String.valueOf(i + 1);
 			} else {
-				row = Character.toString('a' + i);
-				rank = Integer.toString(8 - i);
+				row = String.valueOf((char)('a' + i));
+				rank = String.valueOf(8 - i);
 			}
 			
 			rect = new Rectangle(size * i, size * 8 + 2, size, 15);
@@ -405,6 +420,26 @@ public class ChessPanel extends JPanel {
 			}
 		}
 		
+		{
+			g.setColor(checked);
+			
+			int mul = board.isWhiteTurn() ? 1:-1;
+			if(board.isChecked()) {
+				int index = board.findPiece(Pieces.KING * mul, 0); {
+					int x = index & 7;
+					int y = index / 8;
+					
+					if(flipBoard) {
+						x = 7 - x;
+					} else {
+						y = 7 - y;
+					}
+					
+					g.fillRect(x * size, y * size, size, size);
+				}
+			}
+		}
+		
 		if(board.getLastMove() != null) {
 			Move move = board.getLastMove();
 			
@@ -429,7 +464,7 @@ public class ChessPanel extends JPanel {
 			}
 		}
 		
-		{
+		if(!hideArrows) {
 			Scan0 sc = scan;
 //			double baseline = 0;
 //			if(sc != null) {
@@ -471,8 +506,8 @@ public class ChessPanel extends JPanel {
 				g.setStroke(old);
 			}
 		}
-		
-		{
+
+		if(!hideArrows) {
 			Scan0 sc = scan;
 			if(sc != null) {
 				java.util.List<Move0> list = sc.follow;

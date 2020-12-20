@@ -18,27 +18,27 @@ public class Chessboard {
 	protected State ls;
 	
 	public Chessboard() {
-//		this(
-//			"RNBQKBNR" +
-//			"PPPPPPPP" +
-//			"        " +
-//			"        " +
-//			"        " +
-//			"        " +
-//			"pppppppp" +
-//			"rnbqkbnr"
-//		);
-		
 		this(
-			"R   K  R" +
-			"    P   " +
-			"    r   " +
-			"    r   " +
-			"    r   " +
-			"    r   " +
-			"    p  R" +
-			"r   k   "
+			"RNBQKBNR" +
+			"PPPPPPPP" +
+			"        " +
+			"        " +
+			"        " +
+			"        " +
+			"pppppppp" +
+			"rnbqkbnr"
 		);
+		
+//		this(
+//			"R   K  R" +
+//			"    P   " +
+//			"    r   " +
+//			"    r   " +
+//			"    r   " +
+//			"    r   " +
+//			"    p  R" +
+//			"r   k   "
+//		);
 		
 //		this(
 //			"        " +
@@ -133,7 +133,7 @@ public class Chessboard {
 		return getPieceAt(index) != 0;
 	}
 	
-	protected int findPiece(int id, int skip) {
+	public int findPiece(int id, int skip) {
 		int count = 0;
 		for(int i = 0; i < 64; i++) {
 			int p = board[i];
@@ -150,6 +150,13 @@ public class Chessboard {
 		if(pieceId == 0) return allowEmpty;
 		if(isWhiteTurn()) return pieceId < 0;
 		return pieceId > 0;
+	}
+	
+	public boolean isChecked() {
+		State ls = getState();
+		boolean result = isChecked(!isWhiteTurn());
+		setState(ls);
+		return result;
 	}
 	
 	// Returns true if the king is in check if this move was made.
@@ -200,7 +207,7 @@ public class Chessboard {
 		}
 
 		moves.clear();
-		ChessProcesser.getKingMoves(this, moves, king_idx);
+		ChessProcesser.getKingMovesBasic(this, moves, king_idx);
 		for(Move m : moves) {
 			int pieceId = getPieceAt(m.to()) * pm;
 			if(pieceId == KING) return true;
@@ -253,7 +260,7 @@ public class Chessboard {
 		}
 
 		moves.clear();
-		ChessProcesser.getKingMoves(this, moves, idx);
+		ChessProcesser.getKingMovesBasic(this, moves, idx);
 		for(Move m : moves) {
 			int pieceId = getPieceAt(m.to()) * pm;
 			if(pieceId == KING) return true;

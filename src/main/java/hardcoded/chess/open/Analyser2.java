@@ -37,10 +37,10 @@ public class Analyser2 {
 	
 	public static double getMaterial(Chessboard b) {
 		double mat = 0;
-		if(b.isFlagSet(Flags.CASTLE_BK)) mat -= 0.15;
-		if(b.isFlagSet(Flags.CASTLE_BQ)) mat -= 0.15;
-		if(b.isFlagSet(Flags.CASTLE_WK)) mat += 0.15;
-		if(b.isFlagSet(Flags.CASTLE_WQ)) mat += 0.15;
+		if(b.isFlagSet(Flags.CASTLE_BK)) mat -= 0.1;
+		if(b.isFlagSet(Flags.CASTLE_BQ)) mat -= 0.1;
+		if(b.isFlagSet(Flags.CASTLE_WK)) mat += 0.1;
+		if(b.isFlagSet(Flags.CASTLE_WQ)) mat += 0.1;
 		
 		for(int i = 0; i < 64; i++) {
 			int pieceId = b.getPieceAt(i);
@@ -127,6 +127,7 @@ public class Analyser2 {
 		if(board.getPieceAt(6) == Pieces.KNIGHT) result -= 0.1;
 		if(board.getPieceAt(11) == Pieces.PAWN) result -= 0.09;
 		if(board.getPieceAt(12) == Pieces.PAWN) result -= 0.09;
+		if(board.getPieceAt(4) == Pieces.KING) result -= 0.08;
 		
 		if(board.getPieceAt(57) == -Pieces.KNIGHT) result += 0.1;
 		if(board.getPieceAt(58) == -Pieces.BISHOP) result += 0.1;
@@ -134,6 +135,7 @@ public class Analyser2 {
 		if(board.getPieceAt(62) == -Pieces.KNIGHT) result += 0.1;
 		if(board.getPieceAt(51) == -Pieces.PAWN) result += 0.09;
 		if(board.getPieceAt(52) == -Pieces.PAWN) result += 0.09;
+		if(board.getPieceAt(60) == -Pieces.KING) result += 0.08;
 		
 		return result * penalty;
 	}
@@ -172,10 +174,10 @@ public class Analyser2 {
 //				percent += 0.11 * (scan.white ? 1:-1);
 //			}
 			
-//			if(depth == DEPTH) {
-//				log("  move: %-10s (%2.4f) -> (%2.4f)", move, material, percent);
-//				log("      : (%s)", branch.follow);
-//			}
+			if(depth == DEPTH) {
+				log("  move: %-10s (%2.4f) -> (%2.4f)", move, material, percent);
+				log("      : (%s)", branch.follow);
+			}
 			
 			// Add this move to the evaluation set
 			scan.branches.add(new Move0(branch, percent, move));

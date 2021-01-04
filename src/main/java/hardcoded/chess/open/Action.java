@@ -6,5 +6,5 @@ public enum Action {
 	PAWN_JUMP,
 	KINGSIDE_CASTLE,
 	QUEENSIDE_CASTLE,
-	NONE
+	NONE;
 }

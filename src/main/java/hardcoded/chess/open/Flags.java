@@ -7,4 +7,7 @@ public interface Flags {
 	int CASTLE_BQ		= (1 << 3);
 	int CASTLE_BK		= (1 << 4);
 	int CHECKED			= (1 << 5);
+	
+	
+	int DEFAULT = TURN | CASTLE_WK | CASTLE_WQ | CASTLE_BK | CASTLE_BQ;
 }

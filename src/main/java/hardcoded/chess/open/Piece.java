@@ -2,11 +2,11 @@ package hardcoded.chess.open;
 
 public enum Piece {
 	KING(0, 'k'),
-	QUEEN(9, 'q'),
-	BISHOP(3, 'b'),
-	KNIGHT(3, 'n'),
-	ROOK(5, 'r'),
-	PAWN(1),
+	QUEEN(900, 'q'),
+	BISHOP(300, 'b'),
+	KNIGHT(300, 'n'),
+	ROOK(500, 'r'),
+	PAWN(100),
 	NONE(0),
 	;
 	

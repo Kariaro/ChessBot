@@ -7,6 +7,8 @@ import javax.swing.JFrame;
 
 import hardcoded.chess.open.*;
 import hardcoded.chess.open.Analyser.Scan0;
+import hardcoded.chess.open2.Analyser3;
+import hardcoded.chess.open2.Chess;
 
 public class ChessWindow implements Runnable {
 	private static final int size = 80;
@@ -14,7 +16,7 @@ public class ChessWindow implements Runnable {
 	private JFrame frame;
 	private boolean running;
 	
-	private Chessboard board;
+	private Chess board;
 	private int selectedIndex = -1;
 	private Set<Move> moves;
 	private ChessPanel panel;
@@ -68,6 +70,7 @@ public class ChessWindow implements Runnable {
 					panel.setPromoting(true);
 				} else {
 					board.doMove(move);
+					tick();
 					onMovePlayed(move, idx);
 					
 					panel.getAudio().playChessMove();
@@ -87,14 +90,29 @@ public class ChessWindow implements Runnable {
 			hasMove = true;
 			
 			Thread thread = new Thread(() -> {
-				scan = Analyser2.analyse(board);
+				if(board.isWhiteTurn()) {
+					scan = Analyser2.analyse(board);
+				} else {
+					scan = Analyser3.analyse(board);
+				}
+				
 				if(scan.best != null) {
+					try {
+						// Play the sound eitherway
+						Thread.sleep(20);
+					} catch(InterruptedException e) {
+						e.printStackTrace();
+					}
+					
 					board.doMove(scan.best.move);
 					panel.setScan(scan);
 					panel.getAudio().playChessMove();
+					
+					hasMove = false;
+					
+					onForceMove();
 				}
 				
-				hasMove = false;
 			});
 			thread.setDaemon(true);
 			thread.start();
@@ -128,7 +146,7 @@ public class ChessWindow implements Runnable {
 		panel = new ChessPanel(size);
 		panel.setListener(listener);
 		
-		board = new Chessboard();
+		board = new Chess();
 		panel.setChessboard(board);
 		frame.add(panel);
 		frame.pack();
@@ -194,40 +212,40 @@ public class ChessWindow implements Runnable {
 //		}
 //	}
 	
-	public void paintDetails(Graphics2D g) {
-		double baseline = 0;
-		{
-			g.translate(size * 8, 0);
-			
-			g.setColor(Color.black);
-			g.setFont(new Font("Calibri", Font.PLAIN, 20));
-			g.setColor(Color.black);
-			g.drawString("Score", 30, 30);
-			g.drawString(String.format("%.4f", baseline), 30, 60);
-			
-			g.drawString("Status", 30, 100);
-			g.drawString(String.format("%s", "PLAYING"), 30, 130);
-			
-			
-			g.setColor(Color.darkGray);
-			g.fillRect(0, 0, 14, size * 8);
-			
-			g.setColor(Color.white);
-			g.fillRect(2, 2, 10, size * 8 - 4);
-			
-			double p = -baseline / 16.0;
-			p += 0.5;
-			if(p < 0) p = 0;
-			if(p > 1) p = 1;
-			
-			p *= (size * 8 - 4.0);
-			
-			g.setColor(Color.black);
-			g.fillRect(2, 2, 10, (int)p);
-			
-			g.translate(-size * 8, 0);
-		}
-	}
+//	public void paintDetails(Graphics2D g) {
+//		double baseline = 0;
+//		{
+//			g.translate(size * 8, 0);
+//			
+//			g.setColor(Color.black);
+//			g.setFont(new Font("Calibri", Font.PLAIN, 20));
+//			g.setColor(Color.black);
+//			g.drawString("Score", 30, 30);
+//			g.drawString(String.format("%.4f", baseline), 30, 60);
+//			
+//			g.drawString("Status", 30, 100);
+//			g.drawString(String.format("%s", "PLAYING"), 30, 130);
+//			
+//			
+//			g.setColor(Color.darkGray);
+//			g.fillRect(0, 0, 14, size * 8);
+//			
+//			g.setColor(Color.white);
+//			g.fillRect(2, 2, 10, size * 8 - 4);
+//			
+//			double p = (-baseline / 16.0) / 100.0;
+//			p += 0.5;
+//			if(p < 0) p = 0;
+//			if(p > 1) p = 1;
+//			
+//			p *= (size * 8 - 4.0);
+//			
+//			g.setColor(Color.black);
+//			g.fillRect(2, 2, 10, (int)p);
+//			
+//			g.translate(-size * 8, 0);
+//		}
+//	}
 	
 	public void start() {
 		if(running) return;

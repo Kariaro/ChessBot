@@ -4,23 +4,37 @@ package hardcoded.chess.open;
  * Used to save the current state of a chess board
  */
 public class State {
-	protected final Move last_move;
-	protected final int flags;
-	protected final int[] board;
+	public final Move last_move;
+	public final int flags;
+	public final int[] board;
+	public final int halfmove;
+	public final int fullmove;
 	
 	protected State(Chessboard board) {
 		this.last_move = board.last_move;
 		this.flags = board.flags;
 		this.board = board.board.clone();
+		this.halfmove = 0;
+		this.fullmove = 0;
 	}
 	
-	protected State(int[] board, int flags, Move last_move) {
+	protected State(int[] board, int flags, Move last_move, int halfmove, int fullmove) {
 		this.last_move = last_move;
 		this.flags = flags;
 		this.board = board.clone();
+		this.halfmove = halfmove;
+		this.fullmove = fullmove;
+	}
+	
+	public int getFlags() {
+		return flags;
 	}
 	
 	public static State of(int[] board, int flags, Move last_move) {
-		return new State(board, flags, last_move);
+		return new State(board, flags, last_move, 0, 0);
+	}
+	
+	public static State of(int[] board, int flags, Move last_move, int halfmove, int fullmove) {
+		return new State(board, flags, last_move, halfmove, fullmove);
 	}
 }

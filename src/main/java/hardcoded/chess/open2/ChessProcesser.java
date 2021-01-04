@@ -1,31 +1,31 @@
-package hardcoded.chess.open;
+package hardcoded.chess.open2;
 
 import static hardcoded.chess.open.Pieces.*;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
-class ChessProcesser {
-	static Set<Move> getPieceMoves(Chessboard board, int index) {
+import hardcoded.chess.open.*;
+
+public class ChessProcesser {
+	private static final Set<Move> EMPTY = Collections.emptySet();
+	
+	static Set<Move> getPieceMoves(Chess board, int index) {
+		int pieceId = board.getPieceAt(index);
+		if((pieceId == 0) || (pieceId > 0 != board.isWhiteTurn())) return EMPTY;
 		Set<Move> moves = new HashSet<>();
 		
-		int pieceId = board.getPieceAt(index);
-		if((pieceId == 0) || (pieceId > 0 != board.isWhiteTurn())) return moves;
-		
-		
 		switch(ChessUtils.toPiece(pieceId)) {
-			case PAWN: getPawnMoves(board, moves, index); break;
-			case KNIGHT: getKnightMoves(board, moves, index); break;
-			case BISHOP: getBishopMoves(board, moves, index); break;
-			case ROOK: getRookMoves(board, moves, index); break;
+			case PAWN: getPawnMoves(board, moves, pieceId, index); break;
+			case KNIGHT: getKnightMoves(board, moves, pieceId, index); break;
+			case BISHOP: getBishopMoves(board, moves, pieceId, index); break;
+			case ROOK: getRookMoves(board, moves, pieceId, index); break;
 			case QUEEN: {
-				getBishopMoves(board, moves, index);
-				getRookMoves(board, moves, index);
+				getBishopMoves(board, moves, pieceId, index);
+				getRookMoves(board, moves, pieceId, index);
 				break;
 			}
-			case KING: getKingMoves(board, moves, index); break;
-			default: return moves;
+			case KING: getKingMoves(board, moves, pieceId, index); break;
+			default: return EMPTY;
 		}
 		
 		Iterator<Move> iter = moves.iterator();
@@ -45,24 +45,22 @@ class ChessProcesser {
 		return moves;
 	}
 	
-	static void getPawnMoves(Chessboard board, Set<Move> set, int index) {
+	static void getPawnMoves(Chess board, Set<Move> set, int pieceId, int index) {
 		if(board.isWhiteTurn()) {
-			getWhitePawnMoves(board, set, index);
+			getWhitePawnMoves(board, set, pieceId, index);
 		} else {
-			getBlackPawnMoves(board, set, index);
+			getBlackPawnMoves(board, set, pieceId, index);
 		}
 	}
 	
-	static void getWhitePawnMoves(Chessboard board, Set<Move> set, int index) {
-		int pieceId = board.getPieceAt(index);
-
+	static void getWhitePawnMoves(Chess board, Set<Move> set, int pieceId, int index) {
 		int rank = index / 8;
 		int xpos = index & 7;
 		
 		if(!board.hasPiece(index + 8)) {
 			if(rank == 6) {
-				set.add(Move.of(QUEEN, index, index + 8, Action.PROMOTE));
-				set.add(Move.of(ROOK, index, index + 8, Action.PROMOTE));
+				set.add(Move.of(QUEEN,  index, index + 8, Action.PROMOTE));
+				set.add(Move.of(ROOK,   index, index + 8, Action.PROMOTE));
 				set.add(Move.of(KNIGHT, index, index + 8, Action.PROMOTE));
 				set.add(Move.of(BISHOP, index, index + 8, Action.PROMOTE));
 			} else {
@@ -74,25 +72,25 @@ class ChessProcesser {
 			}
 		}
 		
-		if(xpos > 0 && board.canTake(index + 7, false)) {
+		if(xpos > 0 && board.hasEnemyPiece(index + 7)) {
 			if(rank == 6) {
-				set.add(Move.of(QUEEN, index, index + 7, Action.PROMOTE));
-				set.add(Move.of(ROOK, index, index + 7, Action.PROMOTE));
-				set.add(Move.of(KNIGHT, index, index + 7, Action.PROMOTE));
-				set.add(Move.of(BISHOP, index, index + 7, Action.PROMOTE));
+				set.add(Move.of(QUEEN,  index, index + 7, Action.PROMOTE, true));
+				set.add(Move.of(ROOK,   index, index + 7, Action.PROMOTE, true));
+				set.add(Move.of(KNIGHT, index, index + 7, Action.PROMOTE, true));
+				set.add(Move.of(BISHOP, index, index + 7, Action.PROMOTE, true));
 			} else {
-				set.add(Move.of(pieceId, index, index + 7));
+				set.add(Move.of(pieceId, index, index + 7, true));
 			}
 		}
 		
-		if(xpos < 7 && board.canTake(index + 9, false)) {
+		if(xpos < 7 && board.hasEnemyPiece(index + 9)) {
 			if(rank == 6) {
-				set.add(Move.of(QUEEN, index, index + 9, Action.PROMOTE));
-				set.add(Move.of(ROOK, index, index + 9, Action.PROMOTE));
-				set.add(Move.of(KNIGHT, index, index + 9, Action.PROMOTE));
-				set.add(Move.of(BISHOP, index, index + 9, Action.PROMOTE));
+				set.add(Move.of(QUEEN,  index, index + 9, Action.PROMOTE, true));
+				set.add(Move.of(ROOK,   index, index + 9, Action.PROMOTE, true));
+				set.add(Move.of(KNIGHT, index, index + 9, Action.PROMOTE, true));
+				set.add(Move.of(BISHOP, index, index + 9, Action.PROMOTE, true));
 			} else {
-				set.add(Move.of(pieceId, index, index + 9));
+				set.add(Move.of(pieceId, index, index + 9, true));
 			}
 		}
 		
@@ -107,16 +105,14 @@ class ChessProcesser {
 		}
 	}
 	
-	static void getBlackPawnMoves(Chessboard board, Set<Move> set, int index) {
-		int pieceId = board.getPieceAt(index);
-
+	static void getBlackPawnMoves(Chess board, Set<Move> set, int pieceId, int index) {
 		int rank = index / 8;
 		int xpos = index & 7;
 		
 		if(!board.hasPiece(index - 8)) {
 			if(rank == 1) {
-				set.add(Move.of(-QUEEN, index, index - 8, Action.PROMOTE));
-				set.add(Move.of(-ROOK, index, index - 8, Action.PROMOTE));
+				set.add(Move.of(-QUEEN,  index, index - 8, Action.PROMOTE));
+				set.add(Move.of(-ROOK,   index, index - 8, Action.PROMOTE));
 				set.add(Move.of(-KNIGHT, index, index - 8, Action.PROMOTE));
 				set.add(Move.of(-BISHOP, index, index - 8, Action.PROMOTE));
 			} else {
@@ -128,25 +124,25 @@ class ChessProcesser {
 			}
 		}
 		
-		if(xpos > 0 && board.canTake(index - 9, false)) {
+		if(xpos > 0 && board.hasEnemyPiece(index - 9)) {
 			if(rank == 1) {
-				set.add(Move.of(-QUEEN, index, index - 9, Action.PROMOTE));
-				set.add(Move.of(-ROOK, index, index - 9, Action.PROMOTE));
-				set.add(Move.of(-KNIGHT, index, index - 9, Action.PROMOTE));
-				set.add(Move.of(-BISHOP, index, index - 9, Action.PROMOTE));
+				set.add(Move.of(-QUEEN,  index, index - 9, Action.PROMOTE, true));
+				set.add(Move.of(-ROOK,   index, index - 9, Action.PROMOTE, true));
+				set.add(Move.of(-KNIGHT, index, index - 9, Action.PROMOTE, true));
+				set.add(Move.of(-BISHOP, index, index - 9, Action.PROMOTE, true));
 			} else {
-				set.add(Move.of(pieceId, index, index - 9));
+				set.add(Move.of(pieceId, index, index - 9, true));
 			}
 		}
 		
-		if(xpos < 7 && board.canTake(index - 7, false)) {
+		if(xpos < 7 && board.hasEnemyPiece(index - 7)) {
 			if(rank == 1) {
-				set.add(Move.of(-QUEEN, index, index - 7, Action.PROMOTE));
-				set.add(Move.of(-ROOK, index, index - 7, Action.PROMOTE));
-				set.add(Move.of(-KNIGHT, index, index - 7, Action.PROMOTE));
-				set.add(Move.of(-BISHOP, index, index - 7, Action.PROMOTE));
+				set.add(Move.of(-QUEEN,  index, index - 7, Action.PROMOTE, true));
+				set.add(Move.of(-ROOK,   index, index - 7, Action.PROMOTE, true));
+				set.add(Move.of(-KNIGHT, index, index - 7, Action.PROMOTE, true));
+				set.add(Move.of(-BISHOP, index, index - 7, Action.PROMOTE, true));
 			} else {
-				set.add(Move.of(pieceId, index, index - 7));
+				set.add(Move.of(pieceId, index, index - 7, true));
 			}
 		}
 		
@@ -161,9 +157,7 @@ class ChessProcesser {
 		}
 	}
 	
-	static void getKnightMoves(Chessboard board, Set<Move> set, int index) {
-		int pieceId = board.getPieceAt(index);
-		
+	static void getKnightMoves(Chess board, Set<Move> set, int pieceId, int index) {
 		int[] offset_x = { -1, 1, 2, 2, 1, -1, -2, -2 };
 		int[] offset_y = { -2, -2, -1, 1, 2, 2, 1, -1 };
 		
@@ -179,15 +173,13 @@ class ChessProcesser {
 			if(xp < 0 || xp > 7 || yp < 0 || yp > 7) continue;
 			int idx = xp + yp * 8;
 			
-			if(board.canTake(idx, true)) {
-				set.add(Move.of(pieceId, index, idx));
+			if(board.hasEnemyOrSpace(idx)) {
+				set.add(Move.of(pieceId, index, idx, true));
 			}
 		}
 	}
 	
-	static void getBishopMoves(Chessboard board, Set<Move> set, int index) {
-		int pieceId = board.getPieceAt(index);
-		
+	static void getBishopMoves(Chess board, Set<Move> set, int pieceId, int index) {
 		int ypos = index / 8;
 		int xpos = index & 7;
 		
@@ -202,17 +194,15 @@ class ChessProcesser {
 				if(xp < 0 || xp > 7 || yp < 0 || yp > 7) break;
 				int idx = xp + yp * 8;
 				
-				if(!board.canTake(idx, true)) break;
-				set.add(Move.of(pieceId, index, idx));
+				if(!board.hasEnemyOrSpace(idx)) break;
+				set.add(Move.of(pieceId, index, idx, true));
 				
 				if(board.hasPiece(idx)) break;
 			}
 		}
 	}
 	
-	static void getRookMoves(Chessboard board, Set<Move> set, int index) {
-		int pieceId = board.getPieceAt(index);
-		
+	static void getRookMoves(Chess board, Set<Move> set, int pieceId, int index) {
 		int ypos = index / 8;
 		int xpos = index & 7;
 		
@@ -228,17 +218,16 @@ class ChessProcesser {
 				if(xp < 0 || xp > 7 || yp < 0 || yp > 7) break;
 				int idx = xp + yp * 8;
 				
-				if(!board.canTake(idx, true)) break;
-				set.add(Move.of(pieceId, index, idx));
+				if(!board.hasEnemyOrSpace(idx)) break;
+				set.add(Move.of(pieceId, index, idx, true));
 				
 				if(board.hasPiece(idx)) break;
 			}
 		}
 	}
 	
-	static void getKingMoves(Chessboard board, Set<Move> set, int index) {
-		int pieceId = board.getPieceAt(index);
-		getKingMovesBasic(board, set, index);
+	static void getKingMoves(Chess board, Set<Move> set, int pieceId, int index) {
+		getKingMovesBasic(board, set, pieceId, index);
 		
 		// To castle we need to check if the squares inbetween
 		// are not checked and that our king and rooks have not
@@ -250,7 +239,7 @@ class ChessProcesser {
 				if(board.isFlagSet(Flags.CASTLE_WQ)) {
 					if(!(board.hasPiece(1) || board.hasPiece(2) || board.hasPiece(3)) && board.getPieceAt(0) == ROOK) {
 						if(!(board.isAttacked(1, true) || board.isAttacked(2, true) || board.isAttacked(3, true))) {
-							set.add(Move.of(pieceId, index, 2, Action.QUEENSIDE_CASTLE));
+							set.add(Move.of(pieceId, index, 0, Action.QUEENSIDE_CASTLE));
 						}
 					}
 				}
@@ -258,29 +247,27 @@ class ChessProcesser {
 				if(board.isFlagSet(Flags.CASTLE_WK)) {
 					if(!(board.hasPiece(5) || board.hasPiece(6)) && board.getPieceAt(7) == ROOK) {
 						if(!(board.isAttacked(5, true) || board.isAttacked(6, true))) {
-							set.add(Move.of(pieceId, index, 6, Action.KINGSIDE_CASTLE));
+							set.add(Move.of(pieceId, index, 7, Action.KINGSIDE_CASTLE));
 						}
 					}
 				}
 			} else {
 				if(board.isFlagSet(Flags.CASTLE_BQ)) {
 					if(!(board.hasPiece(57) || board.hasPiece(58) || board.hasPiece(59)) && board.getPieceAt(56) == -ROOK) {
-						set.add(Move.of(pieceId, index, 58, Action.QUEENSIDE_CASTLE));
+						set.add(Move.of(pieceId, index, 56, Action.QUEENSIDE_CASTLE));
 					}
 				}
 				
 				if(board.isFlagSet(Flags.CASTLE_BK)) {
 					if(!(board.hasPiece(61) || board.hasPiece(62)) && board.getPieceAt(63) == -ROOK) {
-						set.add(Move.of(pieceId, index, 62, Action.KINGSIDE_CASTLE));
+						set.add(Move.of(pieceId, index, 63, Action.KINGSIDE_CASTLE));
 					}
 				}
 			}
 		}
 	}
 	
-	static void getKingMovesBasic(Chessboard board, Set<Move> set, int index) {
-		int pieceId = board.getPieceAt(index);
-		
+	static void getKingMovesBasic(Chess board, Set<Move> set, int pieceId, int index) {
 		int ypos = index / 8;
 		int xpos = index & 7;
 		
@@ -292,8 +279,8 @@ class ChessProcesser {
 			if(x < 0 || x > 7 || y < 0 || y > 7) continue;
 			int idx = x + y * 8;
 			
-			if(board.canTake(idx, true)) {
-				set.add(Move.of(pieceId, index, idx));
+			if(board.hasEnemyOrSpace(idx)) {
+				set.add(Move.of(pieceId, index, idx, true));
 			}
 		}
 	}

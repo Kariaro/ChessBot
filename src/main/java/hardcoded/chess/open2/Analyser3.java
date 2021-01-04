@@ -1,12 +1,12 @@
-package hardcoded.chess.open;
+package hardcoded.chess.open2;
 
 import java.util.*;
 
+import hardcoded.chess.open.*;
 import hardcoded.chess.open.Analyser.Move0;
 import hardcoded.chess.open.Analyser.Scan0;
-import hardcoded.chess.open2.Chess;
 
-public class Analyser2 {
+public class Analyser3 {
 	private static Set<Move> getAllMoves(Chess b) {
 		Set<Move> moves = new HashSet<>();
 		
@@ -74,7 +74,12 @@ public class Analyser2 {
 	private static final int DEPTH = 3;
 	
 	private static Scan0 analyseFrom(Chess board, int depth) {
-		return analyseBranchMoves(board, depth, getAllMoves(board));
+		boolean turn = board.isWhiteTurn();
+		board.setFlagsBit(Flags.TURN, !turn);
+		Set<Move> enemyMoves = getAllMoves(board);
+		board.setFlagsBit(Flags.TURN, turn);
+		
+		return analyseBranchMoves(board, depth, enemyMoves, getAllMoves(board));
 	}
 	
 	private static int un_developing(Move move) {
@@ -150,9 +155,9 @@ public class Analyser2 {
 		return result * penalty;
 	}
 	
-	private static Scan0 analyseBranchMoves(Chess board, int depth, Set<Move> moves) {
+	private static Scan0 analyseBranchMoves(Chess board, int depth, Set<Move> enemy, Set<Move> moves) {
 		// Create a new scanner container
-		Scan0 scan = new Scan0(board);
+		Scan0 scan = new Scan0(board, enemy, moves);
 		if(depth < 0) return scan;
 		
 		// Save the last state of the board
@@ -171,18 +176,12 @@ public class Analyser2 {
 			if(depth < 1) {
 				branch = new Scan0(board);
 			} else {
-				branch = analyseBranchMoves(board, depth - 1, getAllMoves(board));
+				branch = analyseBranchMoves(board, depth - 1, moves, getAllMoves(board));
 			}
 			
-			
 			double percent = ((branch.material()) * 90 + material * 10) / 100;
-			percent = percent + un_developing(move) + non_developing(board);
+			percent = percent + un_developing(move) + non_developing(board) + scan.attacks[move.to()];
 			if(move.action() == Action.QUEENSIDE_CASTLE || move.action() == Action.KINGSIDE_CASTLE) percent += 50 * (board.isWhiteTurn() ? -1:1);
-			
-//			int aid = Math.abs(move.id());
-//			if(aid != Pieces.PAWN && aid != Pieces.KING) {
-//				percent += 0.11 * (scan.white ? 1:-1);
-//			}
 			
 			if(depth == DEPTH) {
 				log("  move: %-10s (%2.2f) -> (%2.2f)", move, material / 100.0, percent / 100.0);

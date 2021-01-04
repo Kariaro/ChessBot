@@ -1,115 +1,33 @@
-package hardcoded.chess.open;
+package hardcoded.chess.open2;
 
 import static hardcoded.chess.open.Flags.*;
 import static hardcoded.chess.open.Pieces.*;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import hardcoded.chess.decoder.BoardUtils;
+import hardcoded.chess.open.Action;
+import hardcoded.chess.open.Flags;
+import hardcoded.chess.open.Move;
+import hardcoded.chess.open.State;
 
-@Deprecated
-class Chessboard {
+public class Chess {
 	public static final State DEFAULT = BoardUtils.FEN.decode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 	
-	protected final int[] board;
-	protected int flags = (1 | 2 | 4 | 8 | 16);
+	protected final int[] board = new int[64];
 	protected Move last_move = Move.INVALID;
+	protected int flags = Flags.DEFAULT;
+	// TODO: Fifty Move rule
+	// TODO: Threefold repetition
 	
-	protected State ls;
-	
-	public Chessboard() {
-		this(
-			"RNBQKBNR" +
-			"PPPPPPPP" +
-			"        " +
-			"        " +
-			"        " +
-			"        " +
-			"pppppppp" +
-			"rnbqkbnr"
-		);
-		
-//		this(
-//			"R   K  R" +
-//			"    P   " +
-//			"    r   " +
-//			"    r   " +
-//			"    r   " +
-//			"    r   " +
-//			"    p  R" +
-//			"r   k   "
-//		);
-		
-//		this(
-//			"        " +
-//			"        " +
-//			"        " +
-//			"        " +
-//			"        " +
-//			"       p" +
-//			"        " +
-//			"k      K"
-//		);
-//		
-//		setFlagsBit(CASTLE_BK, false);
-//		setFlagsBit(CASTLE_BQ, false);
-//		setFlagsBit(CASTLE_WK, false);
-//		setFlagsBit(CASTLE_WQ, false);
-		
-		
-//		this(
-//			"K       " +
-//			"     p  " +
-//			" k      " +
-//			"        " +
-//			"        " +
-//			"        " +
-//			"        " +
-//			"        "
-//		);
-		
-//		this(
-//			"        " +
-//			"        " +
-//			"        " +
-//			"        " +
-//			"        " +
-//			"        " +
-//			"PPK    k" +
-//			"        "
-//		);
+	public Chess() {
+		this(DEFAULT);
 	}
 	
-	public Chessboard(String str) {
-		if(str.length() != 64) throw new IllegalArgumentException();
-		board = new int[64];
-		
-		for(int i = 0; i < 64; i++) {
-			boolean lower = Character.isLowerCase(str.charAt(i));
-			char c = Character.toUpperCase(str.charAt(i));
-			switch(c) {
-				case 'K': board[i] = (lower ? -1:1) * KING; break;
-				case 'Q': board[i] = (lower ? -1:1) * QUEEN; break;
-				case 'B': board[i] = (lower ? -1:1) * BISHOP; break;
-				case 'N': board[i] = (lower ? -1:1) * KNIGHT; break;
-				case 'R': board[i] = (lower ? -1:1) * ROOK; break;
-				case 'P': board[i] = (lower ? -1:1) * PAWN; break;
-			}
-		}
-	}
-	
-	protected Chessboard(State state) {
-		board = new int[64];
+	protected Chess(State state) {
 		setState(state);
-	}
-	
-	public Chessboard clone() {
-		return new Chessboard(getState());
-	}
-	
-	public boolean isPromoting() {
-		return last_move.action() == Action.PROMOTE;
 	}
 	
 	public int getPieceAt(int index) {
@@ -122,7 +40,12 @@ class Chessboard {
 		if(set) flags |= mask;
 	}
 	
-	protected boolean isFlagSet(int mask) {
+	protected void setFlagsBit(int mask, int set) {
+		flags &= ~mask;
+		if(set != 0) flags |= mask;
+	}
+	
+	public boolean isFlagSet(int mask) {
 		return (flags & mask) != 0;
 	}
 	
@@ -130,8 +53,23 @@ class Chessboard {
 		return isFlagSet(TURN);
 	}
 	
+	public Chess clone() {
+		return new Chess(getState());
+	}
+	
 	protected boolean hasPiece(int index) {
 		return getPieceAt(index) != 0;
+	}
+	
+	protected boolean hasEnemyOrSpace(int index) {
+		int piece = getPieceAt(index);
+		if(piece == 0) return true;
+		return isWhiteTurn() ? (piece < 0):(piece > 0);
+	}
+	
+	protected boolean hasEnemyPiece(int index) {
+		int piece = getPieceAt(index);
+		return isWhiteTurn() ? (piece < 0):(piece > 0);
 	}
 	
 	public int findPiece(int id, int skip) {
@@ -146,11 +84,14 @@ class Chessboard {
 		return -1;
 	}
 	
-	protected boolean canTake(int index, boolean allowEmpty) {
-		int pieceId = getPieceAt(index);
-		if(pieceId == 0) return allowEmpty;
-		if(isWhiteTurn()) return pieceId < 0;
-		return pieceId > 0;
+	public State getState() {
+		return State.of(board, flags, last_move, 0, 0);
+	}
+	
+	public void setState(State state) {
+		for(int i = 0; i < 64; i++) board[i] = state.board[i];
+		last_move = state.last_move;
+		flags = state.flags;
 	}
 	
 	public boolean isChecked() {
@@ -169,7 +110,7 @@ class Chessboard {
 		return result;
 	}
 	
-	protected boolean isChecked(boolean white) {
+	public boolean isChecked(boolean white) {
 		int pm = 1;
 		int king_idx = 0;
 		
@@ -187,28 +128,28 @@ class Chessboard {
 		}
 		
 		Set<Move> moves = new HashSet<>();
-		ChessProcesser.getRookMoves(this, moves, king_idx);
+		ChessProcesser.getRookMoves(this, moves, 0, king_idx);
 		for(Move m : moves) {
 			int pieceId = getPieceAt(m.to()) * pm;
 			if(pieceId == QUEEN || pieceId == ROOK) return true;
 		}
 		
 		moves.clear();
-		ChessProcesser.getKnightMoves(this, moves, king_idx);
+		ChessProcesser.getKnightMoves(this, moves, 0, king_idx);
 		for(Move m : moves) {
 			int pieceId = getPieceAt(m.to()) * pm;
 			if(pieceId == KNIGHT) return true;
 		}
 
 		moves.clear();
-		ChessProcesser.getBishopMoves(this, moves, king_idx);
+		ChessProcesser.getBishopMoves(this, moves, 0, king_idx);
 		for(Move m : moves) {
 			int pieceId = getPieceAt(m.to()) * pm;
 			if(pieceId == QUEEN || pieceId == BISHOP) return true;
 		}
 
 		moves.clear();
-		ChessProcesser.getKingMovesBasic(this, moves, king_idx);
+		ChessProcesser.getKingMovesBasic(this, moves, 0, king_idx);
 		for(Move m : moves) {
 			int pieceId = getPieceAt(m.to()) * pm;
 			if(pieceId == KING) return true;
@@ -227,7 +168,6 @@ class Chessboard {
 		return false;
 	}
 	
-	
 	public boolean isAttacked(int idx, boolean white) {
 		State state = getState();
 		boolean result = isAttacked0(idx, white);
@@ -240,28 +180,28 @@ class Chessboard {
 		int pm = white ? -1:1;
 		
 		Set<Move> moves = new HashSet<>();
-		ChessProcesser.getRookMoves(this, moves, idx);
+		ChessProcesser.getRookMoves(this, moves, 0, idx);
 		for(Move m : moves) {
 			int pieceId = getPieceAt(m.to()) * pm;
 			if(pieceId == QUEEN || pieceId == ROOK) return true;
 		}
 		
 		moves.clear();
-		ChessProcesser.getKnightMoves(this, moves, idx);
+		ChessProcesser.getKnightMoves(this, moves, 0, idx);
 		for(Move m : moves) {
 			int pieceId = getPieceAt(m.to()) * pm;
 			if(pieceId == KNIGHT) return true;
 		}
 
 		moves.clear();
-		ChessProcesser.getBishopMoves(this, moves, idx);
+		ChessProcesser.getBishopMoves(this, moves, 0, idx);
 		for(Move m : moves) {
 			int pieceId = getPieceAt(m.to()) * pm;
 			if(pieceId == QUEEN || pieceId == BISHOP) return true;
 		}
 
 		moves.clear();
-		ChessProcesser.getKingMovesBasic(this, moves, idx);
+		ChessProcesser.getKingMovesBasic(this, moves, 0, idx);
 		for(Move m : moves) {
 			int pieceId = getPieceAt(m.to()) * pm;
 			if(pieceId == KING) return true;
@@ -281,24 +221,15 @@ class Chessboard {
 	}
 	
 	public synchronized Set<Move> getPieceMoves(int index) {
-		if(index < 0 || index > 63) return new HashSet<>();
+		if(index < 0 || index > 63) return Collections.emptySet();
 		return ChessProcesser.getPieceMoves(this, index);
-	}
-	
-	public State getState() {
-		return new State(this);
-	}
-	
-	public void setState(State state) {
-		for(int i = 0; i < 64; i++) board[i] = state.board[i];
-		last_move = state.last_move;
-		flags = state.flags;
 	}
 	
 	public synchronized void doMove(Move move) {
 		doMove(move, true);
 	}
 	
+	protected State ls;
 	protected synchronized void doMove(Move move, boolean updateLastState) {
 		if(updateLastState) {
 			ls = getState();
@@ -313,13 +244,18 @@ class Chessboard {
 		}
 		
 		if(move.action() == Action.KINGSIDE_CASTLE) {
-			board[move.to() + 1] = 0;
-			board[move.to() - 1] = ROOK * (isWhiteTurn() ? 1:-1);
+			int turn = (isWhiteTurn() ? 1:-1);
+			board[move.to()    ] = 0;
+			board[move.to() - 1] = KING * turn;
+			board[move.to() - 2] = ROOK * turn;
+			board[move.to() - 3] = 0;
 		}
 		
 		if(move.action() == Action.QUEENSIDE_CASTLE) {
-			board[move.to() - 2] = 0;
-			board[move.to() + 1] = ROOK * (isWhiteTurn() ? 1:-1);
+			int turn = (isWhiteTurn() ? 1:-1);
+			board[move.to()    ] = 0;
+			board[move.to() + 2] = KING * turn;
+			board[move.to() + 3] = ROOK * turn;
 		}
 		
 		if(p0 == -KING) {
@@ -343,7 +279,7 @@ class Chessboard {
 		setFlagsBit(TURN, !isWhiteTurn());
 		last_move = move;
 	}
-
+	
 	public Move getLastMove() {
 		return last_move;
 	}

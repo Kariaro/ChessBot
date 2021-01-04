@@ -3,7 +3,7 @@ package hardcoded.chess.gui;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Path2D;
+import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Locale;
@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import hardcoded.chess.open.*;
 import hardcoded.chess.open.Analyser.Move0;
 import hardcoded.chess.open.Analyser.Scan0;
+import hardcoded.chess.open2.Chess;
 
 public class ChessPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -38,7 +39,7 @@ public class ChessPanel extends JPanel {
 	private ChessAudio audio;
 	
 	private ChessListener listener;
-	private Chessboard board;
+	private Chess board;
 	
 	private float[] hoverSquares = new float[64];
 	
@@ -108,7 +109,7 @@ public class ChessPanel extends JPanel {
 				}
 				case "Restart Game": {
 					scan = null;
-					board.setState(Chessboard.DEFAULT);
+					board.setState(Chess.DEFAULT);
 					break;
 				}
 				
@@ -202,7 +203,7 @@ public class ChessPanel extends JPanel {
 		this.listener = listener;
 	}
 	
-	public void setChessboard(Chessboard board) {
+	public void setChessboard(Chess board) {
 		this.board = board;
 	}
 	
@@ -271,7 +272,7 @@ public class ChessPanel extends JPanel {
 				g.setColor(Color.black);
 				g.fillRect(2, 2, 10, size * 8 + 26);
 				
-				double p = baseline / 16.0;
+				double p = baseline / 1600.0;
 				p += 0.5;
 				if(p < 0) p = 0;
 				if(p > 1) p = 1;
@@ -284,7 +285,7 @@ public class ChessPanel extends JPanel {
 				g.setColor(Color.white);
 				g.fillRect(2, 2, 10, size * 8 + 26);
 				
-				double p = -baseline / 16.0;
+				double p = -baseline / 1600.0;
 				p += 0.5;
 				if(p < 0) p = 0;
 				if(p > 1) p = 1;
@@ -320,12 +321,9 @@ public class ChessPanel extends JPanel {
 			g.setFont(new Font("Calibri", Font.BOLD, 18));
 			Rectangle rect = new Rectangle(5 + 14, 5, 100, 20);
 			
-			drawVCenteredString(g, String.format("Score %.2f", baseline), rect);
+			drawVCenteredString(g, String.format("Score %2.2f", baseline / 100.0), rect);
 		}
 	}
-	
-	
-	
 	
 	
 	
@@ -416,6 +414,12 @@ public class ChessPanel extends JPanel {
 					}
 					
 					g.fillOval(x * size + mrg, y * size + mrg, orb, orb);
+					
+					if(move.action() == Action.KINGSIDE_CASTLE || move.action() == Action.QUEENSIDE_CASTLE) {
+						Area a = new Area(new Rectangle2D.Float(x * size, y * size, size, size));
+						a.subtract(new Area(new Ellipse2D.Float(x * size, y * size, size, size)));
+						g.fill(a);
+					}
 				}
 			}
 		}

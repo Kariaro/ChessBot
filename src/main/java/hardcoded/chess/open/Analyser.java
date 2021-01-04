@@ -2,8 +2,10 @@ package hardcoded.chess.open;
 
 import java.util.*;
 
+import hardcoded.chess.open2.Chess;
+
 public class Analyser {
-	private static Set<Move> getAllMoves(Chessboard b) {
+	private static Set<Move> getAllMoves(Chess b) {
 		Set<Move> moves = new HashSet<>();
 		
 		for(int i = 0; i < 64; i++) {
@@ -13,7 +15,7 @@ public class Analyser {
 		return moves;
 	}
 	
-	public static double getMaterial(Chessboard b) {
+	public static double getMaterial(Chess b) {
 		double mat = 0;
 		for(int i = 0; i < 64; i++) {
 			int pieceId = b.getPieceAt(i);
@@ -32,7 +34,7 @@ public class Analyser {
 		return mat;
 	}
 	
-	public static Scan0 analyse(Chessboard board) {
+	public static Scan0 analyse(Chess board) {
 		Scan0 scan = analyseFrom(board.clone(), DEPTH);
 		return scan;
 	}
@@ -43,11 +45,11 @@ public class Analyser {
 	
 	private static final int DEPTH = 3;
 	
-	private static Scan0 analyseFrom(Chessboard board, int depth) {
+	private static Scan0 analyseFrom(Chess board, int depth) {
 		return analyseBranchMoves(board, depth, getAllMoves(board));
 	}
 	
-	private static Scan0 analyseBranchMoves(Chessboard board, int depth, Set<Move> moves) {
+	private static Scan0 analyseBranchMoves(Chess board, int depth, Set<Move> moves) {
 		// Create a new scanner container
 		Scan0 scan = new Scan0(board);
 		if(depth < 0) return scan;
@@ -99,7 +101,7 @@ public class Analyser {
 		return scan;
 	}
 	
-	private static void evaluate(Chessboard board, Scan0 scan) {
+	private static void evaluate(Chess board, Scan0 scan) {
 		List<Move0> evaluation = scan.branches;
 		
 		if(!evaluation.isEmpty()) {
@@ -144,7 +146,7 @@ public class Analyser {
 	}
 	
 	public static class Move0 implements Comparable<Move0> {
-		Scan0 sc;
+		public Scan0 sc;
 		public double material;
 		public Move move;
 		
@@ -162,7 +164,7 @@ public class Analyser {
 			return Double.compare(material, o.material);
 		}
 		
-		protected Move0 clone() {
+		public Move0 clone() {
 			return new Move0(material, move);
 		}
 		
@@ -191,15 +193,29 @@ public class Analyser {
 		List<Move> behind = new ArrayList<>();
 		public List<Move0> follow = new ArrayList<>();
 		
+		public int[] attacks = new int[64];
 		
 		/**
 		 * The predicted best move
 		 */
 		public Move0 best;
 		
-		Scan0(Chessboard board) {
+		public Scan0(Chess board) {
 			this.base = getMaterial(board);
 			this.white = board.isWhiteTurn();
+		}
+		
+		public Scan0(Chess board, Set<Move> enemy, Set<Move> moves) {
+			this.base = getMaterial(board);
+			this.white = board.isWhiteTurn();
+			
+			for(Move move : moves) {
+				attacks[move.to()] += move.attack() ? 1:0;
+			}
+			
+			for(Move move : enemy) {
+				attacks[move.to()] -= move.attack() ? 1:0;
+			}
 		}
 
 		public double material() {

@@ -27,6 +27,16 @@ public interface Pieces {
 		 100, // PAWN    6
 	};
 	
+	String[] STRING_VALUES = {
+		"NONE",
+		"KING",
+		"QUEEN",
+		"BISHOP",
+		"KNIGHT",
+		"ROOK",
+		"PAWN"
+	};
+	
 	static int value(int id) {
 		return VALUES[id + 6];
 //		if(id < 0) {
@@ -51,5 +61,9 @@ public interface Pieces {
 //			case PAWN: return 100;
 //			default: return 0;
 //		}
+	}
+	
+	static String toString(int id) {
+		return STRING_VALUES[Math.abs(id)];
 	}
 }

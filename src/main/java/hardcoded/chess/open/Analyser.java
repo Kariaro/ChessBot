@@ -180,6 +180,8 @@ public class Analyser {
 		 */
 		public double base;
 		
+		public boolean draw;
+		
 		/**
 		 * If it is white to move
 		 */
@@ -219,6 +221,7 @@ public class Analyser {
 		}
 
 		public double material() {
+			if(draw) return 0;
 			if(best != null) {
 				return best.material;
 			}

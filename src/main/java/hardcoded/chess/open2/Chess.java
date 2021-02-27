@@ -3,15 +3,10 @@ package hardcoded.chess.open2;
 import static hardcoded.chess.open.Flags.*;
 import static hardcoded.chess.open.Pieces.*;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import hardcoded.chess.decoder.BoardUtils;
-import hardcoded.chess.open.Action;
-import hardcoded.chess.open.Flags;
-import hardcoded.chess.open.Move;
-import hardcoded.chess.open.State;
+import hardcoded.chess.open.*;
 
 public class Chess {
 	public static final State DEFAULT = BoardUtils.FEN.decode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -19,6 +14,7 @@ public class Chess {
 	protected final int[] board = new int[64];
 	protected Move last_move = Move.INVALID;
 	protected int flags = Flags.DEFAULT;
+	protected List<Move> last_moves = new ArrayList<>();
 	// TODO: Fifty Move rule
 	// TODO: Threefold repetition
 	
@@ -57,6 +53,26 @@ public class Chess {
 		return new Chess(getState());
 	}
 	
+	public boolean hasThreefoldRepetition() {
+		if(last_moves.size() < 7) return false;
+		
+		int size = last_moves.size();
+		Move w1 = last_moves.get(size - 1); // w 1 0
+		Move b1 = last_moves.get(size - 2); // b 2 0
+		
+		Move w2 = last_moves.get(size - 3); // w 3 1
+		Move b2 = last_moves.get(size - 4); // b 4 1
+		
+		Move w3 = last_moves.get(size - 5); // w 5 2
+		Move b3 = last_moves.get(size - 6); // b 6 2
+		
+		// First move has been repeted
+		return (w1.hashCode() == w3.hashCode())
+			&& (b1.hashCode() == b3.hashCode())
+			&& (w2.from() == w1.to())
+			&& (b2.from() == b1.to());
+	}
+	
 	protected boolean hasPiece(int index) {
 		return getPieceAt(index) != 0;
 	}
@@ -85,13 +101,15 @@ public class Chess {
 	}
 	
 	public State getState() {
-		return State.of(board, flags, last_move, 0, 0);
+		return State.of(board, flags, last_move, 0, 0, last_moves);
 	}
 	
 	public void setState(State state) {
 		for(int i = 0; i < 64; i++) board[i] = state.board[i];
 		last_move = state.last_move;
 		flags = state.flags;
+		last_moves.clear();
+		last_moves.addAll(state.lastMoves);
 	}
 	
 	public boolean isChecked() {
@@ -231,9 +249,11 @@ public class Chess {
 	
 	protected State ls;
 	protected synchronized void doMove(Move move, boolean updateLastState) {
+		last_moves.add(move);
 		if(updateLastState) {
 			ls = getState();
 		}
+		
 		
 		int p0 = move.id();
 		board[move.to()] = p0;

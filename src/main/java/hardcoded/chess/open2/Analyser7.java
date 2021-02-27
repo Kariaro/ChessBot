@@ -6,35 +6,20 @@ import hardcoded.chess.open.*;
 import hardcoded.chess.open.Analyser.Move0;
 import hardcoded.chess.open.Analyser.Scan0;
 
-public class Analyser3 {
-	public static Set<Move> getAllMoves(Chess b) {
+public class Analyser7 {
+	private static Set<Move> getAllMoves(Chess board) {
 		Set<Move> moves = new HashSet<>();
 		
+		boolean turn = board.isWhiteTurn();
 		for(int i = 0; i < 64; i++) {
-			moves.addAll(b.getPieceMoves(i));
+			int piece = board.getPieceAt(i);
+			if(turn && piece < 1 || (!turn && piece > -1)) continue;
+			
+			moves.addAll(board.getPieceMoves(i));
 		}
 		
 		return moves;
 	}
-	
-//	public static double getMaterial(Chess b) {
-//		double mat = 0;
-//		for(int i = 0; i < 64; i++) {
-//			int pieceId = b.getPieceAt(i);
-//			double val = Pieces.value(pieceId);
-//			
-//			if(pieceId == Pieces.PAWN) {
-//				val += (i / 8) / 24.0;
-//			}
-//			
-//			if(pieceId == -Pieces.PAWN) {
-//				val -= (8 - (i / 8)) / 24.0;
-//			}
-//			mat += val;
-//		}
-//		
-//		return mat;
-//	}
 	
 	public static int getMaterial(Chess b) {
 		int mat = 0;
@@ -49,13 +34,13 @@ public class Analyser3 {
 			mat += val;
 			
 			// Pushed pawns get's more points only if the row has no other pawn on it
-//			if(pieceId == Pieces.PAWN) {
-//				val += (int)(((i / 8) / 24.0) * 50);
-//			}
-//			
-//			if(pieceId == -Pieces.PAWN) {
-//				val -= (int)(((8 - (i / 8)) / 24.0) * 50);
-//			}
+			if(pieceId == Pieces.PAWN) {
+				val += (int)(((i / 8) / 24.0) * 20);
+			}
+			
+			if(pieceId == -Pieces.PAWN) {
+				val -= (int)(((8 - (i / 8)) / 24.0) * 20);
+			}
 		}
 		
 		return mat;
@@ -71,15 +56,13 @@ public class Analyser3 {
 		System.out.printf(format + "\n", args);
 	}
 	
+	private static Random random = new Random();
 	private static final int DEPTH = 3;
 	
 	private static Scan0 analyseFrom(Chess board, int depth) {
-		boolean turn = board.isWhiteTurn();
-		board.setFlagsBit(Flags.TURN, !turn);
-		Set<Move> enemyMoves = getAllMoves(board);
-		board.setFlagsBit(Flags.TURN, turn);
-		
-		return analyseBranchMoves(board, depth, enemyMoves, getAllMoves(board));
+		Scan0 scan = analyseBranchMoves(board, depth, getAllMoves(board));
+		customizeEnds(scan);
+		return scan;
 	}
 	
 	private static int un_developing(Move move) {
@@ -130,35 +113,33 @@ public class Analyser3 {
 			}
 		}
 		
-		return result;
+		return result * 3;
 	}
 	
 	private static int non_developing(Chess board) {
 		int result = 0;
-		int penalty = 3;
 		if(board.getPieceAt(1) == Pieces.KNIGHT) result -= 10;
 		if(board.getPieceAt(2) == Pieces.BISHOP) result -= 10;
 		if(board.getPieceAt(5) == Pieces.BISHOP) result -= 10;
 		if(board.getPieceAt(6) == Pieces.KNIGHT) result -= 10;
-		if(board.getPieceAt(11) == Pieces.PAWN) result -= 9;
-		if(board.getPieceAt(12) == Pieces.PAWN) result -= 9;
+		if(board.getPieceAt(11) == Pieces.PAWN) result -= 11;
+		if(board.getPieceAt(12) == Pieces.PAWN) result -= 11;
 		if(board.getPieceAt(4) == Pieces.KING) result -= 8;
 		
 		if(board.getPieceAt(57) == -Pieces.KNIGHT) result += 10;
 		if(board.getPieceAt(58) == -Pieces.BISHOP) result += 10;
 		if(board.getPieceAt(61) == -Pieces.BISHOP) result += 10;
 		if(board.getPieceAt(62) == -Pieces.KNIGHT) result += 10;
-		if(board.getPieceAt(51) == -Pieces.PAWN) result += 9;
-		if(board.getPieceAt(52) == -Pieces.PAWN) result += 9;
+		if(board.getPieceAt(51) == -Pieces.PAWN) result += 11;
+		if(board.getPieceAt(52) == -Pieces.PAWN) result += 11;
 		if(board.getPieceAt(60) == -Pieces.KING) result += 8;
 		
-		return result * penalty;
+		return result * 3;
 	}
 	
-	private static Scan0 analyseBranchMoves(Chess board, int depth, Set<Move> enemy, Set<Move> moves) {
+	private static Scan0 analyseBranchMoves(Chess board, int depth, Set<Move> moves) {
 		// Create a new scanner container
-		Scan0 scan = new Scan0(board, enemy, moves);
-		if(depth < 0) return scan;
+		Scan0 scan = new Scan0(board);
 		
 		// Save the last state of the board
 		State state = board.getState();
@@ -177,38 +158,13 @@ public class Analyser3 {
 			if(depth < 1) {
 				branch = new Scan0(board);
 			} else {
-				branch = analyseBranchMoves(board, depth - 1, moves, getAllMoves(board));
+				branch = analyseBranchMoves(board, depth - 1, getAllMoves(board));
 			}
 			
-			double percent = ((branch.material()) * 90 + material * 10) / 100;
+			double percent = ((branch.material()) * 95 + material * 5) / 100.0;
 			percent = percent + un_developing(move) + non_developing(board);
 			
-			{
-				int delta = (board.isWhiteTurn() ? 1:-1);
-				
-				for(int i = 0; i < 64; i++) {
-					percent += delta * scan.attacks[i] / 2;
-				}
-			}
-//			{
-//				int attacks = scan.attacks[move.to()];
-//				int delta = (board.isWhiteTurn() ? 1:-1);
-//				int value = Pieces.value(move.id());
-//				if(delta < 0) {
-//					// black
-//				
-//				} else {
-//					
-//				}
-//				
-//				if(attacks < 0 && value * value > 1) {
-//					percent += value / 3;
-//				}
-//				
-//				percent += attacks * delta * 5;
-//			}
-			
-			if(move.action() == Action.QUEENSIDE_CASTLE || move.action() == Action.KINGSIDE_CASTLE) percent += 50 * (board.isWhiteTurn() ? -1:1);
+			if(move.action() == Action.QUEENSIDE_CASTLE || move.action() == Action.KINGSIDE_CASTLE) percent += 20 * (board.isWhiteTurn() ? -1:1);
 			
 			if(depth == DEPTH) {
 				log("  move: %-10s (%2.2f) -> (%2.2f)", move, material / 100.0, percent / 100.0);
@@ -222,51 +178,37 @@ public class Analyser3 {
 			board.setState(state);
 		}
 		
-		if(!scan.branches.isEmpty()) {
-			double median = 0;
-			for(Move0 move : scan.branches) {
-				median += move.material;
-			}
-			
-			median = median / (0.0 + scan.branches.size());
-			
-			Iterator<Move0> iter = scan.branches.iterator();
-			while(iter.hasNext()) {
-				Move0 move = iter.next();
+		evaluate(board, scan);
+		board.setState(state);
+		return scan;
+	}
+	
+	
+	/**
+	 * Add some custom and random moves to the bot
+	 */
+	private static void customizeEnds(Scan0 scan) {
+		List<Move0> branches = scan.branches;
+		if(branches.size() < 2) return;
+		
+		double score = scan.best.material;
+		if(random.nextFloat() < 0.3) {
+			if(!scan.white) {
+				Move0 move = branches.get(branches.size() - 2);
 				
-				if(scan.white) {
-					if(move.material < median - 100) {
-						iter.remove();
-					}
-				} else {
-					if(move.material > median + 100) {
-						iter.remove();
-					}
+				if(Math.abs(move.material - score) < 10) {
+					scan.branches.remove(branches.size() - 1);
+					scan.best = move;
+				}
+			} else {
+				Move0 move = branches.get(1);
+				if(Math.abs(move.material - score) < 10) {
+					scan.branches.remove(0);
+					scan.best = move;
 				}
 			}
 		}
 		
-		evaluate(board, scan);
-		board.setState(state);
-		
-//		if(depth == DEPTH) {
-//			log("Material: %.4f", scan.base);
-//		}
-//		
-//		if(depth == DEPTH) {
-//			if(scan.follow.size() > 2) {
-//				while(scan.follow.size() > 2) {
-//					scan.follow.remove(2);
-//				}
-//			}
-//			Scan0 next = analyseBranchMoves(board, depth + 1, scand - 1, Set.of(scan.best.move));
-//			
-//			scan.follow.addAll(next.follow);
-//			log("  move: %-10s (%2.4f) -> (%2.4f)", scan.best, scan.material(), scan.best.material);
-//			log("      : (%s)", scan.follow);
-//		}
-		
-		return scan;
 	}
 	
 	private static void evaluate(Chess board, Scan0 scan) {

@@ -18,4 +18,8 @@ public abstract class ChessListener {
 	public void onForceMove() {
 		
 	}
+	
+	public void onRestartGame() {
+		
+	}
 }

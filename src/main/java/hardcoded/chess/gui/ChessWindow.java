@@ -1,13 +1,17 @@
 package hardcoded.chess.gui;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.util.Set;
 
 import javax.swing.JFrame;
 
 import hardcoded.chess.open.*;
+import hardcoded.chess.open.Analyser.Move0;
 import hardcoded.chess.open.Analyser.Scan0;
 import hardcoded.chess.open2.Analyser3;
+import hardcoded.chess.open2.Analyser7;
 import hardcoded.chess.open2.Chess;
 
 public class ChessWindow implements Runnable {
@@ -28,7 +32,6 @@ public class ChessWindow implements Runnable {
 				return;
 			}
 			
-			System.out.println(moves);
 			Move move = null;
 			for(Move m : moves) {
 				if(m.action() != Action.PROMOTE) continue;
@@ -84,19 +87,37 @@ public class ChessWindow implements Runnable {
 			onForceMove();
 		}
 		
+		@Override
+		public void onRestartGame() {
+			
+		}
+		
 		private boolean hasMove = false;
 		public void onForceMove() {
 			if(hasMove) return;
 			hasMove = true;
 			
 			Thread thread = new Thread(() -> {
-				if(board.isWhiteTurn()) {
-					scan = Analyser2.analyse(board);
+				boolean comp = false;
+				Scan0 scan = null;
+				
+				if(comp) {
+					if(board.isWhiteTurn()) {
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						scan = Analyser3.analyse(board);
+					} else {
+						scan = Analyser3.analyse(board);
+					}
 				} else {
-					scan = Analyser3.analyse(board);
+					scan = Analyser2.analyse(board);
 				}
 				
-				if(scan.best != null) {
+				Move0 best = scan.best;
+				if(best != null) {
 					try {
 						// Play the sound eitherway
 						Thread.sleep(20);
@@ -104,14 +125,16 @@ public class ChessWindow implements Runnable {
 						e.printStackTrace();
 					}
 					
-					board.doMove(scan.best.move);
+					board.doMove(best.move);
 					panel.setScan(scan);
 					panel.getAudio().playChessMove();
 					
 					hasMove = false;
 					
-					onForceMove();
+					if(comp) onForceMove();
 				}
+				
+				hasMove = false;
 				
 			});
 			thread.setDaemon(true);
@@ -168,8 +191,6 @@ public class ChessWindow implements Runnable {
 				last += ((now - last) / 1000) * 1000;
 				// System.out.println("fps: " + frame);
 				
-				// doMove();
-				
 				frame = 0;
 				times++;
 			}
@@ -186,66 +207,6 @@ public class ChessWindow implements Runnable {
 	public void tick() {
 		frame.repaint(20);
 	}
-	
-//	public void doMove() {
-//		boolean hasMove = false;
-//		if(board.isWhiteTurn()) {
-//			//scan = Analyser.analyse(board);
-//			//hasMove = true;
-//		} else {
-//			scan = Analyser2.analyse(board);
-//			hasMove = true;
-//		}
-//		
-//		if(hasMove) {
-//			if(scan.best != null) {
-//				Move move = scan.best.move;
-//				board.doMove(move);
-//				tick();
-//				
-//				System.out.println("Moving: " + move);
-//			} else {
-//				System.out.println("Stalemate or checkmate!!!");
-//			}
-//			
-//			panel.setScan(scan);
-//		}
-//	}
-	
-//	public void paintDetails(Graphics2D g) {
-//		double baseline = 0;
-//		{
-//			g.translate(size * 8, 0);
-//			
-//			g.setColor(Color.black);
-//			g.setFont(new Font("Calibri", Font.PLAIN, 20));
-//			g.setColor(Color.black);
-//			g.drawString("Score", 30, 30);
-//			g.drawString(String.format("%.4f", baseline), 30, 60);
-//			
-//			g.drawString("Status", 30, 100);
-//			g.drawString(String.format("%s", "PLAYING"), 30, 130);
-//			
-//			
-//			g.setColor(Color.darkGray);
-//			g.fillRect(0, 0, 14, size * 8);
-//			
-//			g.setColor(Color.white);
-//			g.fillRect(2, 2, 10, size * 8 - 4);
-//			
-//			double p = (-baseline / 16.0) / 100.0;
-//			p += 0.5;
-//			if(p < 0) p = 0;
-//			if(p > 1) p = 1;
-//			
-//			p *= (size * 8 - 4.0);
-//			
-//			g.setColor(Color.black);
-//			g.fillRect(2, 2, 10, (int)p);
-//			
-//			g.translate(-size * 8, 0);
-//		}
-//	}
 	
 	public void start() {
 		if(running) return;

@@ -6,12 +6,11 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JPanel;
 
 import hardcoded.chess.open.*;
@@ -47,21 +46,45 @@ public class ChessPanel extends JPanel {
 	private int selectedIdx = -1;
 	private int buttonIdx = -1;
 	
+	private int dragOffsetX;
+	private int dragOffsetY;
+	private int dragPosX;
+	private int dragPosY;
+	private int dragIdx = -1;
+	
 	private MouseAdapter adapter = new MouseAdapter() {
+		private int drgIdx = -1;
+		
 		public void mouseMoved(MouseEvent e) {
 			promoteIdx = toPromoteIndex(e.getPoint());
 			buttonIdx = toButtonIndex(e.getPoint());
 		}
 		
+		public void mouseReleased(MouseEvent e) {
+			if(dragIdx != -1) {
+				if(listener != null) {
+					listener.onSelectedSquare(toIndex(e.getPoint()));
+					moves = Collections.emptySet();
+				}
+			}
+			
+			dragIdx = -1;
+			drgIdx = -1;
+			dragPosX = 0;
+			dragPosY = 0;
+		}
+		
 		public void mousePressed(MouseEvent e) {
-			buttonIdx = toButtonIndex(e.getPoint());
+			Point point = e.getPoint();
+			
+			buttonIdx = toButtonIndex(point);
 			if(buttonIdx != -1) {
 				onButtonPressed(buttonIdx);
 				return;
 			}
 			
 			if(promoting) {
-				promoteIdx = toPromoteIndex(e.getPoint());
+				promoteIdx = toPromoteIndex(point);
 				
 				if(promoteIdx == 5) {
 					promoting = false;
@@ -75,10 +98,21 @@ public class ChessPanel extends JPanel {
 					promoting = false;
 				}
 			} else {
-				selectedIdx = toIndex(e.getPoint());
+				selectedIdx = toIndex(point);
 				
 				if(selectedIdx != -1) {
 					moves = board.getPieceMoves(selectedIdx);
+				}
+				
+				{
+					drgIdx = selectedIdx;
+					if(moves == null || moves.isEmpty()) {
+						drgIdx = -1;
+					}
+					dragOffsetX = ((point.x - 15) / size) * size + size / 2 + 15;
+					dragOffsetY = ((point.y - 15) / size) * size + size / 2 + 15;
+					dragPosX = 0;
+					dragPosY = 0;
 				}
 				
 				if(listener != null) {
@@ -88,7 +122,10 @@ public class ChessPanel extends JPanel {
 		}
 		
 		public void mouseDragged(MouseEvent e) {
-			// TODO:
+			dragPosX = e.getX() - dragOffsetX;
+			dragPosY = e.getY() - dragOffsetY;
+			dragIdx = drgIdx;
+			repaint();
 		}
 		
 		
@@ -103,16 +140,18 @@ public class ChessPanel extends JPanel {
 					}
 					break;
 				}
+				case "Restart Game": {
+					scan = null;
+					board.setState(Chess.DEFAULT);
+					if(listener != null) {
+						listener.onRestartGame();
+					}
+					break;
+				}
 				case "Hide Arrows": {
 					hideArrows = !hideArrows;
 					break;
 				}
-				case "Restart Game": {
-					scan = null;
-					board.setState(Chess.DEFAULT);
-					break;
-				}
-				
 				case "Flip Board": {
 					flipBoard = !flipBoard;
 					break;
@@ -172,12 +211,13 @@ public class ChessPanel extends JPanel {
 		setMinimumSize(dim);
 		setMaximumSize(dim);
 		addMouseMotionListener(adapter);
+		addMouseWheelListener(adapter);
 		addMouseListener(adapter);
 		setBackground(Color.gray);
 		
 		try {
 			audio = new ChessAudio();
-		} catch(UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 		
@@ -464,7 +504,30 @@ public class ChessPanel extends JPanel {
 			int piece = board.getPieceAt(i);
 			if(piece != 0) {
 				if(piece < 0) piece = 6 - piece;
-				g.drawImage(pieces[piece - 1], x * size, y * size, size, size, null);
+				if(dragIdx != i) {
+					g.drawImage(pieces[piece - 1], x * size, y * size, size, size, null);
+				}
+			}
+		}
+		
+		if(dragIdx != -1) {
+			int x = dragIdx & 7;
+			int y = dragIdx / 8;
+			
+			if(!flipBoard) {
+				y = 7 - y;
+			} else {
+				x = 7 - x;
+			}
+			
+			int piece = board.getPieceAt(dragIdx);
+			if(piece != 0) {
+				if(piece < 0) piece = 6 - piece;
+				
+				Shape old = g.getClip();
+				g.setClip(0, 0, size * 8, size * 8);
+				g.drawImage(pieces[piece - 1], x * size + dragPosX, y * size + dragPosY, size, size, null);
+				g.setClip(old);
 			}
 		}
 		
@@ -480,31 +543,38 @@ public class ChessPanel extends JPanel {
 //			}
 			
 			if(sc != null) {
-				double material = Analyser2.getMaterial(board);
 				Stroke old = g.getStroke();
 				g.setColor(Color.black);
 				
-				for(int i = 0; i < Math.min(5, sc.branches.size()); i++) {
+				int max = 10;
+				int bs = sc.branches.size();
+				int st = sc.white ? Math.max(0, bs - max):0;
+				int et = sc.white ? Math.min(st + max, bs):Math.min(max, bs);
+				
+				for(int i = st; i < et; i++) {
 					Move0 dmove = sc.branches.get(i);
 					
-					float mat = (float)(dmove.material - material);
-					if(mat < -0.05 && mat > -3) mat = -3;
-					else if(mat >  0.05 && mat <  3) mat =  3;
-					else {
-						mat = -3;
-					}
+					float mat = (float)(dmove.material - sc.base);
+					g.setColor(scan_blue);
+//					if(sc.white) {
+//						g.setColor(mat < 0 ? scan_red:scan_blue);
+//					} else {
+//						g.setColor(mat > 0 ? scan_red:scan_blue);
+//					}
 					
-					if(board.isWhiteTurn() && false) {
-						g.setColor(mat < 0 ? scan_red:scan_blue);
-					} else {
-						g.setColor(mat > 0 ? scan_red:scan_blue);
-					}
-					
+					mat /= 100;
 					if(mat < 0) mat = -mat;
+					
+					if(Math.abs(mat) < 2) {
+						mat = 2;
+					}
 					
 					float size = (Math.abs(mat) + 0.5f) * 2.0f;
 					if(size > this.size / 5) size = this.size / 5;
-					drawMoveDebug(g, dmove.move, size, dmove.material);
+					
+					size = 4 + 20 / (3 * size + 0.1f);
+					
+					drawMoveDebug(g, dmove.move, size, (int)dmove.material);
 				}
 				
 				g.setStroke(old);
@@ -518,7 +588,7 @@ public class ChessPanel extends JPanel {
 				for(int i = 0; i < list.size(); i++) {
 					Move0 m = list.get(i);
 					g.setColor(new Color(255, 255, 0, 60));
-					drawMove(g, m.move, (list.size() - i) * 5);
+					drawMove(g, m.move, ((list.size() - i + 1) * 5));
 				}
 			}
 		}
@@ -574,7 +644,7 @@ public class ChessPanel extends JPanel {
 		drawArrow(g, x0, y0, x1, y1, scale);
 	}
 	
-	private void drawMoveDebug(Graphics2D g, Move move, float scale, double mat) {
+	private void drawMoveDebug(Graphics2D g, Move move, float scale, int mat) {
 		int a = move.from();
 		int b = move.to();
 		
@@ -596,7 +666,7 @@ public class ChessPanel extends JPanel {
 		
 		g.setColor(Color.white);
 		Rectangle rect = new Rectangle(x0, y0, x1 - x0, y1 - y0);
-		drawCenteredString(g, String.format("%.2f", mat), rect);
+		drawCenteredString(g, String.format("%.2f", mat / 100.0), rect);
 	}
 	
 	private void drawArrow(Graphics2D g, int x0, int y0, int x1, int y1, double size) {

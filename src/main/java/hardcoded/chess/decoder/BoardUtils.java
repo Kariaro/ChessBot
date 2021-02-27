@@ -70,9 +70,9 @@ public class BoardUtils {
 			}
 			
 			int flags = 0;
-			System.out.println("---");
-			ChessUtils.printBoard(board);
-			System.out.println("---");
+//			System.out.println("---");
+//			ChessUtils.printBoard(board);
+//			System.out.println("---");
 			
 			// Turn
 			switch(parts[1]) {

@@ -24,4 +24,27 @@ public final class UtilsF {
 		}
 		return "unknown";
 	}
+	
+	/**
+	 * Check if the board has the specified piece on the mask
+	 * 
+	 * @param board
+	 * @param mask
+	 * @param find
+	 * @return
+	 */
+	public static boolean hasPiece(ChessB board, long mask, int find) {
+		// the mask only contains pieces that belongs to the correct team
+		mask &= (find < 0 ? board.black_mask:board.white_mask);
+		
+		while(mask != 0) {
+			long pick = Long.lowestOneBit(mask);
+			mask &= ~pick;
+			int idx = Long.numberOfTrailingZeros(pick);
+			
+			if(board.pieces[idx] == find) return true;
+		}
+		
+		return false;
+	}
 }

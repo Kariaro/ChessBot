@@ -43,15 +43,26 @@ public class ChessB {
 //			-ROOK,       0,       0, -KING,      0,       0,       0, -ROOK,
 //		};
 		
+//		pieces = new int[] {
+//			 ROOK,       0,       0,  KING,      0,       0,       0,  ROOK,
+//			 PAWN,       0,       0,  PAWN,   PAWN,    PAWN,    PAWN,  PAWN,
+//			    0,       0,       0,     0,      0,       0,       0,     0,
+//			    0,       0,       0,     0,      0,       0,       0,     0,
+//			    0,   -ROOK,       0,     0,      0,       0,       0,     0,
+//			    0,       0,       0,     0,      0,       0,       0,     0,
+//			-PAWN,   -PAWN,   -PAWN, -PAWN,  -PAWN,   -PAWN,   -PAWN, -PAWN,
+//			-ROOK,       0,       0, -KING,      0,       0,       0, -ROOK,
+//		};
+		
 		pieces = new int[] {
-			 ROOK,       0,       0,  KING,      0,       0,       0,  ROOK,
-			 PAWN,       0,       0,  PAWN,   PAWN,    PAWN,    PAWN,  PAWN,
+			    0,    PAWN,       0,  KING,      0,       0,       0,     0,
 			    0,       0,       0,     0,      0,       0,       0,     0,
+		  -KNIGHT,       0,       0,     0,      0,       0,       0,     0,
 			    0,       0,       0,     0,      0,       0,       0,     0,
+			    0,       0,       0,     0,      0,       0, -BISHOP,     0,
 			    0,   -ROOK,       0,     0,      0,       0,       0,     0,
 			    0,       0,       0,     0,      0,       0,       0,     0,
-			-PAWN,   -PAWN,   -PAWN, -PAWN,  -PAWN,   -PAWN,   -PAWN, -PAWN,
-			-ROOK,       0,       0, -KING,      0,       0,       0, -ROOK,
+			    0,       0,       0,     0,      0,       0,       0,     0,
 		};
 		
 		
@@ -85,4 +96,9 @@ public class ChessB {
 	public boolean canBC()  { return (flags & BCR) != 0; }
 	public boolean canBCK() { return (flags & BCK) != 0; }
 	public boolean canBCQ() { return (flags & BCQ) != 0; }
+	
+	
+	public int getPiece(int i) {
+		return this.pieces[i];
+	}
 }

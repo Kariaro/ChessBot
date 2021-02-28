@@ -11,7 +11,6 @@ import hardcoded.chess.open.*;
 import hardcoded.chess.open.Analyser.Move0;
 import hardcoded.chess.open.Analyser.Scan0;
 import hardcoded.chess.open2.Analyser3;
-import hardcoded.chess.open2.Analyser7;
 import hardcoded.chess.open2.Chess;
 
 public class ChessWindow implements Runnable {

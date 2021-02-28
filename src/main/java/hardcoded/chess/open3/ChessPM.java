@@ -49,23 +49,8 @@ public class ChessPM {
 		}
 	}
 	
-	// private static final int[] knight_offset_x = { -1, 1, 2, 2, 1, -1, -2, -2 };
-	// private static final int[] knight_offset_y = { -2, -2, -1, 1, 2, 2, 1, -1 };
 	public static long knight_move(ChessB board, int idx) {
 		return Table.KNIGHT_MOVES[idx];
-		/*int ypos = idx >> 3;
-		int xpos = idx & 7;
-		long result = 0;
-		
-		for(int i = 0; i < 8; i++) {
-			int xp = xpos + knight_offset_x[i];
-			int yp = ypos + knight_offset_y[i];
-			
-			if(xp < 0 || xp > 7 || yp < 0 || yp > 7) continue;
-			result |= 1L << (xp + yp * 8L);
-		}
-		
-		return result;*/
 	}
 	
 	public static long rook_move(ChessB board, int idx) {
@@ -256,22 +241,6 @@ public class ChessPM {
 	
 	public static long king_move(ChessB board, int idx) {
 		return Table.KING_MOVES[idx];
-		/*
-		int ypos = idx >> 3;
-		int xpos = idx & 7;
-		long result = 0;
-		
-		for(int j = 0; j < 9; j++) {
-			if(j == 4) continue; // Middle
-			
-			int x = xpos + (j % 3) - 1;
-			int y = ypos + (j / 3) - 1;
-			if(x < 0 || x > 7 || y < 0 || y > 7) continue;
-			
-			result |= 1L << (x + y * 8L);
-		}
-		
-		return result;*/
 	}
 	
 	// FIXME: Missing moves
@@ -293,9 +262,9 @@ public class ChessPM {
 		
 		if(board.isWhite()) {
 			if(board.canWC()) { // can white castle
-				boolean a = is_attacked(board, idx);
+				boolean a = is_attacked(board, idx - 2);
 				boolean b = is_attacked(board, idx - 1);
-				boolean c = is_attacked(board, idx - 2);
+				boolean c = is_attacked(board, idx);
 				
 				System.out.printf("%s, %s, %s\n", a, b, c);
 			}
@@ -313,10 +282,17 @@ public class ChessPM {
 	// FIXME: Probably slow.
 	private static boolean is_attacked(ChessB board, int idx) {
 		if(board.isWhite()) {
-			long rook_bishop = piece_move(board, Pieces.QUEEN, idx) & board.black_mask;
-			long knight      = piece_move(board, Pieces.KNIGHT, idx) & board.black_mask;
+			long rook_move = piece_move(board, Pieces.ROOK, idx) & board.black_mask;
+			if(UtilsF.hasPiece(board, rook_move, -Pieces.ROOK)) return true;
 			
-			System.out.printf("*** QUEEN: %s\n", UtilsF.toBitString(rook_bishop));
+			long bishop_move = piece_move(board, Pieces.BISHOP, idx) & board.black_mask;
+			if(UtilsF.hasPiece(board, bishop_move, -Pieces.BISHOP)) return true;
+			
+			long knight_move = piece_move(board, Pieces.KNIGHT, idx) & board.black_mask;
+			if(UtilsF.hasPiece(board, knight_move, -Pieces.KNIGHT)) return true;
+			
+			
+			System.out.printf("*** PIECE: %s\n", UtilsF.toBitString(knight_move));
 		}
 		
 		return false;

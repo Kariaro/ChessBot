@@ -64,7 +64,7 @@ public final class ChessUtils {
 	 */
 	public static boolean hasPiece(ChessBoard board, long mask, int find) {
 		// the mask only contains pieces that belongs to the correct team
-		mask &= (find < 0 ? board.black_mask:board.white_mask);
+		mask &= (find < 0 ? board.blackMask :board.whiteMask);
 		
 		while (mask != 0) {
 			long pick = Long.lowestOneBit(mask);
@@ -77,5 +77,25 @@ public final class ChessUtils {
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Returns the first index of the piece to find
+	 */
+	public static int getFirst(ChessBoard board, long mask, int find) {
+		// the mask only contains pieces that belongs to the correct team
+		mask &= (find < 0 ? board.blackMask :board.whiteMask);
+		
+		while (mask != 0) {
+			long pick = Long.lowestOneBit(mask);
+			mask &= ~pick;
+			int idx = Long.numberOfTrailingZeros(pick);
+			
+			if (board.pieces[idx] == find) {
+				return idx;
+			}
+		}
+		
+		return -1;
 	}
 }

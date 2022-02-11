@@ -1,5 +1,7 @@
 package me.hardcoded.chess.advanced;
 
+import me.hardcoded.chess.open.Move;
+
 /**
  * This class contains information about precomputed numbers.
  *
@@ -44,27 +46,155 @@ public final class PrecomputedTable {
 		0x2838000000000000L, 0x5070000000000000L, 0xa0e0000000000000L, 0x40c0000000000000L,
 	};
 	
-	/*
-	public static void main(String[] args) {
-		ChessB board = new ChessB();
-
+	public static final long[] PAWN_ATTACK_WHITE = {
+		0x0000000000000200L, 0x0000000000000500L, 0x0000000000000a00L, 0x0000000000001400L,
+		0x0000000000002800L, 0x0000000000005000L, 0x000000000000a000L, 0x0000000000004000L,
+		0x0000000000020000L, 0x0000000000050000L, 0x00000000000a0000L, 0x0000000000140000L,
+		0x0000000000280000L, 0x0000000000500000L, 0x0000000000a00000L, 0x0000000000400000L,
+		0x0000000002000000L, 0x0000000005000000L, 0x000000000a000000L, 0x0000000014000000L,
+		0x0000000028000000L, 0x0000000050000000L, 0x00000000a0000000L, 0x0000000040000000L,
+		0x0000000200000000L, 0x0000000500000000L, 0x0000000a00000000L, 0x0000001400000000L,
+		0x0000002800000000L, 0x0000005000000000L, 0x000000a000000000L, 0x0000004000000000L,
+		0x0000020000000000L, 0x0000050000000000L, 0x00000a0000000000L, 0x0000140000000000L,
+		0x0000280000000000L, 0x0000500000000000L, 0x0000a00000000000L, 0x0000400000000000L,
+		0x0002000000000000L, 0x0005000000000000L, 0x000a000000000000L, 0x0014000000000000L,
+		0x0028000000000000L, 0x0050000000000000L, 0x00a0000000000000L, 0x0040000000000000L,
+		0x0000000000000000L, 0x0000000000000000L, 0x0000000000000000L, 0x0000000000000000L,
+		0x0000000000000000L, 0x0000000000000000L, 0x0000000000000000L, 0x0000000000000000L,
+		0x0000000000000000L, 0x0000000000000000L, 0x0000000000000000L, 0x0000000000000000L,
+		0x0000000000000000L, 0x0000000000000000L, 0x0000000000000000L, 0x0000000000000000L,
+	};
+	
+	public static final long[] PAWN_ATTACK_BLACK = {
+		0x0000000000000000L, 0x0000000000000000L, 0x0000000000000000L, 0x0000000000000000L,
+		0x0000000000000000L, 0x0000000000000000L, 0x0000000000000000L, 0x0000000000000000L,
+		0x0000000000000002L, 0x0000000000000005L, 0x000000000000000aL, 0x0000000000000014L,
+		0x0000000000000028L, 0x0000000000000050L, 0x00000000000000a0L, 0x0000000000000040L,
+		0x0000000000000200L, 0x0000000000000500L, 0x0000000000000a00L, 0x0000000000001400L,
+		0x0000000000002800L, 0x0000000000005000L, 0x000000000000a000L, 0x0000000000004000L,
+		0x0000000000020000L, 0x0000000000050000L, 0x00000000000a0000L, 0x0000000000140000L,
+		0x0000000000280000L, 0x0000000000500000L, 0x0000000000a00000L, 0x0000000000400000L,
+		0x0000000002000000L, 0x0000000005000000L, 0x000000000a000000L, 0x0000000014000000L,
+		0x0000000028000000L, 0x0000000050000000L, 0x00000000a0000000L, 0x0000000040000000L,
+		0x0000000200000000L, 0x0000000500000000L, 0x0000000a00000000L, 0x0000001400000000L,
+		0x0000002800000000L, 0x0000005000000000L, 0x000000a000000000L, 0x0000004000000000L,
+		0x0000020000000000L, 0x0000050000000000L, 0x00000a0000000000L, 0x0000140000000000L,
+		0x0000280000000000L, 0x0000500000000000L, 0x0000a00000000000L, 0x0000400000000000L,
+		0x0002000000000000L, 0x0005000000000000L, 0x000a000000000000L, 0x0014000000000000L,
+		0x0028000000000000L, 0x0050000000000000L, 0x00a0000000000000L, 0x0040000000000000L,
+	};
+	
+	private static long[] computePawnAttackMoves(boolean isWhite) {
+		long[] array = new long[64];
+		
 		for (int i = 0; i < 64; i++) {
-			setIdx(board, i);
-
-			long value = ChessPM.king_move(board, i);
-			System.out.printf("0x%016xL, ", value);
-			if (i > 0 && (i % 4) == 3) {
-				System.out.println();
+			int ypos = i >>> 3;
+			int xpos = i & 7;
+			long moves = 0;
+			
+			if (isWhite) {
+				if (ypos < 6) {
+					if (xpos > 0) {
+						moves |= 1L << (xpos - 1L + ((ypos + 1L) << 3L));
+					}
+					
+					if (xpos < 7) {
+						moves |= 1L << (xpos + 1L + ((ypos + 1L) << 3L));
+					}
+				}
+			} else {
+				if (ypos > 0) {
+					if (xpos > 0) {
+						moves |= 1L << (xpos - 1L + ((ypos - 1L) << 3L));
+					}
+					
+					if (xpos < 7) {
+						moves |= 1L << (xpos + 1L + ((ypos - 1L) << 3L));
+					}
+				}
 			}
+			
+			array[i] = moves;
 		}
+		
+		return array;
 	}
-
-	private static void setIdx(ChessB board, int idx) {
+	
+	private static long[] computeKingMoves() {
+		long[] array = new long[64];
+		
 		for (int i = 0; i < 64; i++) {
-			board.pieces[0] = 0;
+			int ypos = i >>> 3;
+			int xpos = i & 7;
+			long moves = 0;
+			
+			for (int j = 0; j < 9; j ++) {
+				if (j == 4) {
+					continue;
+				}
+				
+				int xp = xpos + (j % 3) - 1;
+				int yp = ypos + (j / 3) - 1;
+				
+				if (xp < 0 || xp > 7 || yp < 0 || yp > 7) {
+					continue;
+				}
+				
+				moves |= 1L << (xp + (yp << 3L));
+			}
+			
+			array[i] = moves;
 		}
-		board.pieces[0] = Pieces.KING;
-		board.init_masks();
+		
+		return array;
 	}
-	*/
+	
+	private static long[] computeKnightMoves() {
+		long[] array = new long[64];
+		int[] offsets = { -1, -2, 1, -2, 2, -1, 2, 1, 1, 2, -1, 2, -2, 1, -2, -1 };
+		
+		for (int i = 0; i < 64; i++) {
+			int ypos = i >>> 3;
+			int xpos = i & 7;
+			long moves = 0;
+			
+			for (int j = 0; j < 16; j += 2) {
+				int xp = xpos + offsets[j];
+				int yp = ypos + offsets[j + 1];
+				
+				if (xp < 0 || xp > 7 || yp < 0 || yp > 7) {
+					continue;
+				}
+				
+				moves |= 1L << (xp + (yp << 3L));
+			}
+			
+			array[i] = moves;
+		}
+		
+		return array;
+	}
+	
+	private static String getLongString(String name, long[] array) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("public static final long[] ").append(name).append(" = {");
+		for (int i = 0; i < array.length; i++) {
+			if ((i & 3) == 0) {
+				sb.append("\n\t");
+			} else {
+				sb.append(" ");
+			}
+			
+			sb.append("0x%016xL,".formatted(array[i]));
+		}
+		
+		return sb.append("\n};").toString();
+	}
+	
+	public static void main(String[] args) {
+		// System.out.println(getLongString("KNIGHT_MOVES", computeKnightMoves()));
+		// System.out.println(getLongString("KING_MOVES", computeKingMoves()));
+		// System.out.println(getLongString("PAWN_ATTACK_WHITE", computePawnAttackMoves(true)));
+		// System.out.println(getLongString("PAWN_ATTACK_BLACK", computePawnAttackMoves(false)));
+	}
 }

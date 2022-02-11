@@ -4,6 +4,7 @@ package me.hardcoded.chess.open;
  * Negative values is black and positive is white
  */
 public interface Pieces {
+	int NONE = 0;
 	int KING = 1;
 	int QUEEN = 2;
 	int BISHOP = 3;

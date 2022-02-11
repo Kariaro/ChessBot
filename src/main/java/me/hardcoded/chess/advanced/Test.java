@@ -1,8 +1,10 @@
 package me.hardcoded.chess.advanced;
 
 import me.hardcoded.chess.open.Pieces;
+import me.hardcoded.chess.open2.Chess;
 
 public class Test {
+	// TODO: Validate this chess board compared to the old one
 	public static void main(String[] args) {
 		ChessBoard board = new ChessBoard();
 		
@@ -10,6 +12,11 @@ public class Test {
 //		for(int i = 0; i < 100000; i++) {
 //		}
 		ChessGenerator.generate(board, (fromIdx, toIdx, special) -> {
+			// This will generate all legal moves. Check if the move actually is legal
+			if (!ChessGenerator.isValid(board, fromIdx, toIdx, special)) {
+				return;
+			}
+			
 			int piece = board.getPiece(fromIdx);
 			if (special == 0) {
 				System.out.printf("%9s: from %s, to %s\n", Pieces.toString(piece), ChessUtils.toSquare(fromIdx), ChessUtils.toSquare(toIdx));

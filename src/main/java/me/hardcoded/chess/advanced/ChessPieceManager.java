@@ -21,22 +21,22 @@ public class ChessPieceManager {
 	protected static long piece_move(ChessBoard board, int piece, boolean isWhite, int idx) {
 		if (isWhite) {
 			return switch (piece) {
-				case KNIGHT -> knight_move(board, idx) & ~board.white_mask;
-				case BISHOP -> bishop_move(board, idx) & ~board.white_mask;
-				case ROOK -> rook_move(board, idx) & ~board.white_mask;
-				case QUEEN -> (bishop_move(board, idx) | rook_move(board, idx)) & ~board.white_mask;
+				case KNIGHT -> knight_move(board, idx) & ~board.whiteMask;
+				case BISHOP -> bishop_move(board, idx) & ~board.whiteMask;
+				case ROOK -> rook_move(board, idx) & ~board.whiteMask;
+				case QUEEN -> (bishop_move(board, idx) | rook_move(board, idx)) & ~board.whiteMask;
 				case PAWN -> white_pawn_move(board, idx);
-				case KING -> king_move(board, idx) & ~board.white_mask;
+				case KING -> king_move(board, idx) & ~board.whiteMask;
 				default -> 0;
 			};
 		} else {
 			return switch (-piece) {
-				case KNIGHT -> knight_move(board, idx) & ~board.black_mask;
-				case BISHOP -> bishop_move(board, idx) & ~board.black_mask;
-				case ROOK -> rook_move(board, idx) & ~board.black_mask;
-				case QUEEN -> (bishop_move(board, idx) | rook_move(board, idx)) & ~board.black_mask;
+				case KNIGHT -> knight_move(board, idx) & ~board.blackMask;
+				case BISHOP -> bishop_move(board, idx) & ~board.blackMask;
+				case ROOK -> rook_move(board, idx) & ~board.blackMask;
+				case QUEEN -> (bishop_move(board, idx) | rook_move(board, idx)) & ~board.blackMask;
 				case PAWN -> black_pawn_move(board, idx);
-				case KING -> king_move(board, idx) & ~board.black_mask;
+				case KING -> king_move(board, idx) & ~board.blackMask;
 				default -> 0;
 			};
 		}
@@ -83,7 +83,7 @@ public class ChessPieceManager {
 				final long mask = 1L << (xp + (yp << 3L));
 				result |= mask;
 				
-				if ((mask & board.piece_mask) != 0) {
+				if ((mask & board.pieceMask) != 0) {
 					break;
 				}
 			}
@@ -112,7 +112,7 @@ public class ChessPieceManager {
 				final long mask = 1L << (xp + (yp << 3L));
 				result |= mask;
 				
-				if ((mask & board.piece_mask) != 0) {
+				if ((mask & board.pieceMask) != 0) {
 					break;
 				}
 			}
@@ -130,18 +130,18 @@ public class ChessPieceManager {
 			int ypos = idx >> 3;
 			int xpos = idx & 7;
 			
-			result |= step & ~board.piece_mask;
+			result |= step & ~board.pieceMask;
 			if (result != 0 && ypos == 1) { // Pawn jump
-				result |= (step << 8L) & ~board.piece_mask;
+				result |= (step << 8L) & ~board.pieceMask;
 			}
 			
 			// Takes
 			if (xpos > 0) {
-				result |= board.black_mask & (step >>> 1);
+				result |= board.blackMask & (step >>> 1);
 			}
 			
 			if (xpos < 7) {
-				result |= board.black_mask & (step << 1);
+				result |= board.blackMask & (step << 1);
 			}
 		}
 		
@@ -157,18 +157,18 @@ public class ChessPieceManager {
 			int ypos = idx >> 3;
 			int xpos = idx & 7;
 			
-			result |= step & ~board.piece_mask;
+			result |= step & ~board.pieceMask;
 			if (result != 0 && ypos == 6) { // Pawn jump
-				result |= (step >>> 8L) & ~board.piece_mask;
+				result |= (step >>> 8L) & ~board.pieceMask;
 			}
 			
 			// Takes
 			if (xpos > 0) {
-				result |= board.white_mask & (step >>> 1);
+				result |= board.whiteMask & (step >>> 1);
 			}
 			
 			if (xpos < 7) {
-				result |= board.white_mask & (step << 1);
+				result |= board.whiteMask & (step << 1);
 			}
 		}
 		
@@ -183,15 +183,15 @@ public class ChessPieceManager {
 		int xpos = idx & 7;
 		
 		// En passant
-		if (ypos == 4 && board.lastpawn != 0) {
+		if (ypos == 4 && board.lastPawn != 0) {
 			// rp....PR
 			// .p..P..R
 			// ....p.PR
 			
-			int lyp = board.lastpawn >> 3;
+			int lyp = board.lastPawn >> 3;
 			
 			if (lyp == 4) {
-				int lxp = board.lastpawn & 7;
+				int lxp = board.lastPawn & 7;
 				if (xpos - 1 == lxp) {
 					return (idx + 7) | sm_en_passant;
 				}
@@ -208,21 +208,21 @@ public class ChessPieceManager {
 			
 			if (xpos > 0) {
 				long mask = 1L << (idx + 7L);
-				if ((board.black_mask & mask) != 0) {
+				if ((board.blackMask & mask) != 0) {
 					result |= 1; // left
 				}
 			}
 			
 			if (xpos < 7) {
 				long mask = 1L << (idx + 9L);
-				if ((board.black_mask & mask) != 0) {
+				if ((board.blackMask & mask) != 0) {
 					result |= 2; // right
 				}
 			}
 			
 			{
 				long mask = 1L << (idx + 8L);
-				if (((board.piece_mask) & mask) == 0) {
+				if (((board.pieceMask) & mask) == 0) {
 					result |= 4; // straight
 				}
 			}
@@ -238,15 +238,15 @@ public class ChessPieceManager {
 		int xpos = idx & 7;
 		
 		// En passant
-		if (ypos == 3 && board.lastpawn != 0) {
+		if (ypos == 3 && board.lastPawn != 0) {
 			// rp....PR
 			// ...p..PR
 			// .p.P...R
 			
-			int lyp = board.lastpawn >> 3;
+			int lyp = board.lastPawn >> 3;
 			
 			if (lyp == 3) {
-				int lxp = board.lastpawn & 7;
+				int lxp = board.lastPawn & 7;
 				if (xpos - 1 == lxp) {
 					return (idx - 9) | sm_en_passant;
 				}
@@ -263,21 +263,21 @@ public class ChessPieceManager {
 			
 			if (xpos > 0) {
 				long mask = 1L << (idx - 9L);
-				if ((board.white_mask & mask) != 0) {
+				if ((board.whiteMask & mask) != 0) {
 					result |= 1; // left
 				}
 			}
 			
 			if (xpos < 7) {
 				long mask = 1L << (idx - 7L);
-				if ((board.white_mask & mask) != 0) {
+				if ((board.whiteMask & mask) != 0) {
 					result |= 2; // right
 				}
 			}
 			
 			{
 				long mask = 1L << (idx - 8L);
-				if (((board.piece_mask) & mask) == 0) {
+				if (((board.pieceMask) & mask) == 0) {
 					result |= 4; // straight
 				}
 			}
@@ -292,43 +292,27 @@ public class ChessPieceManager {
 		return PrecomputedTable.KING_MOVES[idx];
 	}
 	
+	private static final long WHITE_K = 0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000110L;
+	private static final long WHITE_Q = 0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_01110000L;
+	private static final long BLACK_K = 0b00000110_00000000_00000000_00000000_00000000_00000000_00000000_00000000L;
+	private static final long BLACK_Q = 0b01110000_00000000_00000000_00000000_00000000_00000000_00000000_00000000L;
 	private static long king_special_move(ChessBoard board, int idx) {
-//		boolean attacker = board.isWhite();
-		
 		long result = 0;
 		if (board.isWhite()) {
-			if (board.hasFlags(CastlingFlags.WHITE_CASTLE_K)) {
-				if (!(is_attacked(board, idx - 2)
-				|| is_attacked(board, idx - 1)
-				|| is_attacked(board, idx))) {
-					result |= sm_castling | CastlingFlags.WHITE_CASTLE_K;
-				}
+			if ((board.pieceMask & WHITE_K) == 0 && board.hasFlags(CastlingFlags.WHITE_CASTLE_K)) {
+				result |= sm_castling | CastlingFlags.WHITE_CASTLE_K;
 			}
 			
-			if (board.hasFlags(CastlingFlags.WHITE_CASTLE_Q)) {
-				if (!(is_attacked(board, idx + 3)
-				|| is_attacked(board, idx + 2)
-				|| is_attacked(board, idx + 1)
-				|| is_attacked(board, idx))) {
-					result |= sm_castling | CastlingFlags.WHITE_CASTLE_Q;
-				}
+			if ((board.pieceMask & WHITE_Q) == 0 && board.hasFlags(CastlingFlags.WHITE_CASTLE_Q)) {
+				result |= sm_castling | CastlingFlags.WHITE_CASTLE_Q;
 			}
 		} else {
-			if (board.hasFlags(CastlingFlags.BLACK_CASTLE_K)) {
-				if (!(is_attacked(board, idx - 2)
-				|| is_attacked(board, idx - 1)
-				|| is_attacked(board, idx))) {
-					result |= sm_castling | CastlingFlags.BLACK_CASTLE_K;
-				}
+			if ((board.pieceMask & BLACK_K) == 0 && board.hasFlags(CastlingFlags.BLACK_CASTLE_K)) {
+				result |= sm_castling | CastlingFlags.BLACK_CASTLE_K;
 			}
 
-			if (board.hasFlags(CastlingFlags.BLACK_CASTLE_Q)) {
-				if (!(is_attacked(board, idx + 3)
-				|| is_attacked(board, idx + 2)
-				|| is_attacked(board, idx + 1)
-				|| is_attacked(board, idx))) {
-					result |= sm_castling | CastlingFlags.BLACK_CASTLE_Q;
-				}
+			if ((board.pieceMask & BLACK_Q) == 0 && board.hasFlags(CastlingFlags.BLACK_CASTLE_Q)) {
+				result |= sm_castling | CastlingFlags.BLACK_CASTLE_Q;
 			}
 		}
 		
@@ -336,33 +320,9 @@ public class ChessPieceManager {
 	}
 	
 	private static long pawn_attack(ChessBoard board, boolean isWhite, int idx) {
-		long pawn_move = 0;
-		int y = idx >>> 3;
-		int x = idx & 7;
-		
-		if (isWhite) {
-			if (y < 6) {
-				if (x > 0) {
-					pawn_move |= 1L << (x - 1L + ((y + 1L) << 3L));
-				}
-				
-				if (x < 7) {
-					pawn_move |= 1L << (x + 1L + ((y + 1L) << 3L));
-				}
-			}
-		} else {
-			if (y > 0) {
-				if (x > 0) {
-					pawn_move |= 1L << (x - 1L + ((y - 1L) << 3L));
-				}
-				
-				if (x < 7) {
-					pawn_move |= 1L << (x + 1L + ((y - 1L) << 3L));
-				}
-			}
-		}
-		
-		return pawn_move;
+		return isWhite
+			? PrecomputedTable.PAWN_ATTACK_BLACK[idx]
+			: PrecomputedTable.PAWN_ATTACK_WHITE[idx];
 	}
 	
 	/**
@@ -372,47 +332,86 @@ public class ChessPieceManager {
 	 *       in that direction. Tell if the piece is pinned horizontal, vertical, diagonal_1 or diagonal 2.
 	 * TODO: This might be slow
 	 */
-	private static boolean is_attacked(ChessBoard board, int idx) {
+	public static boolean isAttacked(ChessBoard board, int idx) {
 		if (board.isWhite()) {
-			long rook_move = piece_move(board, Pieces.ROOK, idx) & board.black_mask;
+			long rook_move = piece_move(board, Pieces.ROOK, idx) & board.blackMask;
 			if (ChessUtils.hasPiece(board, rook_move, -Pieces.ROOK)) {
 				return true;
 			}
 			
-			long bishop_move = piece_move(board, Pieces.BISHOP, idx) & board.black_mask;
+			long bishop_move = piece_move(board, Pieces.BISHOP, idx) & board.blackMask;
 			if (ChessUtils.hasPiece(board, bishop_move, -Pieces.BISHOP)) {
 				return true;
 			}
 			
-			long knight_move = piece_move(board, Pieces.KNIGHT, idx) & board.black_mask;
+			long queen_move = rook_move | bishop_move;
+			if (ChessUtils.hasPiece(board, queen_move, -Pieces.QUEEN)) {
+				return true;
+			}
+			
+			long knight_move = piece_move(board, Pieces.KNIGHT, idx) & board.blackMask;
 			if (ChessUtils.hasPiece(board, knight_move, -Pieces.KNIGHT)) {
 				return true;
 			}
 			
-			long pawn_move = pawn_attack(board, true, idx) & board.black_mask;
+			long king_move = piece_move(board, Pieces.KING, idx) & board.blackMask;
+			if (ChessUtils.hasPiece(board, king_move, -Pieces.KING)) {
+				return true;
+			}
+			
+			long pawn_move = pawn_attack(board, true, idx) & board.blackMask;
 			return ChessUtils.hasPiece(board, pawn_move, -Pieces.PAWN);
 		} else {
-			long rook_move = piece_move(board, -Pieces.ROOK, idx) & board.white_mask;
+			long rook_move = piece_move(board, -Pieces.ROOK, idx) & board.whiteMask;
 			if (ChessUtils.hasPiece(board, rook_move, Pieces.ROOK)) {
 				return true;
 			}
 			
-			long bishop_move = piece_move(board, -Pieces.BISHOP, idx) & board.white_mask;
+			long bishop_move = piece_move(board, -Pieces.BISHOP, idx) & board.whiteMask;
 			if (ChessUtils.hasPiece(board, bishop_move, Pieces.BISHOP)) {
 				return true;
 			}
 			
-			long knight_move = piece_move(board, -Pieces.KNIGHT, idx) & board.white_mask;
+			long queen_move = rook_move | bishop_move;
+			if (ChessUtils.hasPiece(board, queen_move, Pieces.QUEEN)) {
+				return true;
+			}
+			
+			long knight_move = piece_move(board, -Pieces.KNIGHT, idx) & board.whiteMask;
 			if (ChessUtils.hasPiece(board, knight_move, Pieces.KNIGHT)) {
 				return true;
 			}
 			
-			long pawn_move = pawn_attack(board, false, idx) & board.white_mask;
+			long king_move = piece_move(board, -Pieces.KING, idx) & board.whiteMask;
+			if (ChessUtils.hasPiece(board, king_move, Pieces.KING)) {
+				return true;
+			}
+			
+			long pawn_move = pawn_attack(board, false, idx) & board.whiteMask;
 			return ChessUtils.hasPiece(board, pawn_move, Pieces.PAWN);
 		}
 	}
 	
-	public static boolean isValid(ChessBoard board, boolean isWhite) {
-	
+	public static boolean isKingAttacked(ChessBoard board, boolean isWhite) {
+		int old = board.halfMove;
+		int idx;
+		board.halfMove = isWhite ? 0 : 1;
+		
+		// Find the king
+		if (isWhite) {
+			idx = ChessUtils.getFirst(board, board.whiteMask, Pieces.KING);
+		} else {
+			idx = ChessUtils.getFirst(board, board.blackMask, -Pieces.KING);
+		}
+		
+		ChessGenerator.debug("Is King Attacked?", board.pieces);
+		
+		if (isAttacked(board, idx)) {
+			board.halfMove = old;
+			return false;
+		}
+		
+		board.halfMove = old;
+		return true;
 	}
 }

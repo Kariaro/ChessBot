@@ -18,16 +18,16 @@ public class ChessBoard {
 	int lastPawn;
 	
 	public ChessBoard() {
-//		pieces = new int[] {
-//			 ROOK,  KNIGHT,  BISHOP,  KING,  QUEEN,  BISHOP,  KNIGHT,  ROOK,
-//			 PAWN,    PAWN,    PAWN,  PAWN,   PAWN,    PAWN,    PAWN,  PAWN,
-//			    0,       0,       0,     0,      0,       0,       0,     0,
-//			    0,       0,       0,     0,      0,       0,       0,     0,
-//			    0,       0,       0,     0,      0,       0,       0,     0,
-//			    0,       0,       0,     0,      0,       0,       0,     0,
-//			-PAWN,   -PAWN,   -PAWN, -PAWN,  -PAWN,   -PAWN,   -PAWN, -PAWN,
-//			-ROOK, -KNIGHT, -BISHOP, -KING, -QUEEN, -BISHOP, -KNIGHT, -ROOK,
-//		};
+		pieces = new int[] {
+			 ROOK,  KNIGHT,  BISHOP,  KING,  QUEEN,  BISHOP,  KNIGHT,  ROOK,
+			 PAWN,    PAWN,    PAWN,  PAWN,   PAWN,    PAWN,    PAWN,  PAWN,
+			    0,       0,       0,     0,      0,       0,       0,     0,
+			    0,       0,       0,     0,      0,       0,       0,     0,
+			    0,       0,       0,     0,      0,       0,       0,     0,
+			    0,       0,       0,     0,      0,       0,       0,     0,
+			-PAWN,   -PAWN,   -PAWN, -PAWN,  -PAWN,   -PAWN,   -PAWN, -PAWN,
+			-ROOK, -KNIGHT, -BISHOP, -KING, -QUEEN, -BISHOP, -KNIGHT, -ROOK,
+		};
 		
 		// Fast init
 		whiteMask = 0b00000000_00000000_00000000_00000000_00000000_00000000_11111111_11111111L;
@@ -62,16 +62,16 @@ public class ChessBoard {
 ////			-ROOK,       0,       0, -KING,      0,       0,       0, -ROOK,
 //		};
 		
-		pieces = new int[] {
-			ROOK,BISHOP,      0,  KING,      0,       0,       0,     ROOK,
-			0,       0,       0,     0, -QUEEN,       0,       0,     0,
-			0,       0,       0,     0,  -ROOK,       0,       0,     0,
-			0,       0,       0,     0,      0,       0,       0,     0,
-			0,       0,       0,     0,      0,       0,       0,     0,
-			0,       0,       0,     0,      0,       0,       0,     0,
-			0,       0,       0, -ROOK,      0,       0,       0,     0,
-			0,       0,       0,     0,      0,       0,       0,     0,
-		};
+//		pieces = new int[] {
+//			0,       0,       0,     0,      0,       0,       0,     0,
+//			0,       0,       0,     0,      0,       0,       0,     0,
+//			0,       0,       0,     0,      0,       0,       0,     0,
+//			0,       0,       0,     0,      0,       0,       0,     0,
+//			0,       0,       0,     0,      0,       0,       0,     0,
+//			0,       0,       0,     0,      0,       0,       0,     0,
+//		-ROOK,    PAWN,    KING,     0,   PAWN,       0,       0,     0,
+//			0,       0,       0,     0,      0, -KNIGHT,       0,     0,
+//		};
 		
 		initializeMasks();
 	}
@@ -94,13 +94,13 @@ public class ChessBoard {
 		flags = 0;
 		
 		// Update castling flags
-		if (pieces[3] == KING) {
-			flags |= ((pieces[0] == ROOK) ? CastlingFlags.WHITE_CASTLE_K : 0)
-				   | ((pieces[7] == ROOK) ? CastlingFlags.WHITE_CASTLE_Q : 0);
+		if (pieces[CastlingFlags.WHITE_KING] == KING) {
+			flags |= ((pieces[CastlingFlags.WHITE_ROOK_K] == ROOK) ? CastlingFlags.WHITE_CASTLE_K : 0)
+				   | ((pieces[CastlingFlags.WHITE_ROOK_Q] == ROOK) ? CastlingFlags.WHITE_CASTLE_Q : 0);
 		}
-		if (pieces[59] == KING) {
-			flags |= ((pieces[56] == ROOK) ? CastlingFlags.BLACK_CASTLE_K : 0)
-				   | ((pieces[63] == ROOK) ? CastlingFlags.BLACK_CASTLE_Q : 0);
+		if (pieces[CastlingFlags.BLACK_KING] == -KING) {
+			flags |= ((pieces[CastlingFlags.BLACK_ROOK_K] == -ROOK) ? CastlingFlags.BLACK_CASTLE_K : 0)
+				   | ((pieces[CastlingFlags.BLACK_ROOK_Q] == -ROOK) ? CastlingFlags.BLACK_CASTLE_Q : 0);
 		}
 	}
 	
@@ -134,6 +134,19 @@ public class ChessBoard {
 		}
 		
 		pieceMask = blackMask | whiteMask;
+	}
+	
+	public ChessBoard creteCopy() {
+		// TODO: Fill a class instead of cloning it
+		ChessBoard copy = new ChessBoard();
+		System.arraycopy(pieces, 0, copy.pieces, 0, 64);
+		copy.lastPawn = lastPawn;
+		copy.whiteMask = whiteMask;
+		copy.blackMask = blackMask;
+		copy.pieceMask = pieceMask;
+		copy.halfMove = halfMove;
+		copy.flags = flags;
+		return copy;
 	}
 	
 	public int getPiece(int i) {

@@ -12,6 +12,13 @@ public interface Pieces {
 	int ROOK = 5;
 	int PAWN = 6;
 	
+	int KING_SQ = KING * KING;
+	int QUEEN_SQ = QUEEN * QUEEN;
+	int BISHOP_SQ = BISHOP * BISHOP;
+	int KNIGHT_SQ = KNIGHT * KNIGHT;
+	int ROOK_SQ = ROOK * ROOK;
+	int PAWN_SQ = PAWN * PAWN;
+	
 	int[] VALUES = {
 		-100, // PAWN   -6
 		-500, // ROOK   -5
@@ -26,6 +33,13 @@ public interface Pieces {
 		 300, // KNIGHT  4
 		 500, // ROOK    5
 		 100, // PAWN    6
+	};
+	
+	int[] PROMOTION = {
+		QUEEN,
+		BISHOP,
+		KNIGHT,
+		ROOK,
 	};
 	
 	String[] STRING_VALUES = {

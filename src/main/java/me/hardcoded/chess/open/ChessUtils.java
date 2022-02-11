@@ -37,7 +37,7 @@ public class ChessUtils {
 			
 			if(pieceId > 0) letter = Character.toUpperCase(letter);
 			if(pieceId == 0) letter = ' ';
-			sb.append(letter);
+			sb.append(letter).append(" ");
 		}
 		
 		String str = sb.toString().substring(1);

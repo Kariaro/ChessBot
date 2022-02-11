@@ -47,24 +47,20 @@ public final class ChessUtils {
 	
 	public static String toSpecialString(int mask) {
 		return switch (mask) {
-			case ChessPieceManager.sm_castling -> "Castling";
-			case ChessPieceManager.sm_en_passant -> "En Passant";
-			case ChessPieceManager.sm_promotion -> "Promotion";
+//			case ChessPieceManager.SM_NORMAL -> "Normal";
+			case ChessPieceManager.SM_CASTLING -> "Castling";
+			case ChessPieceManager.SM_EN_PASSANT -> "En Passant";
+			case ChessPieceManager.SM_PROMOTION -> "Promotion";
 			default -> "unknown";
 		};
 	}
 	
 	/**
 	 * Check if the board has the specified piece on the mask
-	 * 
-	 * @param board
-	 * @param mask
-	 * @param find
-	 * @return
 	 */
 	public static boolean hasPiece(ChessBoard board, long mask, int find) {
 		// the mask only contains pieces that belongs to the correct team
-		mask &= (find < 0 ? board.blackMask :board.whiteMask);
+		mask &= (find < 0 ? board.blackMask : board.whiteMask);
 		
 		while (mask != 0) {
 			long pick = Long.lowestOneBit(mask);

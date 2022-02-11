@@ -1,7 +1,5 @@
 package me.hardcoded.chess.advanced;
 
-import me.hardcoded.chess.open.Move;
-
 /**
  * This class contains information about precomputed numbers.
  *

@@ -175,9 +175,15 @@ public class ChessPieceManager {
 		return result;
 	}
 	
-	public static final int sm_en_passant	= 0b01_000000;
-	public static final int sm_promotion	= 0b10_000000;
-	public static final int sm_castling 	= 0b11_000000;
+	public static final int SM_NORMAL        = 0b00_000000;
+	public static final int SM_EN_PASSANT    = 0b01_000000;
+	public static final int SM_PROMOTION     = 0b10_000000;
+	public static final int SM_CASTLING      = 0b11_000000;
+	
+	public static final int PROMOTION_LEFT   = 0b001;
+	public static final int PROMOTION_RIGHT  = 0b010;
+	public static final int PROMOTION_MIDDLE = 0b100;
+//	public static final int PROMOTION_TYPE   = 0b111000;
 	private static long white_pawn_special_move(ChessBoard board, int idx) {
 		int ypos = idx >> 3;
 		int xpos = idx & 7;
@@ -193,11 +199,11 @@ public class ChessPieceManager {
 			if (lyp == 4) {
 				int lxp = board.lastPawn & 7;
 				if (xpos - 1 == lxp) {
-					return (idx + 7) | sm_en_passant;
+					return (idx + 7) | SM_EN_PASSANT;
 				}
 				
 				if (xpos + 1 == lxp) {
-					return (idx + 9) | sm_en_passant;	
+					return (idx + 9) | SM_EN_PASSANT;
 				}
 			}
 		}
@@ -209,25 +215,25 @@ public class ChessPieceManager {
 			if (xpos > 0) {
 				long mask = 1L << (idx + 7L);
 				if ((board.blackMask & mask) != 0) {
-					result |= 1; // left
+					result |= PROMOTION_LEFT;
 				}
 			}
 			
 			if (xpos < 7) {
 				long mask = 1L << (idx + 9L);
 				if ((board.blackMask & mask) != 0) {
-					result |= 2; // right
+					result |= PROMOTION_RIGHT;
 				}
 			}
 			
 			{
 				long mask = 1L << (idx + 8L);
 				if (((board.pieceMask) & mask) == 0) {
-					result |= 4; // straight
+					result |= PROMOTION_MIDDLE;
 				}
 			}
 			
-			return result == 0 ? 0 : (result | sm_promotion);
+			return result == 0 ? 0 : (result | SM_PROMOTION);
 		}
 		
 		return 0;
@@ -248,11 +254,11 @@ public class ChessPieceManager {
 			if (lyp == 3) {
 				int lxp = board.lastPawn & 7;
 				if (xpos - 1 == lxp) {
-					return (idx - 9) | sm_en_passant;
+					return (idx - 9) | SM_EN_PASSANT;
 				}
 				
 				if (xpos + 1 == lxp) {
-					return (idx - 7) | sm_en_passant;	
+					return (idx - 7) | SM_EN_PASSANT;
 				}
 			}
 		}
@@ -264,25 +270,26 @@ public class ChessPieceManager {
 			if (xpos > 0) {
 				long mask = 1L << (idx - 9L);
 				if ((board.whiteMask & mask) != 0) {
-					result |= 1; // left
+					result |= PROMOTION_LEFT;
 				}
 			}
 			
 			if (xpos < 7) {
 				long mask = 1L << (idx - 7L);
 				if ((board.whiteMask & mask) != 0) {
-					result |= 2; // right
+					result |= PROMOTION_RIGHT;
 				}
 			}
 			
 			{
+				// TODO: Remove long cast because the compiler will change them to int eitherway
 				long mask = 1L << (idx - 8L);
 				if (((board.pieceMask) & mask) == 0) {
-					result |= 4; // straight
+					result |= PROMOTION_MIDDLE;
 				}
 			}
 			
-			return result == 0 ? 0 : (result | sm_promotion);
+			return result == 0 ? 0 : (result | SM_PROMOTION);
 		}
 		
 		return 0;
@@ -300,19 +307,19 @@ public class ChessPieceManager {
 		long result = 0;
 		if (board.isWhite()) {
 			if ((board.pieceMask & WHITE_K) == 0 && board.hasFlags(CastlingFlags.WHITE_CASTLE_K)) {
-				result |= sm_castling | CastlingFlags.WHITE_CASTLE_K;
+				result |= SM_CASTLING | CastlingFlags.WHITE_CASTLE_K;
 			}
 			
 			if ((board.pieceMask & WHITE_Q) == 0 && board.hasFlags(CastlingFlags.WHITE_CASTLE_Q)) {
-				result |= sm_castling | CastlingFlags.WHITE_CASTLE_Q;
+				result |= SM_CASTLING | CastlingFlags.WHITE_CASTLE_Q;
 			}
 		} else {
 			if ((board.pieceMask & BLACK_K) == 0 && board.hasFlags(CastlingFlags.BLACK_CASTLE_K)) {
-				result |= sm_castling | CastlingFlags.BLACK_CASTLE_K;
+				result |= SM_CASTLING | CastlingFlags.BLACK_CASTLE_K;
 			}
 
 			if ((board.pieceMask & BLACK_Q) == 0 && board.hasFlags(CastlingFlags.BLACK_CASTLE_Q)) {
-				result |= sm_castling | CastlingFlags.BLACK_CASTLE_Q;
+				result |= SM_CASTLING | CastlingFlags.BLACK_CASTLE_Q;
 			}
 		}
 		
@@ -331,6 +338,7 @@ public class ChessPieceManager {
 	 * TODO: Calculate the pinned pieces from the previous round. Edge cases is when pieces can still move
 	 *       in that direction. Tell if the piece is pinned horizontal, vertical, diagonal_1 or diagonal 2.
 	 * TODO: This might be slow
+	 * TODO: Inline functions
 	 */
 	public static boolean isAttacked(ChessBoard board, int idx) {
 		if (board.isWhite()) {
@@ -359,7 +367,7 @@ public class ChessPieceManager {
 				return true;
 			}
 			
-			long pawn_move = pawn_attack(board, true, idx) & board.blackMask;
+			long pawn_move = pawn_attack(board, false, idx) & board.blackMask;
 			return ChessUtils.hasPiece(board, pawn_move, -Pieces.PAWN);
 		} else {
 			long rook_move = piece_move(board, -Pieces.ROOK, idx) & board.whiteMask;
@@ -387,7 +395,7 @@ public class ChessPieceManager {
 				return true;
 			}
 			
-			long pawn_move = pawn_attack(board, false, idx) & board.whiteMask;
+			long pawn_move = pawn_attack(board, true, idx) & board.whiteMask;
 			return ChessUtils.hasPiece(board, pawn_move, Pieces.PAWN);
 		}
 	}
@@ -404,7 +412,7 @@ public class ChessPieceManager {
 			idx = ChessUtils.getFirst(board, board.blackMask, -Pieces.KING);
 		}
 		
-		ChessGenerator.debug("Is King Attacked?", board.pieces);
+//		ChessGenerator.debug("Is King Attacked?", board.pieces);
 		
 		if (isAttacked(board, idx)) {
 			board.halfMove = old;

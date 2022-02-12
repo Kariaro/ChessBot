@@ -3,6 +3,7 @@ package me.hardcoded.chess.open2;
 import static me.hardcoded.chess.open.Flags.*;
 import static me.hardcoded.chess.open.Pieces.*;
 
+import java.security.PublicKey;
 import java.util.*;
 
 import me.hardcoded.chess.decoder.BoardUtils;
@@ -11,9 +12,9 @@ import me.hardcoded.chess.open.*;
 public class Chess {
 	public static final State DEFAULT = BoardUtils.FEN.decode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 	
-	protected final int[] board = new int[64];
-	protected Move last_move = Move.INVALID;
-	protected int flags = Flags.DEFAULT;
+	public final int[] board = new int[64];
+	public Move last_move = Move.INVALID;
+	public int flags = Flags.DEFAULT;
 	protected List<Move> last_moves = new ArrayList<>();
 	// TODO: Fifty Move rule
 	// TODO: Threefold repetition

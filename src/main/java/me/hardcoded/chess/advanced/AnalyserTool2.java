@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Set;
 
 public class AnalyserTool2 {
-	private static Set<Move> getAllMoves(ChessBoard board) {
-		Set<Move> moves = new HashSet<>();
+	private static List<Move> getAllMoves(ChessBoard board) {
+		List<Move> moves = new ArrayList<>();
 		
 		ChessGenerator.generate(board, false, (fromIdx, toIdx, special) -> {
 			if (!ChessGenerator.isValid(board, fromIdx, toIdx, special)) {
@@ -127,7 +127,7 @@ public class AnalyserTool2 {
 		
 		// Save the last state of the board
 		ChessState state = ChessState.of(board);
-		Set<Move> moves = getAllMoves(board);
+		List<Move> moves = getAllMoves(board);
 		
 		for (Move move : moves) {
 			if (!ChessGenerator.playMove(board, move.from, move.to, move.special)) {

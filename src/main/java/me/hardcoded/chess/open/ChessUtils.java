@@ -19,10 +19,6 @@ public class ChessUtils {
 	public static String toSquare(int index) {
 		return (char)('a' + (index & 7)) + "" + ((index / 8) + 1);
 	}
-
-	public static void printBoard(Chessboard board) {
-		printBoard(board.board);
-	}
 	
 	public static void printBoard(int[] board) {
 		StringBuilder sb = new StringBuilder();

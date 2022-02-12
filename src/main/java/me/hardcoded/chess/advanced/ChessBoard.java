@@ -29,6 +29,19 @@ public class ChessBoard {
 			-ROOK, -KNIGHT, -BISHOP, -KING, -QUEEN, -BISHOP, -KNIGHT, -ROOK,
 		};
 		
+//		pieces = new int[] {
+//			ROOK,       0,       0,  KING,  QUEEN,  BISHOP,       0,  ROOK,
+//			PAWN,    PAWN,    PAWN,     0,   PAWN,    PAWN,    PAWN,  PAWN,
+//			   0,       0,  KNIGHT,  PAWN,      0,       0,       0,     0,
+//			   0,       0,       0, -PAWN,      0,       0, -BISHOP,     0,
+//			   0,       0,       0,     0, KNIGHT,       0,  BISHOP,     0,
+//		 -KNIGHT,       0,       0,     0,      0, -KNIGHT,       0,     0,
+//		   -PAWN,   -PAWN,   -PAWN,     0,  -PAWN,   -PAWN,   -PAWN, -PAWN,
+//		   -ROOK,       0,       0, -KING, -QUEEN, -BISHOP,       0,     -ROOK,
+//		};
+		
+//		ChessGenerator.debug("Board", pieces);
+		
 		// Fast init
 		whiteMask = 0b00000000_00000000_00000000_00000000_00000000_00000000_11111111_11111111L;
 		blackMask = 0b11111111_11111111_00000000_00000000_00000000_00000000_00000000_00000000L;

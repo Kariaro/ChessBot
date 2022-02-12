@@ -116,6 +116,7 @@ public class Analyser7 {
 		return result * 3;
 	}
 	
+	
 	private static int non_developing(Chess board) {
 		int result = 0;
 		if(board.getPieceAt(1) == Pieces.KNIGHT) result -= 10;

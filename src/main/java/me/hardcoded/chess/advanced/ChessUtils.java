@@ -30,7 +30,13 @@ public final class ChessUtils {
 	}
 	
 	public static String toSquare(int a) {
-		return (char)('a' + (a & 7)) + "" + ((a / 8) + 1);
+		return (char)('h' - (a & 7)) + "" + ((a / 8) + 1);
+	}
+	
+	public static int fromSquare(String square) {
+		char a = square.charAt(0);
+		char b = square.charAt(1);
+		return ('h' - a) + ((b - '1') << 3);
 	}
 	
 	public static String toCastlingMove(int fields) {

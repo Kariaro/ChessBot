@@ -15,15 +15,6 @@ public class State {
 	public final int fullmove;
 	public final List<Move> lastMoves;
 	
-	protected State(Chessboard board) {
-		this.last_move = board.last_move;
-		this.flags = board.flags;
-		this.board = board.board.clone();
-		this.halfmove = 0;
-		this.fullmove = 0;
-		this.lastMoves = new ArrayList<>();
-	}
-	
 	protected State(int[] board, int flags, Move last_move, int halfmove, int fullmove) {
 		this.last_move = last_move;
 		this.flags = flags;

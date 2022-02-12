@@ -1,6 +1,5 @@
 package me.hardcoded.chess.visual;
 
-import me.hardcoded.chess.gui.ChessPanel;
 import me.hardcoded.chess.open.Pieces;
 
 import javax.imageio.ImageIO;
@@ -11,7 +10,6 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.AnnotationTypeMismatchException;
 
 /**
  * This is a visualization of a chess board.
@@ -26,8 +24,8 @@ public class ChessBoardPanel extends JPanel {
 	private static final BufferedImage[] PIECE_IMAGES = new BufferedImage[12];
 	private final BufferedImage[] SIZED_IMAGES = new BufferedImage[12];
 	private final PieceType[] board;
-	private int checker_size = 96;
-	private int checker_border = 16;
+	private int checkerSize = 96;
+	private int borderSize = 16;
 	
 	static {
 		try {
@@ -71,8 +69,8 @@ public class ChessBoardPanel extends JPanel {
 				continue;
 			}
 			
-			BufferedImage scaledImage = new BufferedImage(checker_size, checker_size, BufferedImage.TYPE_INT_ARGB);
-			final AffineTransform at = AffineTransform.getScaleInstance(checker_size / (double)image.getWidth(), checker_size / (double)image.getHeight());
+			BufferedImage scaledImage = new BufferedImage(checkerSize, checkerSize, BufferedImage.TYPE_INT_ARGB);
+			final AffineTransform at = AffineTransform.getScaleInstance(checkerSize / (double)image.getWidth(), checkerSize / (double)image.getHeight());
 			final AffineTransformOp ato = new AffineTransformOp(at, AffineTransformOp.TYPE_BICUBIC);
 			SIZED_IMAGES[i] = ato.filter(image, scaledImage);
 		}
@@ -86,24 +84,24 @@ public class ChessBoardPanel extends JPanel {
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		g.setColor(CHECKER_D);
-		g.fillRect(checker_border, checker_border, 8 * checker_size, 8 * checker_size);
+		g.fillRect(borderSize, borderSize, 8 * checkerSize, 8 * checkerSize);
 		
 		g.setColor(CHECKER_L);
 		for (int i = 0; i < 64; i += 2) {
-			int y = checker_border + (i >> 3) * checker_size;
-			int x = checker_border + ((i & 7) + ((i >> 3) & 1)) * checker_size;
-			g.fillRect(x, y, checker_size, checker_size);
+			int y = borderSize + (i >> 3) * checkerSize;
+			int x = borderSize + ((i & 7) + ((i >> 3) & 1)) * checkerSize;
+			g.fillRect(x, y, checkerSize, checkerSize);
 		}
 		
 		// Draw pieces
 		for (int i = 0; i < 64; i++) {
-			int y = checker_border + (i >> 3) * checker_size;
-			int x = checker_border + (i & 7) * checker_size;
+			int y = borderSize + (i >> 3) * checkerSize;
+			int x = borderSize + (i & 7) * checkerSize;
 			PieceType type = board[i];
 			
 			switch (type) {
 				case GREEN_DOT -> {
-					int size = checker_size / 2;
+					int size = checkerSize / 2;
 					g.setColor(GREEN_DOT);
 					g.fillOval(x + size / 2, y + size / 2, size, size);
 				}
@@ -112,7 +110,7 @@ public class ChessBoardPanel extends JPanel {
 					
 					Image image;
 					if (idx >= 0 && idx < SIZED_IMAGES.length && (image = SIZED_IMAGES[idx]) != null) {
-						g.drawImage(image, x, y, checker_size, checker_size, null);
+						g.drawImage(image, x, y, checkerSize, checkerSize, null);
 					} else {
 						// Error
 						System.out.println("Bad configuration");
@@ -123,6 +121,10 @@ public class ChessBoardPanel extends JPanel {
 				}
 			}
 		}
+	}
+	
+	public void setCheckerSize(int size) {
+		checkerSize = size;
 	}
 	
 	public ChessBoardPanel setTargets(long value) {
@@ -160,7 +162,7 @@ public class ChessBoardPanel extends JPanel {
 	
 	@Override
 	public Dimension getPreferredSize() {
-		int side = checker_border * 2 + checker_size * 8;
+		int side = borderSize * 2 + checkerSize * 8;
 		return new Dimension(side, side);
 	}
 	

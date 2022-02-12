@@ -19,7 +19,6 @@ import me.hardcoded.chess.open.Analyser.Scan0;
 import me.hardcoded.chess.open2.Chess;
 
 public class ChessPanel extends JPanel {
-	private static final long serialVersionUID = 1L;
 	private static final String[] buttons = {
 		"Force Computer",
 		"Hide Arrows",

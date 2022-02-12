@@ -18,27 +18,27 @@ public class ChessBoard {
 	int lastPawn;
 	
 	public ChessBoard() {
-		pieces = new int[] {
-			 ROOK,  KNIGHT,  BISHOP,  KING,  QUEEN,  BISHOP,  KNIGHT,  ROOK,
-			 PAWN,    PAWN,    PAWN,  PAWN,   PAWN,    PAWN,    PAWN,  PAWN,
-			    0,       0,       0,     0,      0,       0,       0,     0,
-			    0,       0,       0,     0,      0,       0,       0,     0,
-			    0,       0,       0,     0,      0,       0,       0,     0,
-			    0,       0,       0,     0,      0,       0,       0,     0,
-			-PAWN,   -PAWN,   -PAWN, -PAWN,  -PAWN,   -PAWN,   -PAWN, -PAWN,
-			-ROOK, -KNIGHT, -BISHOP, -KING, -QUEEN, -BISHOP, -KNIGHT, -ROOK,
-		};
-		
 //		pieces = new int[] {
-//			ROOK,       0,       0,  KING,  QUEEN,  BISHOP,       0,  ROOK,
-//			PAWN,    PAWN,    PAWN,     0,   PAWN,    PAWN,    PAWN,  PAWN,
-//			   0,       0,  KNIGHT,  PAWN,      0,       0,       0,     0,
-//			   0,       0,       0, -PAWN,      0,       0, -BISHOP,     0,
-//			   0,       0,       0,     0, KNIGHT,       0,  BISHOP,     0,
-//		 -KNIGHT,       0,       0,     0,      0, -KNIGHT,       0,     0,
-//		   -PAWN,   -PAWN,   -PAWN,     0,  -PAWN,   -PAWN,   -PAWN, -PAWN,
-//		   -ROOK,       0,       0, -KING, -QUEEN, -BISHOP,       0,     -ROOK,
+//			 ROOK,  KNIGHT,  BISHOP,  KING,  QUEEN,  BISHOP,  KNIGHT,  ROOK,
+//			 PAWN,    PAWN,    PAWN,  PAWN,   PAWN,    PAWN,    PAWN,  PAWN,
+//			    0,       0,       0,     0,      0,       0,       0,     0,
+//			    0,       0,       0,     0,      0,       0,       0,     0,
+//			    0,       0,       0,     0,      0,       0,       0,     0,
+//			    0,       0,       0,     0,      0,       0,       0,     0,
+//			-PAWN,   -PAWN,   -PAWN, -PAWN,  -PAWN,   -PAWN,   -PAWN, -PAWN,
+//			-ROOK, -KNIGHT, -BISHOP, -KING, -QUEEN, -BISHOP, -KNIGHT, -ROOK,
 //		};
+		
+		pieces = new int[] {
+			ROOK,       0,       0,  KING,  QUEEN,  BISHOP,       0,  ROOK,
+			PAWN,    PAWN,    PAWN,     0,   PAWN,    PAWN,    PAWN,  PAWN,
+			   0,       0,  KNIGHT,  PAWN,      0,       0,       0,     0,
+			   0,       0,       0, -PAWN,      0,       0, -BISHOP,     0,
+			   0,       0,       0,     0, KNIGHT,       0,  BISHOP,     0,
+		 -KNIGHT,       0,       0,     0,      0, -KNIGHT,       0,     0,
+		   -PAWN,   -PAWN,   -PAWN,     0,  -PAWN,   -PAWN,   -PAWN, -PAWN,
+		   -ROOK,       0,       0, -KING, -QUEEN, -BISHOP,       0,     -ROOK,
+		};
 		
 //		ChessGenerator.debug("Board", pieces);
 		
@@ -93,7 +93,7 @@ public class ChessBoard {
 		whiteMask = 0;
 		blackMask = 0;
 		for (int i = 0; i < 64; i++) {
-			long idx = 1L << (long)i;
+			long idx = 1L << i;
 			int piece = pieces[i];
 			if (piece > 0) {
 				whiteMask |= idx;

@@ -1,16 +1,20 @@
 package me.hardcoded.chess.advanced;
 
+import me.hardcoded.chess.open.Analyser;
 import me.hardcoded.chess.open2.Analyser7;
 import me.hardcoded.chess.open2.Chess;
+import me.hardcoded.chess.visual.ChessBoardPanel;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class Test {
 	public static void main(String[] args) throws Exception {
 		ChessBoard board = new ChessBoard();
 		
+		ChessBoardPanel panel = new ChessBoardPanel();
 		JFrame frame = new JFrame();
-		frame.add(ChessPieceManager.BOARD_PANEL);
+		frame.add(panel);
 		frame.pack();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLocationRelativeTo(null);
@@ -18,16 +22,24 @@ public class Test {
 		
 		int index = 0;
 		frame.setTitle("New Move " + index++);
-		ChessPieceManager.BOARD_PANEL.setTargets(board.pieces);
+		frame.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
+		panel.setTargets(board.pieces);
+		frame.repaint();
+		
+		Thread.sleep(1000);
 		while (true) {
 			
-			AnalyserTool3.Scanner scan0 = AnalyserTool3.analyse(board);
-			AnalyserTool3.Move best = scan0.best;
+			AnalyserTool3.Scanner scan = AnalyserTool3.analyse(board);
+			if (scan.best == null) {
+				// The other computer won
+				break;
+			}
+			AnalyserTool3.Move best = scan.best;
 			ChessGenerator.playMove(board, best.from, best.to, best.special);
 			System.out.println(best.material);
 			
 			frame.setTitle("New Move " + index++);
-			ChessPieceManager.BOARD_PANEL.setTargets(board.pieces);
+			panel.setTargets(board.pieces);
 			
 //			AnalyserTool2.Scanner scan0 = AnalyserTool2.analyse(board);
 //			AnalyserTool2.Move best = scan0.best;
@@ -35,8 +47,13 @@ public class Test {
 //			System.out.println(best.material);
 			
 			Chess chess = Convert.toChess(board);
-			System.out.println(chess.isWhiteTurn());
-			chess.doMove(Analyser7.analyse(chess).best.move);
+			Analyser.Move0 bestMove = Analyser7.analyse(chess).best;
+			if (bestMove != null) {
+				chess.doMove(bestMove.move);
+			} else {
+				// Game was won by the other player
+				break;
+			}
 			board = Convert.toChessBoard(chess);
 			
 			frame.setTitle("Old Move " + index++);

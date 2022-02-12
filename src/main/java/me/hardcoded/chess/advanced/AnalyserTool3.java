@@ -207,7 +207,7 @@ public class AnalyserTool3 {
 		
 		// TODO: This might be wrong
 		if (ChessPieceManager.isKingAttacked(board, !board.isWhite())) {
-			double delta = board.isWhite() ? 1:-1;
+			double delta = board.isWhite() ? -1 : 1;
 			scan.base += 10 * delta;
 			
 			if (scan.best == null) { // evaluation.isEmpty()) {

@@ -80,7 +80,7 @@ public class ChessPieceManager {
 					break;
 				}
 				
-				final long mask = 1L << (xp + (yp << 3L));
+				final long mask = 1L << (xp + (yp << 3));
 				result |= mask;
 				
 				if ((mask & board.pieceMask) != 0) {
@@ -109,7 +109,7 @@ public class ChessPieceManager {
 					break;
 				}
 				
-				final long mask = 1L << (xp + (yp << 3L));
+				final long mask = 1L << (xp + (yp << 3));
 				result |= mask;
 				
 				if ((mask & board.pieceMask) != 0) {
@@ -122,54 +122,51 @@ public class ChessPieceManager {
 	}
 	
 	private static long white_pawn_move(ChessBoard board, int idx) {
-		long pawn = 1L << (long)idx ;
-		long step = pawn << 8L;
+		long pawn = 1L << idx;
+		long step = pawn << 8;
 		long result = 0;
 		
-		{
-			int ypos = idx >> 3;
-			int xpos = idx & 7;
-			
-			result |= step & ~board.pieceMask;
-			if (result != 0 && ypos == 1) { // Pawn jump
-				result |= (step << 8L) & ~board.pieceMask;
-			}
-			
-			// Takes
-			if (xpos > 0) {
-				result |= board.blackMask & (step >>> 1);
-			}
-			
-			if (xpos < 7) {
-				result |= board.blackMask & (step << 1);
-			}
+		int ypos = idx >> 3;
+		int xpos = idx & 7;
+		
+		result |= step & ~board.pieceMask;
+		if (result != 0 && ypos == 1) { // Pawn jump
+			result |= (step << 8L) & ~board.pieceMask;
+		}
+		
+		if (xpos > 0) { // Takes
+			result |= board.blackMask & (step >>> 1);
+		}
+		
+		if (xpos < 7) {
+			result |= board.blackMask & (step << 1);
 		}
 		
 		return result;
 	}
 	
 	private static long black_pawn_move(ChessBoard board, int idx) {
-		long pawn = 1L << (long)idx;
-		long step = pawn >>> 8L;
+		long pawn = 1L << idx;
+		long step = pawn >>> 8;
 		long result = 0;
 		
-		{
-			int ypos = idx >> 3;
-			int xpos = idx & 7;
-			
-			result |= step & ~board.pieceMask;
-			if (result != 0 && ypos == 6) { // Pawn jump
-				result |= (step >>> 8L) & ~board.pieceMask;
-			}
-			
-			// Takes
-			if (xpos > 0) {
-				result |= board.whiteMask & (step >>> 1);
-			}
-			
-			if (xpos < 7) {
-				result |= board.whiteMask & (step << 1);
-			}
+		int ypos = idx >> 3;
+		int xpos = idx & 7;
+		
+		// TODO: Do not give any move suggestions for the eights or first rank because that's where the promotion bit
+		//       will be set
+		
+		result |= step & ~board.pieceMask;
+		if (result != 0 && ypos == 6) { // Pawn jump
+			result |= (step >>> 8L) & ~board.pieceMask;
+		}
+		
+		if (xpos > 0) { // Takes
+			result |= board.whiteMask & (step >>> 1);
+		}
+		
+		if (xpos < 7) {
+			result |= board.whiteMask & (step << 1);
 		}
 		
 		return result;
@@ -184,7 +181,7 @@ public class ChessPieceManager {
 	public static final int PROMOTION_RIGHT  = 0b010;
 	public static final int PROMOTION_MIDDLE = 0b100;
 //	public static final int PROMOTION_TYPE   = 0b111000;
-	private static long white_pawn_special_move(ChessBoard board, int idx) {
+	private static int white_pawn_special_move(ChessBoard board, int idx) {
 		int ypos = idx >> 3;
 		int xpos = idx & 7;
 		
@@ -195,7 +192,6 @@ public class ChessPieceManager {
 			// ....p.PR
 			
 			int lyp = board.lastPawn >> 3;
-			
 			if (lyp == 4) {
 				int lxp = board.lastPawn & 7;
 				if (xpos - 1 == lxp) {
@@ -213,21 +209,21 @@ public class ChessPieceManager {
 			int result = 0;
 			
 			if (xpos > 0) {
-				long mask = 1L << (idx + 7L);
+				long mask = 1L << (idx + 7);
 				if ((board.blackMask & mask) != 0) {
 					result |= PROMOTION_LEFT;
 				}
 			}
 			
 			if (xpos < 7) {
-				long mask = 1L << (idx + 9L);
+				long mask = 1L << (idx + 9);
 				if ((board.blackMask & mask) != 0) {
 					result |= PROMOTION_RIGHT;
 				}
 			}
 			
 			{
-				long mask = 1L << (idx + 8L);
+				long mask = 1L << (idx + 8);
 				if (((board.pieceMask) & mask) == 0) {
 					result |= PROMOTION_MIDDLE;
 				}
@@ -239,7 +235,7 @@ public class ChessPieceManager {
 		return 0;
 	}
 	
-	private static long black_pawn_special_move(ChessBoard board, int idx) {
+	private static int black_pawn_special_move(ChessBoard board, int idx) {
 		int ypos = idx >> 3;
 		int xpos = idx & 7;
 		
@@ -250,7 +246,6 @@ public class ChessPieceManager {
 			// .p.P...R
 			
 			int lyp = board.lastPawn >> 3;
-			
 			if (lyp == 3) {
 				int lxp = board.lastPawn & 7;
 				if (xpos - 1 == lxp) {
@@ -268,22 +263,21 @@ public class ChessPieceManager {
 			int result = 0;
 			
 			if (xpos > 0) {
-				long mask = 1L << (idx - 9L);
+				long mask = 1L << (idx - 9);
 				if ((board.whiteMask & mask) != 0) {
 					result |= PROMOTION_LEFT;
 				}
 			}
 			
 			if (xpos < 7) {
-				long mask = 1L << (idx - 7L);
+				long mask = 1L << (idx - 7);
 				if ((board.whiteMask & mask) != 0) {
 					result |= PROMOTION_RIGHT;
 				}
 			}
 			
 			{
-				// TODO: Remove long cast because the compiler will change them to int eitherway
-				long mask = 1L << (idx - 8L);
+				long mask = 1L << (idx - 8);
 				if (((board.pieceMask) & mask) == 0) {
 					result |= PROMOTION_MIDDLE;
 				}
@@ -341,13 +335,20 @@ public class ChessPieceManager {
 	 * TODO: Inline functions
 	 */
 	public static boolean isAttacked(ChessBoard board, int idx) {
-		if (board.isWhite()) {
-			long rook_move = piece_move(board, Pieces.ROOK, idx) & board.blackMask;
-			if (ChessUtils.hasPiece(board, rook_move, -Pieces.ROOK)) {
+		boolean isWhite = board.isWhite();
+		
+		if (isWhite) {
+		
+//			case KNIGHT -> knight_move(board, idx) & ~board.whiteMask;
+//			case BISHOP -> bishop_move(board, idx) & ~board.whiteMask;
+//			case ROOK -> rook_move(board, idx) & ~board.whiteMask;
+			
+			long rook_move = (rook_move(board, idx) & ~board.whiteMask) & board.blackMask;
+			if (ChessUtils.hasPiece(board, rook_move , -Pieces.ROOK)) {
 				return true;
 			}
 			
-			long bishop_move = piece_move(board, Pieces.BISHOP, idx) & board.blackMask;
+			long bishop_move = (bishop_move(board, idx) & ~board.whiteMask) & board.blackMask;
 			if (ChessUtils.hasPiece(board, bishop_move, -Pieces.BISHOP)) {
 				return true;
 			}
@@ -357,12 +358,12 @@ public class ChessPieceManager {
 				return true;
 			}
 			
-			long knight_move = piece_move(board, Pieces.KNIGHT, idx) & board.blackMask;
+			long knight_move = (knight_move(board, idx) & ~board.whiteMask) & board.blackMask;
 			if (ChessUtils.hasPiece(board, knight_move, -Pieces.KNIGHT)) {
 				return true;
 			}
 			
-			long king_move = piece_move(board, Pieces.KING, idx) & board.blackMask;
+			long king_move = (king_move(board, idx) & ~board.whiteMask) & board.blackMask;
 			if (ChessUtils.hasPiece(board, king_move, -Pieces.KING)) {
 				return true;
 			}
@@ -370,12 +371,12 @@ public class ChessPieceManager {
 			long pawn_move = pawn_attack(board, false, idx) & board.blackMask;
 			return ChessUtils.hasPiece(board, pawn_move, -Pieces.PAWN);
 		} else {
-			long rook_move = piece_move(board, -Pieces.ROOK, idx) & board.whiteMask;
+			long rook_move = (rook_move(board, idx) & ~board.blackMask) & board.whiteMask;
 			if (ChessUtils.hasPiece(board, rook_move, Pieces.ROOK)) {
 				return true;
 			}
 			
-			long bishop_move = piece_move(board, -Pieces.BISHOP, idx) & board.whiteMask;
+			long bishop_move = (bishop_move(board, idx) & ~board.blackMask) & board.whiteMask;
 			if (ChessUtils.hasPiece(board, bishop_move, Pieces.BISHOP)) {
 				return true;
 			}
@@ -385,12 +386,12 @@ public class ChessPieceManager {
 				return true;
 			}
 			
-			long knight_move = piece_move(board, -Pieces.KNIGHT, idx) & board.whiteMask;
+			long knight_move = (knight_move(board, idx) & ~board.blackMask) & board.whiteMask;
 			if (ChessUtils.hasPiece(board, knight_move, Pieces.KNIGHT)) {
 				return true;
 			}
 			
-			long king_move = piece_move(board, -Pieces.KING, idx) & board.whiteMask;
+			long king_move = (king_move(board, idx) & ~board.blackMask) & board.whiteMask;
 			if (ChessUtils.hasPiece(board, king_move, Pieces.KING)) {
 				return true;
 			}
@@ -412,7 +413,11 @@ public class ChessPieceManager {
 			idx = ChessUtils.getFirst(board, board.blackMask, -Pieces.KING);
 		}
 		
-//		ChessGenerator.debug("Is King Attacked?", board.pieces);
+		if (idx == -1) {
+			// If the king does not exist we will allow this?
+			// ChessGenerator.debug("Invalid", board.pieces);
+			return true;
+		}
 		
 		if (isAttacked(board, idx)) {
 			board.halfMove = old;

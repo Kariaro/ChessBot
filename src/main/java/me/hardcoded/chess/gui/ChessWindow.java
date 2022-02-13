@@ -8,11 +8,13 @@ import java.util.Set;
 import javax.swing.JFrame;
 
 import me.hardcoded.chess.open.*;
-import me.hardcoded.chess.open.Analyser.Move0;
-import me.hardcoded.chess.open.Analyser.Scan0;
+import me.hardcoded.chess.open.ScanMoveOld;
+import me.hardcoded.chess.open.ScanOld;
 import me.hardcoded.chess.open2.Analyser3;
+import me.hardcoded.chess.open2.Analyser7;
 import me.hardcoded.chess.open2.Chess;
 
+@Deprecated(forRemoval = true)
 public class ChessWindow implements Runnable {
 	private static final int size = 80;
 	
@@ -98,7 +100,7 @@ public class ChessWindow implements Runnable {
 			
 			Thread thread = new Thread(() -> {
 				boolean comp = false;
-				Scan0 scan = null;
+				ScanOld scan = null;
 				
 				if(comp) {
 					if(board.isWhiteTurn()) {
@@ -112,10 +114,10 @@ public class ChessWindow implements Runnable {
 						scan = Analyser3.analyse(board);
 					}
 				} else {
-					scan = Analyser2.analyse(board);
+					scan = Analyser7.analyse(board);
 				}
 				
-				Move0 best = scan.best;
+				ScanMoveOld best = scan.best;
 				if(best != null) {
 					try {
 						// Play the sound eitherway
@@ -174,7 +176,7 @@ public class ChessWindow implements Runnable {
 		frame.pack();
 	}
 
-	private Scan0 scan;
+	private ScanOld scan;
 	
 	@SuppressWarnings("unused")
 	public void run() {

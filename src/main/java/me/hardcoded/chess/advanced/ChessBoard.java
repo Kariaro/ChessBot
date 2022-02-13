@@ -1,5 +1,7 @@
 package me.hardcoded.chess.advanced;
 
+import me.hardcoded.chess.decoder.ChessCodec;
+
 import static me.hardcoded.chess.open.Pieces.*;
 
 /**
@@ -13,97 +15,37 @@ public class ChessBoard {
 	long pieceMask;
 	long whiteMask;
 	long blackMask;
-	long flags;
+	int lastCapture;
 	int halfMove;
 	int lastPawn;
+	int flags;
 	
 	public ChessBoard() {
-//		pieces = new int[] {
-//			 ROOK,  KNIGHT,  BISHOP,  KING,  QUEEN,  BISHOP,  KNIGHT,  ROOK,
-//			 PAWN,    PAWN,    PAWN,  PAWN,   PAWN,    PAWN,    PAWN,  PAWN,
-//			    0,       0,       0,     0,      0,       0,       0,     0,
-//			    0,       0,       0,     0,      0,       0,       0,     0,
-//			    0,       0,       0,     0,      0,       0,       0,     0,
-//			    0,       0,       0,     0,      0,       0,       0,     0,
-//			-PAWN,   -PAWN,   -PAWN, -PAWN,  -PAWN,   -PAWN,   -PAWN, -PAWN,
-//			-ROOK, -KNIGHT, -BISHOP, -KING, -QUEEN, -BISHOP, -KNIGHT, -ROOK,
-//		};
-		
 		pieces = new int[] {
-			ROOK,       0,       0,  KING,  QUEEN,  BISHOP,       0,  ROOK,
-			PAWN,    PAWN,    PAWN,     0,   PAWN,    PAWN,    PAWN,  PAWN,
-			   0,       0,  KNIGHT,  PAWN,      0,       0,       0,     0,
-			   0,       0,       0, -PAWN,      0,       0, -BISHOP,     0,
-			   0,       0,       0,     0, KNIGHT,       0,  BISHOP,     0,
-		 -KNIGHT,       0,       0,     0,      0, -KNIGHT,       0,     0,
-		   -PAWN,   -PAWN,   -PAWN,     0,  -PAWN,   -PAWN,   -PAWN, -PAWN,
-		   -ROOK,       0,       0, -KING, -QUEEN, -BISHOP,       0,     -ROOK,
+			 ROOK,  KNIGHT,  BISHOP,  KING,  QUEEN,  BISHOP,  KNIGHT,  ROOK,
+			 PAWN,    PAWN,    PAWN,  PAWN,   PAWN,    PAWN,    PAWN,  PAWN,
+			    0,       0,       0,     0,      0,       0,       0,     0,
+			    0,       0,       0,     0,      0,       0,       0,     0,
+			    0,       0,       0,     0,      0,       0,       0,     0,
+			    0,       0,       0,     0,      0,       0,       0,     0,
+			-PAWN,   -PAWN,   -PAWN, -PAWN,  -PAWN,   -PAWN,   -PAWN, -PAWN,
+			-ROOK, -KNIGHT, -BISHOP, -KING, -QUEEN, -BISHOP, -KNIGHT, -ROOK,
 		};
-		
-//		ChessGenerator.debug("Board", pieces);
 		
 		// Fast init
 		whiteMask = 0b00000000_00000000_00000000_00000000_00000000_00000000_11111111_11111111L;
 		blackMask = 0b11111111_11111111_00000000_00000000_00000000_00000000_00000000_00000000L;
 		pieceMask = whiteMask | blackMask;
 		flags = 0b1111; // Castling
+		lastCapture = 0;
 		halfMove = 0;
 		lastPawn = 0;
-		
-//		pieces = new int[] {
-//			 ROOK,       0,       0,  KING,      0,       0,       0,  ROOK,
-//			 PAWN,    PAWN,    PAWN,  PAWN,   PAWN,    PAWN,    PAWN,  PAWN,
-//			    0,       0,       0,     0,      0,       0,       0,     0,
-//			    0,       0,       0,     0,      0,       0,       0,     0,
-//			    0,       0,       0,     0,      0,       0,       0,     0,
-//			    0,       0,       0,     0,      0,       0,       0,     0,
-//			-PAWN,   -PAWN,   -PAWN, -PAWN,  -PAWN,   -PAWN,   -PAWN, -PAWN,
-//			-ROOK,       0,       0, -KING,      0,       0,       0, -ROOK,
-//		};
-		
-//		pieces = new int[] {
-//			 ROOK,       0,       0,  KING,      0,       0,       0,  ROOK,
-//			    0,   -PAWN,       0,  PAWN,   PAWN,    PAWN,    PAWN,  PAWN,
-//				0,       0,       0,     0,      0, -KNIGHT,       0,     0,
-//				0,       0,       0,     0,      0,       0,       0,     0,
-//			    0,   -ROOK,   -ROOK,     0,      0,       0,       0,     0,
-//				0,       0,       0,     0,      0,       0,       0,     0,
-//				0,       0,       0,     0,      0,       0,       0,     0,
-//				0,       0,       0,     0,      0,       0,       0,     0,
-////			    0,       0,       0,     0,      0,       0,       0,     0,
-////			-PAWN,   -PAWN,   -PAWN, -PAWN,  -PAWN,   -PAWN,   -PAWN, -PAWN,
-////			-ROOK,       0,       0, -KING,      0,       0,       0, -ROOK,
-//		};
-		
-//		pieces = new int[] {
-//			0,       0,       0,     0,      0,       0,       0,     0,
-//			0,       0,       0,     0,      0,       0,       0,     0,
-//			0,       0,       0,     0,      0,       0,       0,     0,
-//			0,       0,       0,     0,      0,       0,       0,     0,
-//			0,       0,       0,     0,      0,       0,       0,     0,
-//			0,       0,       0,     0,      0,       0,       0,     0,
-//		-ROOK,    PAWN,    KING,     0,   PAWN,       0,       0,     0,
-//			0,       0,       0,     0,      0, -KNIGHT,       0,     0,
-//		};
 		
 		initializeMasks();
 	}
 	
 	private void initializeMasks() {
-		whiteMask = 0;
-		blackMask = 0;
-		for (int i = 0; i < 64; i++) {
-			long idx = 1L << i;
-			int piece = pieces[i];
-			if (piece > 0) {
-				whiteMask |= idx;
-			}
-			
-			if (piece < 0) {
-				blackMask |= idx;
-			}
-		}
-		pieceMask = whiteMask | blackMask;
+		recalculateMasks();
 		flags = 0;
 		
 		// Update castling flags
@@ -149,6 +91,7 @@ public class ChessBoard {
 		pieceMask = blackMask | whiteMask;
 	}
 	
+	@Deprecated
 	public ChessBoard creteCopy() {
 		// TODO: Fill a class instead of cloning it
 		ChessBoard copy = new ChessBoard();
@@ -164,5 +107,60 @@ public class ChessBoard {
 	
 	public int getPiece(int i) {
 		return pieces[i];
+	}
+	
+	/// FOR SERIALIZATION AND DESERIALIZATION
+	public void recalculateMasks() {
+		whiteMask = 0;
+		blackMask = 0;
+		for (int i = 0; i < 64; i++) {
+			long idx = 1L << i;
+			int piece = pieces[i];
+			if (piece > 0) {
+				whiteMask |= idx;
+			}
+			
+			if (piece < 0) {
+				blackMask |= idx;
+			}
+		}
+		pieceMask = whiteMask | blackMask;
+	}
+	
+	@Deprecated
+	public int[] getPieces() {
+		return pieces;
+	}
+	
+	@Deprecated
+	public int getFlags() {
+		return flags;
+	}
+	
+	@Deprecated
+	public int getLastCapture() {
+		return lastCapture;
+	}
+	
+	@Deprecated
+	public int getHalfMove() {
+		return halfMove;
+	}
+	
+	@Deprecated
+	public int getFullMove() {
+		return halfMove / 2;
+	}
+	
+	@Deprecated
+	public int getLastPawn() {
+		return lastPawn;
+	}
+	
+	@Deprecated
+	public void setStates(int flags, int halfMove, int lastPawn) {
+		this.flags = flags;
+		this.halfMove = halfMove;
+		this.lastPawn = lastPawn;
 	}
 }

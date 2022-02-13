@@ -5,12 +5,11 @@ import me.hardcoded.chess.api.ChessAnalysis;
 import me.hardcoded.chess.api.ChessMove;
 import me.hardcoded.chess.open.Pieces;
 
-public class AnalyserTool3 {
-	// TODO: Even numbers will mess up the algorithm
-	private static final int DEPTH = 4;
-	private static final Move[][] MOVES = new Move[DEPTH + 1][1024];
+public class AnalyserTool4 implements ChessAnalyser {
+	private final int DEPTH = 4;
+	private final Move[][] MOVES = new Move[DEPTH + 1][1024];
 	
-	private static Move[] getAllMoves(ChessBoard board, int depth) {
+	private Move[] getAllMoves(ChessBoard board, int depth) {
 		final Move[] moves = MOVES[depth];
 		final int[] ptr = new int[1];
 		
@@ -31,7 +30,7 @@ public class AnalyserTool3 {
 		return moves;
 	}
 	
-	public static int getMaterial(ChessBoard board) {
+	public int getMaterial(ChessBoard board) {
 		long mask = board.pieceMask;
 		int material = 0;
 		
@@ -58,7 +57,7 @@ public class AnalyserTool3 {
 		return material;
 	}
 	
-	private static int non_developing(ChessBoard board) {
+	private int non_developing(ChessBoard board) {
 		int result = 0;
 		if (board.getPiece(1) == Pieces.KNIGHT) result -= 10;
 		if (board.getPiece(2) == Pieces.BISHOP) result -= 10;
@@ -79,7 +78,7 @@ public class AnalyserTool3 {
 		return result * 3;
 	}
 	
-	private static int un_developing(Move move) {
+	private int un_developing(Move move) {
 		int id = move.piece;
 		int move_to = move.to;
 		int result = 0;
@@ -122,18 +121,17 @@ public class AnalyserTool3 {
 		return result * 3;
 	}
 	
-	public static ChessAnalysis analyse(ChessBoard board) {
+	public ChessAnalysis analyse(ChessBoard board) {
 		ChessBoard copy = board.creteCopy();
-		System.out.println(copy);
+		Scanner scanner = analyseBranchMoves(copy, DEPTH, getMaterial(copy));
 		
-		Scanner scanner = analyseBranchMoves(copy, DEPTH, getMaterial(copy));;
 		ChessAnalysis analysis = new ChessAnalysis();
 		analysis.setBestMove(scanner.best);
 		analysis.setMaterial((int) scanner.material());
 		return analysis;
 	}
 	
-	private static Scanner analyseBranchMoves(ChessBoard board, int depth, double currentMaterial) {
+	private Scanner analyseBranchMoves(ChessBoard board, int depth, double currentMaterial) {
 		// Create a new scanner container
 		Scanner scan = new Scanner(board, currentMaterial);
 		
@@ -188,7 +186,7 @@ public class AnalyserTool3 {
 		return scan;
 	}
 	
-	private static void evaluate(ChessBoard board, Scanner scan) {
+	private void evaluate(ChessBoard board, Scanner scan) {
 		if (ChessPieceManager.isKingAttacked(board, !scan.white)) {
 			double delta = scan.white ? -1 : 1;
 			scan.base += 10 * delta;

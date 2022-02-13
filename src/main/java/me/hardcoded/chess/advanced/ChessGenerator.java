@@ -1,5 +1,6 @@
 package me.hardcoded.chess.advanced;
 
+import me.hardcoded.chess.api.ChessMove;
 import me.hardcoded.chess.open.Pieces;
 
 import javax.swing.*;
@@ -186,16 +187,23 @@ public class ChessGenerator {
 		}
 	}
 	
+	public static boolean playMove(ChessBoard board, ChessMove move) {
+		return move != null && playMove(board, move.from, move.to, move.special);
+	}
+	
 	public static boolean playMove(ChessBoard board, int fromIdx, int toIdx, int special) {
 		final boolean isWhite = board.isWhite();
 		final int mul = isWhite ? 1 : -1;
-		board.halfMove ++;
+		
+		// Increase moves since last capture
+		board.lastCapture++;
+		board.halfMove++;
 		board.lastPawn = 0;
 		
 		switch (special & 0b11000000) {
 			case ChessPieceManager.SM_NORMAL -> {
 				int oldFrom = board.pieces[fromIdx];
-				
+				int oldTo = board.pieces[toIdx];
 				int pieceSq = oldFrom * oldFrom;
 				
 				switch (pieceSq) {
@@ -237,7 +245,14 @@ public class ChessGenerator {
 						if (distance == 256) {
 							board.lastPawn = toIdx;
 						}
+						
+						board.lastCapture = 0;
 					}
+				}
+				
+				if (oldTo != Pieces.NONE) {
+					// Capture
+					board.lastCapture = 0;
 				}
 				
 				if (board.flags != 0) {
@@ -289,6 +304,7 @@ public class ChessGenerator {
 				int oldFrom = board.pieces[fromIdx];
 				int remIdx = toIdx + (isWhite ? -8 : 8);
 				
+				board.lastCapture = 0;
 				board.setPiece(fromIdx, Pieces.NONE);
 				board.setPiece(remIdx, Pieces.NONE);
 				board.setPiece(toIdx, oldFrom);

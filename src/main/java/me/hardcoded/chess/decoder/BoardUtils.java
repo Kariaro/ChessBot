@@ -4,6 +4,7 @@ import static me.hardcoded.chess.open.Pieces.*;
 
 import me.hardcoded.chess.open.*;
 
+@Deprecated(forRemoval = true)
 public class BoardUtils {
 	
 	public static void main(String[] args) {

@@ -311,7 +311,7 @@ public class ChessPieceManager {
 			if ((board.pieceMask & BLACK_K) == 0 && board.hasFlags(CastlingFlags.BLACK_CASTLE_K)) {
 				result |= SM_CASTLING | CastlingFlags.BLACK_CASTLE_K;
 			}
-
+			
 			if ((board.pieceMask & BLACK_Q) == 0 && board.hasFlags(CastlingFlags.BLACK_CASTLE_Q)) {
 				result |= SM_CASTLING | CastlingFlags.BLACK_CASTLE_Q;
 			}
@@ -338,23 +338,13 @@ public class ChessPieceManager {
 		boolean isWhite = board.isWhite();
 		
 		if (isWhite) {
-		
-//			case KNIGHT -> knight_move(board, idx) & ~board.whiteMask;
-//			case BISHOP -> bishop_move(board, idx) & ~board.whiteMask;
-//			case ROOK -> rook_move(board, idx) & ~board.whiteMask;
-			
 			long rook_move = (rook_move(board, idx) & ~board.whiteMask) & board.blackMask;
-			if (ChessUtils.hasPiece(board, rook_move , -Pieces.ROOK)) {
+			if (hasTwoPiece(board, rook_move, -Pieces.ROOK, -Pieces.QUEEN)) {
 				return true;
 			}
 			
 			long bishop_move = (bishop_move(board, idx) & ~board.whiteMask) & board.blackMask;
-			if (ChessUtils.hasPiece(board, bishop_move, -Pieces.BISHOP)) {
-				return true;
-			}
-			
-			long queen_move = rook_move | bishop_move;
-			if (ChessUtils.hasPiece(board, queen_move, -Pieces.QUEEN)) {
+			if (hasTwoPiece(board, bishop_move, -Pieces.BISHOP, -Pieces.QUEEN)) {
 				return true;
 			}
 			
@@ -372,17 +362,12 @@ public class ChessPieceManager {
 			return ChessUtils.hasPiece(board, pawn_move, -Pieces.PAWN);
 		} else {
 			long rook_move = (rook_move(board, idx) & ~board.blackMask) & board.whiteMask;
-			if (ChessUtils.hasPiece(board, rook_move, Pieces.ROOK)) {
+			if (hasTwoPiece(board, rook_move, Pieces.ROOK, Pieces.QUEEN)) {
 				return true;
 			}
 			
 			long bishop_move = (bishop_move(board, idx) & ~board.blackMask) & board.whiteMask;
-			if (ChessUtils.hasPiece(board, bishop_move, Pieces.BISHOP)) {
-				return true;
-			}
-			
-			long queen_move = rook_move | bishop_move;
-			if (ChessUtils.hasPiece(board, queen_move, Pieces.QUEEN)) {
+			if (hasTwoPiece(board, bishop_move, Pieces.BISHOP, Pieces.QUEEN)) {
 				return true;
 			}
 			
@@ -399,6 +384,24 @@ public class ChessPieceManager {
 			long pawn_move = pawn_attack(board, true, idx) & board.whiteMask;
 			return ChessUtils.hasPiece(board, pawn_move, Pieces.PAWN);
 		}
+	}
+	
+	private static boolean hasTwoPiece(ChessBoard board, long mask, int findA, int findB) {
+		// the mask only contains pieces that belongs to the correct team
+		mask &= (findA < 0 ? board.blackMask : board.whiteMask);
+		
+		while (mask != 0) {
+			long pick = Long.lowestOneBit(mask);
+			mask &= ~pick;
+			int idx = Long.numberOfTrailingZeros(pick);
+			
+			int piece = board.pieces[idx];
+			if (piece == findA || piece == findB) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	public static boolean isKingAttacked(ChessBoard board, boolean isWhite) {

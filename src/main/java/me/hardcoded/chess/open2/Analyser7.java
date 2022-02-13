@@ -3,12 +3,12 @@ package me.hardcoded.chess.open2;
 import java.util.*;
 
 import me.hardcoded.chess.open.*;
-import me.hardcoded.chess.open.Analyser.Move0;
-import me.hardcoded.chess.open.Analyser.Scan0;
+import me.hardcoded.chess.open.ScanMoveOld;
+import me.hardcoded.chess.open.ScanOld;
 
 public class Analyser7 {
 	private static Set<Move> getAllMoves(Chess board) {
-		Set<Move> moves = new HashSet<>();
+		Set<Move> moves = new LinkedHashSet<>();
 		
 		boolean turn = board.isWhiteTurn();
 		for(int i = 0; i < 64; i++) {
@@ -46,9 +46,9 @@ public class Analyser7 {
 		return mat;
 	}
 	
-	public static Scan0 analyse(Chess board) {
+	public static ScanOld analyse(Chess board) {
 		System.out.println(board.clone());
-		Scan0 scan = analyseFrom(board.clone(), DEPTH);
+		ScanOld scan = analyseFrom(board.clone(), DEPTH);
 		return scan;
 	}
 	
@@ -59,8 +59,8 @@ public class Analyser7 {
 	private static Random random = new Random();
 	private static final int DEPTH = 3;
 	
-	private static Scan0 analyseFrom(Chess board, int depth) {
-		Scan0 scan = analyseBranchMoves(board, depth, getAllMoves(board));
+	private static ScanOld analyseFrom(Chess board, int depth) {
+		ScanOld scan = analyseBranchMoves(board, depth, getAllMoves(board));
 		customizeEnds(scan);
 		return scan;
 	}
@@ -138,9 +138,9 @@ public class Analyser7 {
 		return result * 3;
 	}
 	
-	private static Scan0 analyseBranchMoves(Chess board, int depth, Set<Move> moves) {
+	private static ScanOld analyseBranchMoves(Chess board, int depth, Set<Move> moves) {
 		// Create a new scanner container
-		Scan0 scan = new Scan0(board);
+		ScanOld scan = new ScanOld(board);
 		
 		// Save the last state of the board
 		State state = board.getState();
@@ -155,9 +155,9 @@ public class Analyser7 {
 			board.doMove(move);
 			double material = getMaterial(board);
 			
-			Scan0 branch;
+			ScanOld branch;
 			if(depth < 1) {
-				branch = new Scan0(board);
+				branch = new ScanOld(board);
 			} else {
 				branch = analyseBranchMoves(board, depth - 1, getAllMoves(board));
 			}
@@ -173,7 +173,7 @@ public class Analyser7 {
 			}
 			
 			// Add this move to the evaluation set
-			scan.branches.add(new Move0(branch, percent, move));
+			scan.branches.add(new ScanMoveOld(branch, percent, move));
 			
 			// Undo the move and continue
 			board.setState(state);
@@ -188,21 +188,21 @@ public class Analyser7 {
 	/**
 	 * Add some custom and random moves to the bot
 	 */
-	private static void customizeEnds(Scan0 scan) {
-		List<Move0> branches = scan.branches;
+	private static void customizeEnds(ScanOld scan) {
+		List<ScanMoveOld> branches = scan.branches;
 		if(branches.size() < 2) return;
 		
 		double score = scan.best.material;
 		if(random.nextFloat() < 0.3) {
 			if(!scan.white) {
-				Move0 move = branches.get(branches.size() - 2);
+				ScanMoveOld move = branches.get(branches.size() - 2);
 				
 				if(Math.abs(move.material - score) < 10) {
 					scan.branches.remove(branches.size() - 1);
 					scan.best = move;
 				}
 			} else {
-				Move0 move = branches.get(1);
+				ScanMoveOld move = branches.get(1);
 				if(Math.abs(move.material - score) < 10) {
 					scan.branches.remove(0);
 					scan.best = move;
@@ -212,8 +212,8 @@ public class Analyser7 {
 		
 	}
 	
-	private static void evaluate(Chess board, Scan0 scan) {
-		List<Move0> evaluation = scan.branches;
+	private static void evaluate(Chess board, ScanOld scan) {
+		List<ScanMoveOld> evaluation = scan.branches;
 		
 		if(!evaluation.isEmpty()) {
 			// Only sort the list if we have more than one move
@@ -228,7 +228,7 @@ public class Analyser7 {
 				scan.best = evaluation.get(0);
 			}
 			
-			for(Move0 m : scan.best.sc.follow) {
+			for(ScanMoveOld m : scan.best.sc.follow) {
 				scan.follow.add(m.clone());
 			}
 			
@@ -251,7 +251,7 @@ public class Analyser7 {
 			}
 		}
 		
-		for(Move0 m : evaluation) {
+		for(ScanMoveOld m : evaluation) {
 			m.sc = null;
 		}
 	}

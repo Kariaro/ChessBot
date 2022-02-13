@@ -6,7 +6,7 @@ public class ChessState {
 	
 	public void read(ChessBoard board) {
 		if (longs == null) {
-			longs = new long[5];
+			longs = new long[6];
 		}
 		
 		if (pieces == null) {
@@ -15,9 +15,10 @@ public class ChessState {
 		
 		longs[0] = board.whiteMask;
 		longs[1] = board.blackMask;
-		longs[2] = board.halfMove;
-		longs[3] = board.lastPawn;
-		longs[4] = board.flags;
+		longs[2] = board.lastCapture;
+		longs[3] = board.halfMove;
+		longs[4] = board.lastPawn;
+		longs[5] = board.flags;
 		
 		System.arraycopy(board.pieces, 0, pieces, 0, 64);
 	}
@@ -26,9 +27,10 @@ public class ChessState {
 		board.whiteMask = longs[0];
 		board.blackMask = longs[1];
 		board.pieceMask = board.whiteMask | board.blackMask;
-		board.halfMove = (int)longs[2];
-		board.lastPawn = (int)longs[3];
-		board.flags = (int)longs[4];
+		board.lastCapture = (int)longs[2];
+		board.halfMove = (int)longs[3];
+		board.lastPawn = (int)longs[4];
+		board.flags = (int)longs[5];
 		System.arraycopy(pieces, 0, board.pieces, 0, 64);
 	}
 	

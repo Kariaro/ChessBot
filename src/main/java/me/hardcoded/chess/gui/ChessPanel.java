@@ -14,8 +14,8 @@ import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 import me.hardcoded.chess.open.*;
-import me.hardcoded.chess.open.Analyser.Move0;
-import me.hardcoded.chess.open.Analyser.Scan0;
+import me.hardcoded.chess.open.ScanMoveOld;
+import me.hardcoded.chess.open.ScanOld;
 import me.hardcoded.chess.open2.Chess;
 
 public class ChessPanel extends JPanel {
@@ -32,7 +32,7 @@ public class ChessPanel extends JPanel {
 	private boolean flipBoard;
 	private boolean promoting;
 	private Set<Move> moves;
-	private Scan0 scan;
+	private ScanOld scan;
 	private int size;
 	private ChessAudio audio;
 	
@@ -250,7 +250,7 @@ public class ChessPanel extends JPanel {
 		this.promoting = promoting;
 	}
 	
-	public void setScan(Scan0 scan) {
+	public void setScan(ScanOld scan) {
 		this.scan = scan;
 	}
 	
@@ -294,7 +294,7 @@ public class ChessPanel extends JPanel {
 		
 		double baseline = 0;
 		{
-			Scan0 sc = scan;
+			ScanOld sc = scan;
 			
 			if(sc != null) {
 				baseline = scan.base;
@@ -531,7 +531,7 @@ public class ChessPanel extends JPanel {
 		}
 		
 		if(!hideArrows) {
-			Scan0 sc = scan;
+			ScanOld sc = scan;
 //			double baseline = 0;
 //			if(sc != null) {
 //				baseline = scan.base;
@@ -551,7 +551,7 @@ public class ChessPanel extends JPanel {
 				int et = sc.white ? Math.min(st + max, bs):Math.min(max, bs);
 				
 				for(int i = st; i < et; i++) {
-					Move0 dmove = sc.branches.get(i);
+					ScanMoveOld dmove = sc.branches.get(i);
 					
 					float mat = (float)(dmove.material - sc.base);
 					g.setColor(scan_blue);
@@ -581,11 +581,11 @@ public class ChessPanel extends JPanel {
 		}
 
 		if(!hideArrows) {
-			Scan0 sc = scan;
+			ScanOld sc = scan;
 			if(sc != null) {
-				java.util.List<Move0> list = sc.follow;
+				java.util.List<ScanMoveOld> list = sc.follow;
 				for(int i = 0; i < list.size(); i++) {
-					Move0 m = list.get(i);
+					ScanMoveOld m = list.get(i);
 					g.setColor(new Color(255, 255, 0, 60));
 					drawMove(g, m.move, ((list.size() - i + 1) * 5));
 				}

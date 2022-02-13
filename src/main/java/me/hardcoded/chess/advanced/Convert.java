@@ -1,14 +1,11 @@
 package me.hardcoded.chess.advanced;
 
-import com.sun.source.tree.ReturnTree;
 import me.hardcoded.chess.open.Action;
 import me.hardcoded.chess.open.Flags;
-import me.hardcoded.chess.open.Move;
 import me.hardcoded.chess.open.Pieces;
 import me.hardcoded.chess.open2.Chess;
 
-import java.util.IllegalFormatCodePointException;
-
+@Deprecated(forRemoval = true)
 public class Convert {
 	public static ChessBoard toChessBoard(Chess chess) {
 		ChessBoard board = new ChessBoard();

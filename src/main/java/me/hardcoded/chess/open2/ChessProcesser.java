@@ -11,21 +11,22 @@ public class ChessProcesser {
 	
 	static Set<Move> getPieceMoves(Chess board, int index) {
 		int pieceId = board.getPieceAt(index);
-		if((pieceId == 0) || (pieceId > 0 != board.isWhiteTurn())) return EMPTY;
+		if((pieceId == 0) || (pieceId > 0 != board.isWhiteTurn())) {
+			return EMPTY;
+		}
 		Set<Move> moves = new HashSet<>();
 		
 		switch(ChessUtils.toPiece(pieceId)) {
-			case PAWN: getPawnMoves(board, moves, pieceId, index); break;
-			case KNIGHT: getKnightMoves(board, moves, pieceId, index); break;
-			case BISHOP: getBishopMoves(board, moves, pieceId, index); break;
-			case ROOK: getRookMoves(board, moves, pieceId, index); break;
-			case QUEEN: {
+			case PAWN -> getPawnMoves(board, moves, pieceId, index);
+			case KNIGHT -> getKnightMoves(board, moves, pieceId, index);
+			case BISHOP -> getBishopMoves(board, moves, pieceId, index);
+			case ROOK -> getRookMoves(board, moves, pieceId, index);
+			case QUEEN -> {
 				getBishopMoves(board, moves, pieceId, index);
 				getRookMoves(board, moves, pieceId, index);
-				break;
 			}
-			case KING: getKingMoves(board, moves, pieceId, index); break;
-			default: return EMPTY;
+			case KING -> getKingMoves(board, moves, pieceId, index);
+			default -> { return EMPTY; }
 		}
 		
 		Iterator<Move> iter = moves.iterator();

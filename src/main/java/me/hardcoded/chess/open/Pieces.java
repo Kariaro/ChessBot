@@ -35,6 +35,22 @@ public interface Pieces {
 		 100, // PAWN    6
 	};
 	
+	char[] PRINTABLE = {
+		'p', // PAWN   -6
+		'r', // ROOK   -5
+		'n', // KNIGHT -4
+		'b', // BISHOP -3
+		'q', // QUEEN  -2
+		'k', // KING   -1
+		' ', // NONE    0
+		'K', // KING    1
+		'Q', // QUEEN   2
+		'B', // BISHOP  3
+		'N', // KNIGHT  4
+		'R', // ROOK    5
+		'P', // PAWN    6
+	};
+	
 	int[] PROMOTION = {
 		QUEEN,
 		BISHOP,
@@ -54,28 +70,10 @@ public interface Pieces {
 	
 	static int value(int id) {
 		return VALUES[id + 6];
-//		if(id < 0) {
-//			id = -id;
-//			switch(id) {
-//				case KING: return 0;
-//				case QUEEN: return -900;
-//				case BISHOP: return -300;
-//				case KNIGHT: return -300;
-//				case ROOK: return -500;
-//				case PAWN: return -100;
-//				default: return 0;
-//			}
-//		}
-//		
-//		switch(id) {
-//			case KING: return 0;
-//			case QUEEN: return 900;
-//			case BISHOP: return 300;
-//			case KNIGHT: return 300;
-//			case ROOK: return 500;
-//			case PAWN: return 100;
-//			default: return 0;
-//		}
+	}
+	
+	static char printable(int id) {
+		return PRINTABLE[id + 6];
 	}
 	
 	static String toString(int id) {

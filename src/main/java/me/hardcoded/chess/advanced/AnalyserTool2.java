@@ -1,11 +1,10 @@
 package me.hardcoded.chess.advanced;
 
+import me.hardcoded.chess.api.ChessMove;
 import me.hardcoded.chess.open.Pieces;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class AnalyserTool2 {
 	private static List<Move> getAllMoves(ChessBoard board) {
@@ -210,21 +209,14 @@ public class AnalyserTool2 {
 	}
 	
 	
-	public static class Move {
-		final int from;
-		final int to;
-		final int special;
-		final int piece;
+	public static class Move extends ChessMove {
 		final boolean castle;
 		
 		// Material value
 		double material;
 		
 		public Move(int piece, int from, int to, int special) {
-			this.from = from;
-			this.to = to;
-			this.special = special;
-			this.piece =  piece;
+			super(piece, from, to, special);
 			this.castle = (special & 0b11_0000000) == ChessPieceManager.SM_PROMOTION;
 		}
 	}

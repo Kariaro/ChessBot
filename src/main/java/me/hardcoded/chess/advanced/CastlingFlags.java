@@ -21,6 +21,6 @@ public interface CastlingFlags {
 	int BLACK_KING = 59;
 	int WHITE_ROOK_K = 0;
 	int WHITE_ROOK_Q = 7;
-	int BLACK_ROOK_K = 55;
+	int BLACK_ROOK_K = 56;
 	int BLACK_ROOK_Q = 63;
 }

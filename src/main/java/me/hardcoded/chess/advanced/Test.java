@@ -1,18 +1,18 @@
 package me.hardcoded.chess.advanced;
 
-import me.hardcoded.chess.open.Analyser;
-import me.hardcoded.chess.open2.Analyser7;
-import me.hardcoded.chess.open2.Chess;
-import me.hardcoded.chess.visual.ChessBoardPanel;
+import me.hardcoded.chess.api.ChessAnalysis;
+import me.hardcoded.chess.decoder.ChessCodec;
+import me.hardcoded.chess.visual.PlayableChessBoard;
 
 import javax.swing.*;
 import java.awt.*;
 
+// TODO: http://wbec-ridderkerk.nl/html/UCIProtocol.html
 public class Test {
 	public static void main(String[] args) throws Exception {
 		ChessBoard board = new ChessBoard();
 		
-		ChessBoardPanel panel = new ChessBoardPanel();
+		PlayableChessBoard panel = new PlayableChessBoard();
 		JFrame frame = new JFrame();
 		frame.add(panel);
 		frame.pack();
@@ -26,44 +26,38 @@ public class Test {
 		panel.setTargets(board.pieces);
 		frame.repaint();
 		
+		final boolean customPlayer = true;
+
 		Thread.sleep(1000);
+		
+		ChessAnalysis analysis;
 		while (true) {
-			
-			AnalyserTool3.Scanner scan = AnalyserTool3.analyse(board);
-			if (scan.best == null) {
-				// The other computer won
+			analysis = AnalyserTool3.analyse(board);
+			if (!ChessGenerator.playMove(board, analysis.getBestMove())) {
+				// We probably lost the game
 				break;
 			}
-			AnalyserTool3.Move best = scan.best;
-			ChessGenerator.playMove(board, best.from, best.to, best.special);
-			System.out.println(best.material);
 			
+			System.out.println("Material: " + analysis.getMaterial());
+
 			frame.setTitle("New Move " + index++);
 			panel.setTargets(board.pieces);
-			
-//			AnalyserTool2.Scanner scan0 = AnalyserTool2.analyse(board);
-//			AnalyserTool2.Move best = scan0.best;
-//			ChessGenerator.playMove(board, best.from, best.to, best.special);
-//			System.out.println(best.material);
-			
-			Chess chess = Convert.toChess(board);
-			Analyser.Move0 bestMove = Analyser7.analyse(chess).best;
-			if (bestMove != null) {
-				chess.doMove(bestMove.move);
-			} else {
-				// Game was won by the other player
-				break;
+
+			if (customPlayer) {
+				AnalyserConverted7.ScanConverted scan2 = AnalyserConverted7.analyse(board);
+				if (scan2.best == null) {
+					break;
+				}
+				best = scan2.best.move;
+				ChessGenerator.playMove(board, best.from, best.to, best.special);
+
+				frame.setTitle("Old Move " + index++);
+				panel.setTargets(board.pieces);
 			}
-			board = Convert.toChessBoard(chess);
-			
-			frame.setTitle("Old Move " + index++);
-			ChessPieceManager.BOARD_PANEL.setTargets(board.pieces);
-			
-			// TODO: Castling does not seem to work
-//			me.hardcoded.chess.open.ChessUtils.printBoard(board.pieces);
+
+			me.hardcoded.chess.open.ChessUtils.printBoard(board.pieces);
 			System.out.println(best);
-			
-//			Thread.sleep(5000);
+			ChessCodec.FEN.save(board);
 		}
 	}
 }

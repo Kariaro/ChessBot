@@ -1,5 +1,7 @@
-package me.hardcoded.chess.advanced;
+package me.hardcoded.chess.utils;
 
+import me.hardcoded.chess.advanced.CastlingFlags;
+import me.hardcoded.chess.advanced.ChessBoard;
 import me.hardcoded.chess.open.Action;
 import me.hardcoded.chess.open.Flags;
 import me.hardcoded.chess.open.Pieces;
@@ -10,39 +12,24 @@ public class Convert {
 	public static ChessBoard toChessBoard(Chess chess) {
 		ChessBoard board = new ChessBoard();
 		me.hardcoded.chess.open.Move chess_move = chess.last_move;
+		int[] pieces = new int[64];
+		int lastPawn = 0;
 		if (chess_move.action() == Action.PAWN_JUMP) {
-			board.lastPawn = chess_move.to();
+			lastPawn = chess_move.to();
 		} else {
-			board.lastPawn = 0;
-		}
-		// TODO: Calculate the correct move index
-		board.halfMove = chess.isWhiteTurn() ? 0 : 1;
-		System.arraycopy(chess.board, 0, board.pieces, 0, 64);
-		board.flags = 0;
-		
-		if (chess.isFlagSet(Flags.CASTLE_WK)) board.flags |= CastlingFlags.WHITE_CASTLE_K;
-		if (chess.isFlagSet(Flags.CASTLE_WQ)) board.flags |= CastlingFlags.WHITE_CASTLE_Q;
-		if (chess.isFlagSet(Flags.CASTLE_BK)) board.flags |= CastlingFlags.BLACK_CASTLE_K;
-		if (chess.isFlagSet(Flags.CASTLE_BQ)) board.flags |= CastlingFlags.BLACK_CASTLE_Q;
-		
-		// Masks
-		{
-			board.whiteMask = 0;
-			board.blackMask = 0;
-			for (int i = 0; i < 64; i++) {
-				long idx = 1L << (long)i;
-				int piece = board.pieces[i];
-				if (piece > 0) {
-					board.whiteMask |= idx;
-				}
-				
-				if (piece < 0) {
-					board.blackMask |= idx;
-				}
-			}
-			board.pieceMask = board.whiteMask | board.blackMask;
+			lastPawn = 0;
 		}
 		
+		int halfMove = chess.isWhiteTurn() ? 0 : 1;
+		System.arraycopy(chess.board, 0, pieces, 0, 64);
+		
+		int flags = 0;
+		if (chess.isFlagSet(Flags.CASTLE_WK)) flags |= CastlingFlags.WHITE_CASTLE_K;
+		if (chess.isFlagSet(Flags.CASTLE_WQ)) flags |= CastlingFlags.WHITE_CASTLE_Q;
+		if (chess.isFlagSet(Flags.CASTLE_BK)) flags |= CastlingFlags.BLACK_CASTLE_K;
+		if (chess.isFlagSet(Flags.CASTLE_BQ)) flags |= CastlingFlags.BLACK_CASTLE_Q;
+		
+		board.setStates(flags, halfMove,  lastPawn, 0, pieces);
 		return board;
 	}
 	
@@ -50,7 +37,7 @@ public class Convert {
 		boolean isWhite = chessBoard.isWhite();
 		
 		Chess chess = new Chess();
-		System.arraycopy(chessBoard.pieces, 0, chess.board, 0, 64);
+		System.arraycopy(chessBoard.getPieces(), 0, chess.board, 0, 64);
 		chess.flags = 0;
 		chess.flags |= isWhite ? Flags.TURN : 0;
 		
@@ -59,9 +46,9 @@ public class Convert {
 		if (chessBoard.hasFlags(CastlingFlags.BLACK_CASTLE_K)) chess.flags |= Flags.CASTLE_BK;
 		if (chessBoard.hasFlags(CastlingFlags.BLACK_CASTLE_Q)) chess.flags |= Flags.CASTLE_BQ;
 		
-		if (chessBoard.lastPawn != 0) {
-			int from = chessBoard.lastPawn + (isWhite ? -8 : 8);
-			int to = chessBoard.lastPawn;
+		if (chessBoard.getLastPawn() != 0) {
+			int from = chessBoard.getLastPawn() + (isWhite ? -8 : 8);
+			int to = chessBoard.getLastPawn();
 			chess.last_move = me.hardcoded.chess.open.Move.of(Pieces.PAWN * (isWhite ? -1 : 1), from, to, Action.PAWN_JUMP);
 		}
 		

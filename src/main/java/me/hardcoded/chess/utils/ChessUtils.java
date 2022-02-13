@@ -1,4 +1,8 @@
-package me.hardcoded.chess.advanced;
+package me.hardcoded.chess.utils;
+
+import me.hardcoded.chess.advanced.CastlingFlags;
+import me.hardcoded.chess.advanced.ChessBoard;
+import me.hardcoded.chess.advanced.ChessPieceManager;
 
 public final class ChessUtils {
 	public static String toBitString(long value) {
@@ -33,6 +37,10 @@ public final class ChessUtils {
 		return (char)('h' - (a & 7)) + "" + ((a / 8) + 1);
 	}
 	
+	public static char toColumn(int a) {
+		return (char)('h' - (a & 7));
+	}
+	
 	public static int fromSquare(String square) {
 		char a = square.charAt(0);
 		char b = square.charAt(1);
@@ -59,45 +67,5 @@ public final class ChessUtils {
 			case ChessPieceManager.SM_PROMOTION -> "Promotion";
 			default -> "unknown";
 		};
-	}
-	
-	/**
-	 * Check if the board has the specified piece on the mask
-	 */
-	public static boolean hasPiece(ChessBoard board, long mask, int find) {
-		// the mask only contains pieces that belongs to the correct team
-		mask &= (find < 0 ? board.blackMask : board.whiteMask);
-		
-		while (mask != 0) {
-			long pick = Long.lowestOneBit(mask);
-			mask &= ~pick;
-			int idx = Long.numberOfTrailingZeros(pick);
-			
-			if (board.pieces[idx] == find) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Returns the first index of the piece to find
-	 */
-	public static int getFirst(ChessBoard board, long mask, int find) {
-		// the mask only contains pieces that belongs to the correct team
-		mask &= (find < 0 ? board.blackMask :board.whiteMask);
-		
-		while (mask != 0) {
-			long pick = Long.lowestOneBit(mask);
-			mask &= ~pick;
-			int idx = Long.numberOfTrailingZeros(pick);
-			
-			if (board.pieces[idx] == find) {
-				return idx;
-			}
-		}
-		
-		return -1;
 	}
 }

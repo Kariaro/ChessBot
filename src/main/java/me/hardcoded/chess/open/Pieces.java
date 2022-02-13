@@ -79,4 +79,22 @@ public interface Pieces {
 	static String toString(int id) {
 		return STRING_VALUES[Math.abs(id)];
 	}
+	
+	static int fromPrintable(char c) {
+		return switch (c) {
+			case 'p' -> -PAWN;
+			case 'r' -> -ROOK;
+			case 'n' -> -KNIGHT;
+			case 'b' -> -BISHOP;
+			case 'q' -> -QUEEN;
+			case 'k' -> -KING;
+			case 'P' -> PAWN;
+			case 'R' -> ROOK;
+			case 'N' -> KNIGHT;
+			case 'B' -> BISHOP;
+			case 'Q' -> QUEEN;
+			case 'K' -> KING;
+			default -> NONE;
+		};
+	}
 }

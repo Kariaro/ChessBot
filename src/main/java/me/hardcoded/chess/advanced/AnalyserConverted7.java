@@ -1,5 +1,6 @@
 package me.hardcoded.chess.advanced;
 
+import me.hardcoded.chess.api.ChessAnalysis;
 import me.hardcoded.chess.api.ChessMove;
 import me.hardcoded.chess.open.*;
 
@@ -7,6 +8,7 @@ import java.util.*;
 
 public class AnalyserConverted7 {
 	private static final int DEPTH = 3;
+	private static final Random random = new Random();
 	
 	private static Set<ChessMove> getAllMoves(ChessBoard board) {
 		Set<ChessMove> moves = new LinkedHashSet<>();
@@ -48,20 +50,18 @@ public class AnalyserConverted7 {
 		return mat;
 	}
 	
-	public static ScanConverted analyse(ChessBoard board) {
-		return analyseFrom(board.creteCopy(), DEPTH);
-	}
-	
 	private static void log(String format, Object... args) {
 		System.out.printf(format + "\n", args);
 	}
 	
-	private static Random random = new Random();
-	
-	private static ScanConverted analyseFrom(ChessBoard board, int depth) {
-		ScanConverted scan = analyseBranchMoves(board, depth, getAllMoves(board));
+	public static ChessAnalysis analyse(ChessBoard board) {
+		ScanConverted scan = analyseBranchMoves(board.creteCopy(), DEPTH, getAllMoves(board));
 		customizeEnds(scan);
-		return scan;
+		
+		ChessAnalysis analysis = new ChessAnalysis();
+		analysis.setBestMove(scan.best == null ? null : scan.best.move);
+		analysis.setMaterial((int) scan.material());
+		return analysis;
 	}
 	
 	private static int non_developing(ChessBoard board) {
@@ -252,7 +252,7 @@ public class AnalyserConverted7 {
 		}
 	}
 	
-	public static class ScanConverted {
+	private static class ScanConverted {
 		public double base;
 		public boolean draw;
 		public final boolean white;
@@ -288,7 +288,7 @@ public class AnalyserConverted7 {
 		}
 	}
 	
-	public static class MoveConverted implements Comparable<MoveConverted> {
+	private static class MoveConverted implements Comparable<MoveConverted> {
 		public ScanConverted sc;
 		public double material;
 		public ChessMove move;

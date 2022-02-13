@@ -21,7 +21,7 @@ public class ChessBoard {
 	int flags;
 	
 	public ChessBoard() {
-		pieces = new int[] {
+		this.pieces = new int[] {
 			 ROOK,  KNIGHT,  BISHOP,  KING,  QUEEN,  BISHOP,  KNIGHT,  ROOK,
 			 PAWN,    PAWN,    PAWN,  PAWN,   PAWN,    PAWN,    PAWN,  PAWN,
 			    0,       0,       0,     0,      0,       0,       0,     0,
@@ -36,12 +36,15 @@ public class ChessBoard {
 		whiteMask = 0b00000000_00000000_00000000_00000000_00000000_00000000_11111111_11111111L;
 		blackMask = 0b11111111_11111111_00000000_00000000_00000000_00000000_00000000_00000000L;
 		pieceMask = whiteMask | blackMask;
-		flags = 0b1111; // Castling
+		flags = 0b1111;
 		lastCapture = 0;
 		halfMove = 0;
 		lastPawn = 0;
-		
-		initializeMasks();
+	}
+	
+	public ChessBoard(String fen) {
+		this.pieces = new int[64];
+		ChessCodec.FEN.load(this, fen);
 	}
 	
 	private void initializeMasks() {
@@ -101,6 +104,7 @@ public class ChessBoard {
 		copy.blackMask = blackMask;
 		copy.pieceMask = pieceMask;
 		copy.halfMove = halfMove;
+		copy.lastCapture = lastCapture;
 		copy.flags = flags;
 		return copy;
 	}
@@ -127,40 +131,38 @@ public class ChessBoard {
 		pieceMask = whiteMask | blackMask;
 	}
 	
-	@Deprecated
 	public int[] getPieces() {
 		return pieces;
 	}
 	
-	@Deprecated
 	public int getFlags() {
 		return flags;
 	}
 	
-	@Deprecated
 	public int getLastCapture() {
 		return lastCapture;
 	}
 	
-	@Deprecated
 	public int getHalfMove() {
 		return halfMove;
 	}
 	
-	@Deprecated
 	public int getFullMove() {
 		return halfMove / 2;
 	}
 	
-	@Deprecated
 	public int getLastPawn() {
 		return lastPawn;
 	}
 	
-	@Deprecated
-	public void setStates(int flags, int halfMove, int lastPawn) {
+	public void setStates(int flags, int halfMove, int lastPawn, int lastCapture, int[] pieces) {
 		this.flags = flags;
 		this.halfMove = halfMove;
 		this.lastPawn = lastPawn;
+		this.lastCapture = lastCapture;
+		System.arraycopy(pieces, 0, this.pieces, 0, 64);
+		
+		// Recalculate the piece masks
+		recalculateMasks();
 	}
 }

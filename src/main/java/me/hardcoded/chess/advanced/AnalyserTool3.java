@@ -1,9 +1,9 @@
 package me.hardcoded.chess.advanced;
 
-import me.hardcoded.chess.api.ChessAnalyser;
 import me.hardcoded.chess.api.ChessAnalysis;
 import me.hardcoded.chess.api.ChessMove;
 import me.hardcoded.chess.open.Pieces;
+import me.hardcoded.chess.utils.ChessUtils;
 
 public class AnalyserTool3 {
 	// TODO: Even numbers will mess up the algorithm
@@ -213,20 +213,7 @@ public class AnalyserTool3 {
 		
 		public Move(int piece, int from, int to, int special) {
 			super(piece, from, to, special);
-			
 			this.castle = (special & 0b11_0000000) == ChessPieceManager.SM_PROMOTION;
-		}
-		
-		@Override
-		public String toString() {
-			int type = special & 0b11_000000;
-			return switch (type) {
-				case ChessPieceManager.SM_NORMAL -> ChessUtils.toSquare(from) + " " + ChessUtils.toSquare(to);
-				case ChessPieceManager.SM_CASTLING -> ((special & CastlingFlags.ANY_CASTLE_K) != 0) ? "O-O" : "O-O-O";
-				case ChessPieceManager.SM_EN_PASSANT -> ChessUtils.toSquare(from) + " " + ChessUtils.toSquare(to) + " (en passant)";
-				case ChessPieceManager.SM_PROMOTION -> ChessUtils.toSquare(to) + " (promotion)";
-				default -> "";
-			};
 		}
 	}
 	

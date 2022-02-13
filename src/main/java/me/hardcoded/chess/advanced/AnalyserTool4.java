@@ -4,6 +4,7 @@ import me.hardcoded.chess.api.ChessAnalyser;
 import me.hardcoded.chess.api.ChessAnalysis;
 import me.hardcoded.chess.api.ChessMove;
 import me.hardcoded.chess.open.Pieces;
+import me.hardcoded.chess.utils.ChessUtils;
 
 public class AnalyserTool4 implements ChessAnalyser {
 	private final int DEPTH = 4;
@@ -121,6 +122,11 @@ public class AnalyserTool4 implements ChessAnalyser {
 		return result * 3;
 	}
 	
+	public static ChessAnalysis analyseTest(ChessBoard board) {
+		return new AnalyserTool4().analyse(board);
+	}
+	
+	@Override
 	public ChessAnalysis analyse(ChessBoard board) {
 		ChessBoard copy = board.creteCopy();
 		Scanner scanner = analyseBranchMoves(copy, DEPTH, getMaterial(copy));
@@ -201,6 +207,12 @@ public class AnalyserTool4 implements ChessAnalyser {
 				scan.base = 0;
 			}
 		}
+		
+		if (board.getLastCapture() >= 50) {
+			// The game should end
+			scan.base = 0;
+			scan.best = null;
+		}
 	}
 	
 	private static class Move extends ChessMove {
@@ -211,20 +223,7 @@ public class AnalyserTool4 implements ChessAnalyser {
 		
 		public Move(int piece, int from, int to, int special) {
 			super(piece, from, to, special);
-			
 			this.castle = (special & 0b11_0000000) == ChessPieceManager.SM_PROMOTION;
-		}
-		
-		@Override
-		public String toString() {
-			int type = special & 0b11_000000;
-			return switch (type) {
-				case ChessPieceManager.SM_NORMAL -> ChessUtils.toSquare(from) + " " + ChessUtils.toSquare(to);
-				case ChessPieceManager.SM_CASTLING -> ((special & CastlingFlags.ANY_CASTLE_K) != 0) ? "O-O" : "O-O-O";
-				case ChessPieceManager.SM_EN_PASSANT -> ChessUtils.toSquare(from) + " " + ChessUtils.toSquare(to) + " (en passant)";
-				case ChessPieceManager.SM_PROMOTION -> ChessUtils.toSquare(to) + " (promotion)";
-				default -> "";
-			};
 		}
 	}
 	

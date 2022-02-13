@@ -129,17 +129,19 @@ public class ChessPieceManager {
 		int ypos = idx >> 3;
 		int xpos = idx & 7;
 		
-		result |= step & ~board.pieceMask;
-		if (result != 0 && ypos == 1) { // Pawn jump
-			result |= (step << 8L) & ~board.pieceMask;
-		}
-		
-		if (xpos > 0) { // Takes
-			result |= board.blackMask & (step >>> 1);
-		}
-		
-		if (xpos < 7) {
-			result |= board.blackMask & (step << 1);
+		if (ypos < 6) {
+			result |= step & ~board.pieceMask;
+			if (result != 0 && ypos == 1) { // Pawn jump
+				result |= (step << 8L) & ~board.pieceMask;
+			}
+			
+			if (xpos > 0) { // Takes
+				result |= board.blackMask & (step >>> 1);
+			}
+			
+			if (xpos < 7) {
+				result |= board.blackMask & (step << 1);
+			}
 		}
 		
 		return result;
@@ -156,17 +158,19 @@ public class ChessPieceManager {
 		// TODO: Do not give any move suggestions for the eights or first rank because that's where the promotion bit
 		//       will be set
 		
-		result |= step & ~board.pieceMask;
-		if (result != 0 && ypos == 6) { // Pawn jump
-			result |= (step >>> 8L) & ~board.pieceMask;
-		}
-		
-		if (xpos > 0) { // Takes
-			result |= board.whiteMask & (step >>> 1);
-		}
-		
-		if (xpos < 7) {
-			result |= board.whiteMask & (step << 1);
+		if (ypos > 1) {
+			result |= step & ~board.pieceMask;
+			if (result != 0 && ypos == 6) { // Pawn jump
+				result |= (step >>> 8L) & ~board.pieceMask;
+			}
+			
+			if (xpos > 0) { // Takes
+				result |= board.whiteMask & (step >>> 1);
+			}
+			
+			if (xpos < 7) {
+				result |= board.whiteMask & (step << 1);
+			}
 		}
 		
 		return result;
@@ -192,7 +196,7 @@ public class ChessPieceManager {
 			// ....p.PR
 			
 			int lyp = board.lastPawn >> 3;
-			if (lyp == 4) {
+			if (lyp == 5) {
 				int lxp = board.lastPawn & 7;
 				if (xpos - 1 == lxp) {
 					return (idx + 7) | SM_EN_PASSANT;
@@ -246,7 +250,7 @@ public class ChessPieceManager {
 			// .p.P...R
 			
 			int lyp = board.lastPawn >> 3;
-			if (lyp == 3) {
+			if (lyp == 2) {
 				int lxp = board.lastPawn & 7;
 				if (xpos - 1 == lxp) {
 					return (idx - 9) | SM_EN_PASSANT;
@@ -349,17 +353,17 @@ public class ChessPieceManager {
 			}
 			
 			long knight_move = (knight_move(board, idx) & ~board.whiteMask) & board.blackMask;
-			if (ChessUtils.hasPiece(board, knight_move, -Pieces.KNIGHT)) {
+			if (hasPiece(board, knight_move, -Pieces.KNIGHT)) {
 				return true;
 			}
 			
 			long king_move = (king_move(board, idx) & ~board.whiteMask) & board.blackMask;
-			if (ChessUtils.hasPiece(board, king_move, -Pieces.KING)) {
+			if (hasPiece(board, king_move, -Pieces.KING)) {
 				return true;
 			}
 			
 			long pawn_move = pawn_attack(board, false, idx) & board.blackMask;
-			return ChessUtils.hasPiece(board, pawn_move, -Pieces.PAWN);
+			return hasPiece(board, pawn_move, -Pieces.PAWN);
 		} else {
 			long rook_move = (rook_move(board, idx) & ~board.blackMask) & board.whiteMask;
 			if (hasTwoPiece(board, rook_move, Pieces.ROOK, Pieces.QUEEN)) {
@@ -372,18 +376,45 @@ public class ChessPieceManager {
 			}
 			
 			long knight_move = (knight_move(board, idx) & ~board.blackMask) & board.whiteMask;
-			if (ChessUtils.hasPiece(board, knight_move, Pieces.KNIGHT)) {
+			if (hasPiece(board, knight_move, Pieces.KNIGHT)) {
 				return true;
 			}
 			
 			long king_move = (king_move(board, idx) & ~board.blackMask) & board.whiteMask;
-			if (ChessUtils.hasPiece(board, king_move, Pieces.KING)) {
+			if (hasPiece(board, king_move, Pieces.KING)) {
 				return true;
 			}
 			
 			long pawn_move = pawn_attack(board, true, idx) & board.whiteMask;
-			return ChessUtils.hasPiece(board, pawn_move, Pieces.PAWN);
+			return hasPiece(board, pawn_move, Pieces.PAWN);
 		}
+	}
+	
+	public static boolean isKingAttacked(ChessBoard board, boolean isWhite) {
+		int old = board.halfMove;
+		int idx;
+		board.halfMove = isWhite ? 0 : 1;
+		
+		// Find the king
+		if (isWhite) {
+			idx = getFirst(board, board.whiteMask, Pieces.KING);
+		} else {
+			idx = getFirst(board, board.blackMask, -Pieces.KING);
+		}
+		
+		if (idx == -1) {
+			// If the king does not exist we will allow this?
+			// ChessGenerator.debug("Invalid", board.pieces);
+			return false;
+		}
+		
+		if (isAttacked(board, idx)) {
+			board.halfMove = old;
+			return true;
+		}
+		
+		board.halfMove = old;
+		return false;
 	}
 	
 	private static boolean hasTwoPiece(ChessBoard board, long mask, int findA, int findB) {
@@ -404,30 +435,37 @@ public class ChessPieceManager {
 		return false;
 	}
 	
-	public static boolean isKingAttacked(ChessBoard board, boolean isWhite) {
-		int old = board.halfMove;
-		int idx;
-		board.halfMove = isWhite ? 0 : 1;
+	private static boolean hasPiece(ChessBoard board, long mask, int find) {
+		// the mask only contains pieces that belongs to the correct team
+		mask &= (find < 0 ? board.blackMask : board.whiteMask);
 		
-		// Find the king
-		if (isWhite) {
-			idx = ChessUtils.getFirst(board, board.whiteMask, Pieces.KING);
-		} else {
-			idx = ChessUtils.getFirst(board, board.blackMask, -Pieces.KING);
+		while (mask != 0) {
+			long pick = Long.lowestOneBit(mask);
+			mask &= ~pick;
+			int idx = Long.numberOfTrailingZeros(pick);
+			
+			if (board.pieces[idx] == find) {
+				return true;
+			}
 		}
 		
-		if (idx == -1) {
-			// If the king does not exist we will allow this?
-			// ChessGenerator.debug("Invalid", board.pieces);
-			return true;
+		return false;
+	}
+	
+	private static int getFirst(ChessBoard board, long mask, int find) {
+		// the mask only contains pieces that belongs to the correct team
+		mask &= (find < 0 ? board.blackMask :board.whiteMask);
+		
+		while (mask != 0) {
+			long pick = Long.lowestOneBit(mask);
+			mask &= ~pick;
+			int idx = Long.numberOfTrailingZeros(pick);
+			
+			if (board.pieces[idx] == find) {
+				return idx;
+			}
 		}
 		
-		if (isAttacked(board, idx)) {
-			board.halfMove = old;
-			return false;
-		}
-		
-		board.halfMove = old;
-		return true;
+		return -1;
 	}
 }

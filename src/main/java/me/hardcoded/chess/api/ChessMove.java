@@ -2,7 +2,7 @@ package me.hardcoded.chess.api;
 
 import me.hardcoded.chess.advanced.CastlingFlags;
 import me.hardcoded.chess.advanced.ChessPieceManager;
-import me.hardcoded.chess.advanced.ChessUtils;
+import me.hardcoded.chess.utils.ChessUtils;
 
 /**
  * This class is a storage class for a chess move.

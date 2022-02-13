@@ -4,6 +4,10 @@ import me.hardcoded.chess.api.ChessMove;
 import me.hardcoded.chess.open.Pieces;
 
 import javax.swing.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class will generate all moves possible
@@ -23,6 +27,22 @@ public class ChessGenerator {
 		}
 		
 		return material;
+	}
+	
+	public static Map<Integer, Set<ChessMove>> generateGuiMoves(ChessBoard board) {
+		final Map<Integer, Set<ChessMove>> moves = new HashMap<>();
+		
+		generate(board, true, (fromIdx, toIdx, special) -> {
+			if (!isValid(board, fromIdx, toIdx, special)) {
+				return true;
+			}
+			
+			int piece = board.getPiece(fromIdx);
+			moves.computeIfAbsent(fromIdx, v -> new HashSet<>()).add(new ChessMove(piece, fromIdx, toIdx, special));
+			return true;
+		});
+		
+		return moves;
 	}
 	
 	public static void generate(ChessBoard board, ChessConsumer consumer) {
@@ -71,10 +91,10 @@ public class ChessGenerator {
 					// Split the castling moves up into multiple moves
 					int specialFlag;
 					if ((specialFlag = (special & CastlingFlags.ANY_CASTLE_K)) != 0) {
-						stopRunning = stopRunning || !consumer.accept(idx, 0, ChessPieceManager.SM_CASTLING | specialFlag);
+						stopRunning = stopRunning || !consumer.accept(idx, idx - 2, ChessPieceManager.SM_CASTLING | specialFlag);
 					}
 					if ((specialFlag = (special & CastlingFlags.ANY_CASTLE_Q)) != 0) {
-						stopRunning = stopRunning || !consumer.accept(idx, 0, ChessPieceManager.SM_CASTLING | specialFlag);
+						stopRunning = stopRunning || !consumer.accept(idx, idx + 2, ChessPieceManager.SM_CASTLING | specialFlag);
 					}
 				} else if (type == ChessPieceManager.SM_EN_PASSANT) {
 					stopRunning = stopRunning || !consumer.accept(idx, special & 0b111111, special);
@@ -123,7 +143,7 @@ public class ChessGenerator {
 			board.setPiece(fromIdx, Pieces.NONE);
 			board.setPiece(toIdx, oldFrom);
 			
-			boolean isValid = ChessPieceManager.isKingAttacked(board, isWhite);
+			boolean isValid = !ChessPieceManager.isKingAttacked(board, isWhite);
 			
 			board.setPiece(fromIdx, oldFrom);
 			board.setPiece(toIdx, oldTo);
@@ -158,7 +178,7 @@ public class ChessGenerator {
 					board.setPiece(remIdx, Pieces.NONE);
 					board.setPiece(toIdx, oldFrom);
 					
-					boolean isValid = ChessPieceManager.isKingAttacked(board, isWhite);
+					boolean isValid = !ChessPieceManager.isKingAttacked(board, isWhite);
 					
 					board.setPiece(fromIdx, oldFrom);
 					board.setPiece(remIdx, oldRem);
@@ -174,7 +194,7 @@ public class ChessGenerator {
 					board.setPiece(fromIdx, Pieces.NONE);
 					board.setPiece(toIdx, oldFrom);
 					
-					boolean isValid = ChessPieceManager.isKingAttacked(board, isWhite);
+					boolean isValid = !ChessPieceManager.isKingAttacked(board, isWhite);
 					
 					board.setPiece(fromIdx, oldFrom);
 					board.setPiece(toIdx, oldTo);
@@ -196,8 +216,9 @@ public class ChessGenerator {
 		final int mul = isWhite ? 1 : -1;
 		
 		// Increase moves since last capture
-		board.lastCapture++;
-		board.halfMove++;
+		int oldCapture = board.lastCapture++;
+		int oldHalfMove = board.halfMove++;
+		int oldLastPawn = board.lastPawn;
 		board.lastPawn = 0;
 		
 		switch (special & 0b11000000) {
@@ -243,7 +264,7 @@ public class ChessGenerator {
 						
 						// Because double pawns jump two rows they will always have a distance of 256
 						if (distance == 256) {
-							board.lastPawn = toIdx;
+							board.lastPawn = toIdx + (isWhite ? -8 : 8);
 						}
 						
 						board.lastCapture = 0;
@@ -321,6 +342,9 @@ public class ChessGenerator {
 					}
 					default -> {
 						// Invalid move
+						board.lastCapture = oldCapture;
+						board.lastPawn = oldLastPawn;
+						board.halfMove = oldHalfMove;
 						return false;
 					}
 				}

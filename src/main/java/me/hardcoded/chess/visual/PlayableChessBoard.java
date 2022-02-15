@@ -4,8 +4,8 @@ import me.hardcoded.chess.advanced.ChessBoard;
 import me.hardcoded.chess.advanced.ChessGenerator;
 import me.hardcoded.chess.advanced.ChessPieceManager;
 import me.hardcoded.chess.api.ChessMove;
-import me.hardcoded.chess.open.ChessUtils;
 import me.hardcoded.chess.open.Pieces;
+import me.hardcoded.chess.utils.ReadReset;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -102,6 +102,7 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 	 * This field contains a map of player moves.
 	 *
 	 * Creating a local reference copy of this object before using it.
+	 * This field must never be {@code null}
 	 */
 	private Map<Integer, Set<ChessMove>> playerMoves;
 	
@@ -113,7 +114,7 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 	/**
 	 * This field contains the move that was played by the player.
 	 */
-	private ChessMove playerMove;
+	private final ReadReset<ChessMove> playerMoveTest;
 	
 	static {
 		try {
@@ -149,6 +150,8 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 		this.draggedPosition = new Point();
 		this.draggedIndex = -1;
 		this.playerSelection = -1;
+		this.playerMoveTest = new ReadReset<>();
+		this.playerMoves = Map.of();
 		
 		// Default settings
 		this.whitePov = true;
@@ -269,6 +272,7 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (isDisplayable()) {
+			// Only repaint when we need
 			repaint();
 		}
 	}
@@ -309,6 +313,7 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 			}
 		}
 		
+		// Paint pieces
 		if (board != null) {
 			for (int i = 0; i < 64; i++) {
 				if (i == draggedIndex) {
@@ -420,10 +425,16 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 		}
 		
 		awaitPlayer = true;
-		playerMove = null;
+		playerMoveTest.read();
 		
 		// Display the allowed player moves
-		Map<Integer, Set<ChessMove>> moves = ChessGenerator.generateGuiMoves(board);
+		Map<Integer, Set<ChessMove>> moves = new HashMap<>();
+		{
+			Set<ChessMove> allMoves = ChessGenerator.generateGuiMoves(board);
+			for (ChessMove move : allMoves) {
+				moves.computeIfAbsent(move.from, v -> new HashSet<>()).add(move);
+			}
+		}
 		playerMoves = Collections.unmodifiableMap(moves);
 		
 		ChessMove move;
@@ -444,16 +455,16 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 						}
 					}
 					
-					setTargets(mask);
+					movesMask = mask;
+					repaint();
 					continue;
 				}
 				
 				// A player move was selected
-				move = playerMove;
+				move = playerMoveTest.read();
 				if (move != null) {
 					if (!ChessGenerator.playMove(board, move)) {
 						// The move was invalid so we try again
-						playerMove = null;
 						continue;
 					}
 					
@@ -464,8 +475,7 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 			move = null;
 		}
 		
-		playerMove = null;
-		playerMoves = null;
+		playerMoves = Map.of();
 		awaitPlayer = false;
 		movesMask = 0;
 		return move;
@@ -476,29 +486,9 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 			return;
 		}
 		
-		Map<Integer, Set<ChessMove>> moves = playerMoves;
-		if (moves == null) {
-			return;
-		}
-		
-		Set<ChessMove> set = moves.get(from);
-		if (set == null) {
-			return;
-		}
-		
-		// TODO: Promotion requires one extra UI elements
-		ChessMove move = null;
-		for (ChessMove m : set) {
-			if (m.from == from && m.to == to) {
-				if (move != null) {
-					System.out.println(move);
-					System.out.println(m);
-					throw new RuntimeException("Multiple moves!");
-				}
-				
-				move = m;
-			}
-		}
+		// There should not be multiple moves possible
+		ChessMove move = playerMoves.getOrDefault(from, Set.of())
+			.stream().filter(m -> m.from == from && m.to == to).findFirst().orElse(null);
 		
 		if (move == null) {
 			return;
@@ -529,8 +519,13 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 			move = new ChessMove(move.piece, move.from, move.to, ChessPieceManager.SM_PROMOTION | value);
 		}
 		
+		// Validate the move
+		if (!ChessGenerator.isValid(board, move)) {
+			return;
+		}
+		
 		// Remove the awaited move
-		playerMove = move;
+		playerMoveTest.write(move);
 	}
 	
 	@Deprecated

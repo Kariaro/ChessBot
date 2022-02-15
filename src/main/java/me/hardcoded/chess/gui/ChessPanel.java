@@ -34,7 +34,7 @@ public class ChessPanel extends JPanel {
 	private Set<Move> moves;
 	private ScanOld scan;
 	private int size;
-	private ChessAudio audio;
+	private ChessSoundClip audio;
 	
 	private ChessListener listener;
 	private Chess board;
@@ -215,7 +215,7 @@ public class ChessPanel extends JPanel {
 		setBackground(Color.gray);
 		
 		try {
-			audio = new ChessAudio();
+			audio = new ChessSoundClip("/chess_move.wav");
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -254,7 +254,7 @@ public class ChessPanel extends JPanel {
 		this.scan = scan;
 	}
 	
-	public ChessAudio getAudio() {
+	public ChessSoundClip getAudio() {
 		return audio;
 	}
 	

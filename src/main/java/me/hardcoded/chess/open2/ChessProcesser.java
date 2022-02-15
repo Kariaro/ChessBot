@@ -16,7 +16,7 @@ public class ChessProcesser {
 		}
 		Set<Move> moves = new HashSet<>();
 		
-		switch(ChessUtils.toPiece(pieceId)) {
+		switch(ChessUtilsOld.toPiece(pieceId)) {
 			case PAWN -> getPawnMoves(board, moves, pieceId, index);
 			case KNIGHT -> getKnightMoves(board, moves, pieceId, index);
 			case BISHOP -> getBishopMoves(board, moves, pieceId, index);

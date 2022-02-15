@@ -2,6 +2,7 @@ package me.hardcoded.chess.api;
 
 import me.hardcoded.chess.advanced.CastlingFlags;
 import me.hardcoded.chess.advanced.ChessPieceManager;
+import me.hardcoded.chess.open.Pieces;
 import me.hardcoded.chess.utils.ChessUtils;
 
 /**
@@ -47,7 +48,7 @@ public class ChessMove {
 	public String toString() {
 		int type = special & 0b11_000000;
 		return switch (type) {
-			case ChessPieceManager.SM_NORMAL -> ChessUtils.toSquare(from) + "" + ChessUtils.toSquare(to);
+			case ChessPieceManager.SM_NORMAL -> Pieces.printable(piece) + "" + ChessUtils.toSquare(from) + "" + ChessUtils.toSquare(to);
 			case ChessPieceManager.SM_CASTLING -> ((special & CastlingFlags.ANY_CASTLE_K) != 0) ? "O-O" : "O-O-O";
 			case ChessPieceManager.SM_EN_PASSANT -> ChessUtils.toSquare(from) + "" + ChessUtils.toSquare(to) + " (en passant)";
 			case ChessPieceManager.SM_PROMOTION -> ChessUtils.toSquare(to) + " (promotion)";

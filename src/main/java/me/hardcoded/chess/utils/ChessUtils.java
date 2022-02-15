@@ -1,7 +1,6 @@
 package me.hardcoded.chess.utils;
 
 import me.hardcoded.chess.advanced.CastlingFlags;
-import me.hardcoded.chess.advanced.ChessBoard;
 import me.hardcoded.chess.advanced.ChessPieceManager;
 
 public final class ChessUtils {
@@ -34,7 +33,7 @@ public final class ChessUtils {
 	}
 	
 	public static String toSquare(int a) {
-		return (char)('h' - (a & 7)) + "" + ((a / 8) + 1);
+		return toFileChar(a & 7) + "" + toRankChar(a >> 3);
 	}
 	
 	public static char toColumn(int a) {
@@ -45,6 +44,14 @@ public final class ChessUtils {
 		char a = square.charAt(0);
 		char b = square.charAt(1);
 		return ('h' - a) + ((b - '1') << 3);
+	}
+	
+	public static char toRankChar(int i) {
+		return (char)(i + '1');
+	}
+	
+	public static char toFileChar(int i) {
+		return (char)('h' - i);
 	}
 	
 	public static String toCastlingMove(int fields) {

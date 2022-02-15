@@ -62,7 +62,7 @@ public class ChessWindow implements Runnable {
 				return;
 			}
 			
-			System.out.println("Selected: " + ChessUtils.toSquare(idx));
+			System.out.println("Selected: " + ChessUtilsOld.toSquare(idx));
 			Move move = getMove(idx);
 			if(move == null) {
 				selectedIndex = idx;

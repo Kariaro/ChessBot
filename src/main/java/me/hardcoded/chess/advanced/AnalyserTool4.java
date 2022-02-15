@@ -4,7 +4,6 @@ import me.hardcoded.chess.api.ChessAnalyser;
 import me.hardcoded.chess.api.ChessAnalysis;
 import me.hardcoded.chess.api.ChessMove;
 import me.hardcoded.chess.open.Pieces;
-import me.hardcoded.chess.utils.ChessUtils;
 
 public class AnalyserTool4 implements ChessAnalyser {
 	private final int DEPTH = 4;
@@ -193,8 +192,8 @@ public class AnalyserTool4 implements ChessAnalyser {
 	}
 	
 	private void evaluate(ChessBoard board, Scanner scan) {
-		if (ChessPieceManager.isKingAttacked(board, !scan.white)) {
-			double delta = scan.white ? -1 : 1;
+		if (ChessPieceManager.isKingAttacked(board, board.isWhite())) {
+			double delta = board.isWhite() ? -1 : 1;
 			scan.base += 10 * delta;
 			
 			if (scan.best == null) {

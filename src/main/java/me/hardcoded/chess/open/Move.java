@@ -54,9 +54,9 @@ public class Move {
 	
 	@Override
 	public String toString() {
-		Piece piece = ChessUtils.toPiece(pieceId);
+		Piece piece = ChessUtilsOld.toPiece(pieceId);
 		
-		String square = ChessUtils.toSquare(from) + ChessUtils.toSquare(to);
+		String square = ChessUtilsOld.toSquare(from) + ChessUtilsOld.toSquare(to);
 		if(action == Action.PROMOTE) {
 			return square + piece.letter();
 		}

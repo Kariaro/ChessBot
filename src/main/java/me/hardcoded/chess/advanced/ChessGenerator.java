@@ -4,9 +4,7 @@ import me.hardcoded.chess.api.ChessMove;
 import me.hardcoded.chess.open.Pieces;
 
 import javax.swing.*;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -15,22 +13,8 @@ import java.util.Set;
  * @author HardCoded
  */
 public class ChessGenerator {
-	public static int material(ChessBoard board) {
-		long mask = board.pieceMask;
-		int material = 0;
-		
-		while (mask != 0) {
-			long pick = Long.lowestOneBit(mask);
-			mask &= ~pick;
-			int idx = Long.numberOfTrailingZeros(pick);
-			material += Pieces.value(board.pieces[idx]);
-		}
-		
-		return material;
-	}
-	
-	public static Map<Integer, Set<ChessMove>> generateGuiMoves(ChessBoard board) {
-		final Map<Integer, Set<ChessMove>> moves = new HashMap<>();
+	public static Set<ChessMove> generateGuiMoves(ChessBoard board) {
+		final Set<ChessMove> moves = new HashSet<>();
 		
 		generate(board, true, (fromIdx, toIdx, special) -> {
 			if (!isValid(board, fromIdx, toIdx, special)) {
@@ -38,7 +22,7 @@ public class ChessGenerator {
 			}
 			
 			int piece = board.getPiece(fromIdx);
-			moves.computeIfAbsent(fromIdx, v -> new HashSet<>()).add(new ChessMove(piece, fromIdx, toIdx, special));
+			moves.add(new ChessMove(piece, fromIdx, toIdx, special));
 			return true;
 		});
 		
@@ -133,6 +117,10 @@ public class ChessGenerator {
 		}
 	}
 	
+	public static boolean isValid(ChessBoard board, ChessMove move) {
+		return move != null && isValid(board, move.from, move.to, move.special);
+	}
+	
 	public static boolean isValid(ChessBoard board, int fromIdx, int toIdx, int special) {
 		final boolean isWhite = board.isWhite();
 		
@@ -150,7 +138,6 @@ public class ChessGenerator {
 			
 			return isValid;
 		} else {
-			// TODO: Check if castling is valid
 			int type = special & 0b11000000;
 			
 			switch (type) {
@@ -216,10 +203,9 @@ public class ChessGenerator {
 		final int mul = isWhite ? 1 : -1;
 		
 		// Increase moves since last capture
-		int oldCapture = board.lastCapture++;
-		int oldHalfMove = board.halfMove++;
-		int oldLastPawn = board.lastPawn;
-		board.lastPawn = 0;
+		int nextLastCapture = board.lastCapture + 1;
+		int nextHalfMove = board.halfMove + 1;
+		int nextLastPawn = 0;
 		
 		switch (special & 0b11000000) {
 			case ChessPieceManager.SM_NORMAL -> {
@@ -264,16 +250,16 @@ public class ChessGenerator {
 						
 						// Because double pawns jump two rows they will always have a distance of 256
 						if (distance == 256) {
-							board.lastPawn = toIdx + (isWhite ? -8 : 8);
+							nextLastPawn = toIdx + (isWhite ? -8 : 8);
 						}
 						
-						board.lastCapture = 0;
+						nextLastCapture = 0;
 					}
 				}
 				
 				if (oldTo != Pieces.NONE) {
 					// Capture
-					board.lastCapture = 0;
+					nextLastCapture = 0;
 				}
 				
 				if (board.flags != 0) {
@@ -307,7 +293,6 @@ public class ChessGenerator {
 					board.setPiece(fromIdx - 2, Pieces.KING * mul);
 					board.setPiece(fromIdx - 1, Pieces.ROOK * mul);
 					board.setPiece(fromIdx, Pieces.NONE);
-					
 					board.flags &= isWhite ? ~CastlingFlags.WHITE_CASTLE_ANY : ~CastlingFlags.BLACK_CASTLE_ANY;
 				}
 				
@@ -316,7 +301,6 @@ public class ChessGenerator {
 					board.setPiece(fromIdx + 2, Pieces.KING * mul);
 					board.setPiece(fromIdx + 1, Pieces.ROOK * mul);
 					board.setPiece(fromIdx, Pieces.NONE);
-					
 					board.flags &= isWhite ? ~CastlingFlags.WHITE_CASTLE_ANY : ~CastlingFlags.BLACK_CASTLE_ANY;
 				}
 			}
@@ -325,32 +309,35 @@ public class ChessGenerator {
 				int oldFrom = board.pieces[fromIdx];
 				int remIdx = toIdx + (isWhite ? -8 : 8);
 				
-				board.lastCapture = 0;
+				nextLastCapture = 0;
 				board.setPiece(fromIdx, Pieces.NONE);
 				board.setPiece(remIdx, Pieces.NONE);
 				board.setPiece(toIdx, oldFrom);
 			}
 			
 			case ChessPieceManager.SM_PROMOTION -> {
-				// TODO: Remove magic values
 				int piece = (special & 0b111000) >>> 3;
 				
 				switch (piece) {
 					case Pieces.QUEEN, Pieces.BISHOP, Pieces.KNIGHT, Pieces.ROOK -> {
+						int oldFrom = board.pieces[fromIdx];
 						board.setPiece(fromIdx, Pieces.NONE);
 						board.setPiece(toIdx, piece * mul);
+						
+						if (oldFrom != 0) {
+							nextLastCapture = 0;
+						}
 					}
 					default -> {
-						// Invalid move
-						board.lastCapture = oldCapture;
-						board.lastPawn = oldLastPawn;
-						board.halfMove = oldHalfMove;
 						return false;
 					}
 				}
 			}
 		}
 		
+		board.lastCapture = nextLastCapture;
+		board.lastPawn = nextLastPawn;
+		board.halfMove = nextHalfMove;
 		return true;
 	}
 	

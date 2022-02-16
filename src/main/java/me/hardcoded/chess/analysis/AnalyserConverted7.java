@@ -1,6 +1,8 @@
-package me.hardcoded.chess.advanced;
+package me.hardcoded.chess.analysis;
 
+import me.hardcoded.chess.advanced.*;
 import me.hardcoded.chess.api.ChessAnalysis;
+import me.hardcoded.chess.api.ChessBoard;
 import me.hardcoded.chess.api.ChessMove;
 import me.hardcoded.chess.open.*;
 
@@ -10,7 +12,7 @@ public class AnalyserConverted7 {
 	private static final int DEPTH = 3;
 	private static final Random random = new Random();
 	
-	private static Set<ChessMove> getAllMoves(ChessBoard board) {
+	private static Set<ChessMove> getAllMoves(ChessBoardImpl board) {
 		Set<ChessMove> moves = new LinkedHashSet<>();
 		
 		ChessGenerator.generate(board, false, (fromIdx, toIdx, special) -> {
@@ -25,7 +27,7 @@ public class AnalyserConverted7 {
 		return moves;
 	}
 	
-	public static int getMaterial(ChessBoard b) {
+	public static int getMaterial(ChessBoardImpl b) {
 		int mat = 0;
 		if (b.hasFlags(CastlingFlags.BLACK_CASTLE_K)) mat -= 6;
 		if (b.hasFlags(CastlingFlags.BLACK_CASTLE_Q)) mat -= 6;
@@ -55,7 +57,8 @@ public class AnalyserConverted7 {
 	}
 	
 	public static ChessAnalysis analyse(ChessBoard board) {
-		ScanConverted scan = analyseBranchMoves(board.creteCopy(), DEPTH, getAllMoves(board));
+		ChessBoardImpl b = (ChessBoardImpl)board;
+		ScanConverted scan = analyseBranchMoves(b.creteCopy(), DEPTH, getAllMoves(b));
 		customizeEnds(scan);
 		
 		ChessAnalysis analysis = new ChessAnalysis();
@@ -64,7 +67,7 @@ public class AnalyserConverted7 {
 		return analysis;
 	}
 	
-	private static int non_developing(ChessBoard board) {
+	private static int non_developing(ChessBoardImpl board) {
 		int result = 0;
 		if (board.getPiece(1) == Pieces.KNIGHT) result -= 10;
 		if (board.getPiece(2) == Pieces.BISHOP) result -= 10;
@@ -128,7 +131,7 @@ public class AnalyserConverted7 {
 		return result * 3;
 	}
 	
-	private static ScanConverted analyseBranchMoves(ChessBoard board, int depth, Set<ChessMove> moves) {
+	private static ScanConverted analyseBranchMoves(ChessBoardImpl board, int depth, Set<ChessMove> moves) {
 		// Create a new scanner container
 		ScanConverted scan = new ScanConverted(board);
 		
@@ -208,7 +211,7 @@ public class AnalyserConverted7 {
 		
 	}
 	
-	private static void evaluate(ChessBoard board, ScanConverted scan) {
+	private static void evaluate(ChessBoardImpl board, ScanConverted scan) {
 		List<MoveConverted> evaluation = scan.branches;
 		
 		if (!evaluation.isEmpty()) {
@@ -265,12 +268,12 @@ public class AnalyserConverted7 {
 		 */
 		public MoveConverted best;
 		
-		public ScanConverted(ChessBoard board) {
+		public ScanConverted(ChessBoardImpl board) {
 			this.base = getMaterial(board);
 			this.white = board.isWhite();
 		}
 		
-		public ScanConverted(ChessBoard board, Set<Move> enemy, Set<Move> moves) {
+		public ScanConverted(ChessBoardImpl board, Set<Move> enemy, Set<Move> moves) {
 			this.base = getMaterial(board);
 			this.white = board.isWhite();
 		}

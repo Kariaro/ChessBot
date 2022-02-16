@@ -1,6 +1,6 @@
 package me.hardcoded.chess.api;
 
-import me.hardcoded.chess.advanced.ChessBoard;
+import me.hardcoded.chess.advanced.ChessBoardImpl;
 
 /**
  * This class is an interface for how chess analysers should be constructed.
@@ -14,5 +14,5 @@ public interface ChessAnalyser {
 	 *
 	 * @param board the board to analyze
 	 */
-	ChessAnalysis analyse(ChessBoard board);
+	ChessAnalysis analyse(ChessBoardImpl board);
 }

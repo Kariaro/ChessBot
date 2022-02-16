@@ -1,5 +1,6 @@
 package me.hardcoded.chess.advanced;
 
+import me.hardcoded.chess.api.ChessBoard;
 import me.hardcoded.chess.api.ChessMove;
 import me.hardcoded.chess.open.Pieces;
 
@@ -37,13 +38,14 @@ public class ChessGenerator {
 	 * If gui promotion is {@code true} then only one move will be shown for promotion instead of all piece types
 	 */
 	public static void generate(ChessBoard board, boolean guiPromotion, ChessConsumer consumer) {
-		boolean isWhite = board.isWhite();
+		final ChessBoardImpl b = (ChessBoardImpl)board;
+		boolean isWhite = b.isWhite();
 		
 		long mask;
 		if (isWhite) {
-			mask = board.whiteMask;
+			mask = b.whiteMask;
 		} else {
-			mask = board.blackMask;
+			mask = b.blackMask;
 		}
 		
 		boolean stopRunning = false;
@@ -58,8 +60,8 @@ public class ChessGenerator {
 			mask &= ~pick;
 			int idx = Long.numberOfTrailingZeros(pick);
 			
-			int piece = board.pieces[idx];
-			long moves = ChessPieceManager.piece_move(board, piece, idx);
+			int piece = b.pieces[idx];
+			long moves = ChessPieceManager.piece_move(b, piece, idx);
 			
 			while (moves != 0) {
 				long move_bit = Long.lowestOneBit(moves);
@@ -69,7 +71,7 @@ public class ChessGenerator {
 			}
 			
 			if (piece * piece == 1 || piece * piece == 36) {
-				int special = (int) ChessPieceManager.special_piece_move(board, piece, isWhite, idx);
+				int special = (int) ChessPieceManager.special_piece_move(b, piece, isWhite, idx);
 				int type = special & 0b11000000;
 				if (type == ChessPieceManager.SM_CASTLING) {
 					// Split the castling moves up into multiple moves
@@ -121,7 +123,8 @@ public class ChessGenerator {
 		return move != null && isValid(board, move.from, move.to, move.special);
 	}
 	
-	public static boolean isValid(ChessBoard board, int fromIdx, int toIdx, int special) {
+	public static boolean isValid(ChessBoard chessBoard, int fromIdx, int toIdx, int special) {
+		final ChessBoardImpl board = (ChessBoardImpl)chessBoard;
 		final boolean isWhite = board.isWhite();
 		
 		if (special == 0) {
@@ -199,48 +202,49 @@ public class ChessGenerator {
 	}
 	
 	public static boolean playMove(ChessBoard board, int fromIdx, int toIdx, int special) {
-		final boolean isWhite = board.isWhite();
+		final ChessBoardImpl b = (ChessBoardImpl)board;
+		final boolean isWhite = b.isWhite();
 		final int mul = isWhite ? 1 : -1;
 		
 		// Increase moves since last capture
-		int nextLastCapture = board.lastCapture + 1;
-		int nextHalfMove = board.halfMove + 1;
+		int nextLastCapture = b.lastCapture + 1;
+		int nextHalfMove = b.halfMove + 1;
 		int nextLastPawn = 0;
 		
 		switch (special & 0b11000000) {
 			case ChessPieceManager.SM_NORMAL -> {
-				int oldFrom = board.pieces[fromIdx];
-				int oldTo = board.pieces[toIdx];
+				int oldFrom = b.pieces[fromIdx];
+				int oldTo = b.pieces[toIdx];
 				int pieceSq = oldFrom * oldFrom;
 				
 				switch (pieceSq) {
 					case Pieces.ROOK_SQ -> {
 						if (isWhite) {
 							if (fromIdx == CastlingFlags.WHITE_ROOK_K) {
-								board.flags &= ~CastlingFlags.WHITE_CASTLE_K;
+								b.flags &= ~CastlingFlags.WHITE_CASTLE_K;
 							}
 							
 							if (fromIdx == CastlingFlags.WHITE_ROOK_Q) {
-								board.flags &= ~CastlingFlags.WHITE_CASTLE_Q;
+								b.flags &= ~CastlingFlags.WHITE_CASTLE_Q;
 							}
 						} else {
 							if (fromIdx == CastlingFlags.BLACK_ROOK_K) {
-								board.flags &= ~CastlingFlags.BLACK_CASTLE_K;
+								b.flags &= ~CastlingFlags.BLACK_CASTLE_K;
 							}
 							
 							if (fromIdx == CastlingFlags.BLACK_ROOK_Q) {
-								board.flags &= ~CastlingFlags.BLACK_CASTLE_Q;
+								b.flags &= ~CastlingFlags.BLACK_CASTLE_Q;
 							}
 						}
 					}
 					case Pieces.KING_SQ -> {
 						if (isWhite) {
 							if (fromIdx == CastlingFlags.WHITE_KING) {
-								board.flags &= ~CastlingFlags.WHITE_CASTLE_ANY;
+								b.flags &= ~CastlingFlags.WHITE_CASTLE_ANY;
 							}
 						} else {
 							if (fromIdx == CastlingFlags.BLACK_KING) {
-								board.flags &= ~CastlingFlags.BLACK_CASTLE_ANY;
+								b.flags &= ~CastlingFlags.BLACK_CASTLE_ANY;
 							}
 						}
 					}
@@ -262,57 +266,57 @@ public class ChessGenerator {
 					nextLastCapture = 0;
 				}
 				
-				if (board.flags != 0) {
+				if (b.flags != 0) {
 					// Recalculate the castling flags
 					if (isWhite) {
 						if (toIdx == CastlingFlags.BLACK_ROOK_K) {
-							board.flags &= ~CastlingFlags.BLACK_CASTLE_K;
+							b.flags &= ~CastlingFlags.BLACK_CASTLE_K;
 						}
 						
 						if (toIdx == CastlingFlags.BLACK_ROOK_Q) {
-							board.flags &= ~CastlingFlags.BLACK_CASTLE_Q;
+							b.flags &= ~CastlingFlags.BLACK_CASTLE_Q;
 						}
 					} else {
 						if (toIdx == CastlingFlags.WHITE_ROOK_K) {
-							board.flags &= ~CastlingFlags.WHITE_CASTLE_K;
+							b.flags &= ~CastlingFlags.WHITE_CASTLE_K;
 						}
 						
 						if (toIdx == CastlingFlags.WHITE_ROOK_Q) {
-							board.flags &= ~CastlingFlags.WHITE_CASTLE_Q;
+							b.flags &= ~CastlingFlags.WHITE_CASTLE_Q;
 						}
 					}
 				}
 				
-				board.setPiece(fromIdx, Pieces.NONE);
-				board.setPiece(toIdx, oldFrom);
+				b.setPiece(fromIdx, Pieces.NONE);
+				b.setPiece(toIdx, oldFrom);
 			}
 			
 			case ChessPieceManager.SM_CASTLING -> {
 				if ((special & CastlingFlags.ANY_CASTLE_K) != 0) {
-					board.setPiece(fromIdx - 3, Pieces.NONE);
-					board.setPiece(fromIdx - 2, Pieces.KING * mul);
-					board.setPiece(fromIdx - 1, Pieces.ROOK * mul);
-					board.setPiece(fromIdx, Pieces.NONE);
-					board.flags &= isWhite ? ~CastlingFlags.WHITE_CASTLE_ANY : ~CastlingFlags.BLACK_CASTLE_ANY;
+					b.setPiece(fromIdx - 3, Pieces.NONE);
+					b.setPiece(fromIdx - 2, Pieces.KING * mul);
+					b.setPiece(fromIdx - 1, Pieces.ROOK * mul);
+					b.setPiece(fromIdx, Pieces.NONE);
+					b.flags &= isWhite ? ~CastlingFlags.WHITE_CASTLE_ANY : ~CastlingFlags.BLACK_CASTLE_ANY;
 				}
 				
 				if ((special & CastlingFlags.ANY_CASTLE_Q) != 0) {
-					board.setPiece(fromIdx + 4, Pieces.NONE);
-					board.setPiece(fromIdx + 2, Pieces.KING * mul);
-					board.setPiece(fromIdx + 1, Pieces.ROOK * mul);
-					board.setPiece(fromIdx, Pieces.NONE);
-					board.flags &= isWhite ? ~CastlingFlags.WHITE_CASTLE_ANY : ~CastlingFlags.BLACK_CASTLE_ANY;
+					b.setPiece(fromIdx + 4, Pieces.NONE);
+					b.setPiece(fromIdx + 2, Pieces.KING * mul);
+					b.setPiece(fromIdx + 1, Pieces.ROOK * mul);
+					b.setPiece(fromIdx, Pieces.NONE);
+					b.flags &= isWhite ? ~CastlingFlags.WHITE_CASTLE_ANY : ~CastlingFlags.BLACK_CASTLE_ANY;
 				}
 			}
 			
 			case ChessPieceManager.SM_EN_PASSANT -> {
-				int oldFrom = board.pieces[fromIdx];
+				int oldFrom = b.pieces[fromIdx];
 				int remIdx = toIdx + (isWhite ? -8 : 8);
 				
 				nextLastCapture = 0;
-				board.setPiece(fromIdx, Pieces.NONE);
-				board.setPiece(remIdx, Pieces.NONE);
-				board.setPiece(toIdx, oldFrom);
+				b.setPiece(fromIdx, Pieces.NONE);
+				b.setPiece(remIdx, Pieces.NONE);
+				b.setPiece(toIdx, oldFrom);
 			}
 			
 			case ChessPieceManager.SM_PROMOTION -> {
@@ -320,9 +324,9 @@ public class ChessGenerator {
 				
 				switch (piece) {
 					case Pieces.QUEEN, Pieces.BISHOP, Pieces.KNIGHT, Pieces.ROOK -> {
-						int oldFrom = board.pieces[fromIdx];
-						board.setPiece(fromIdx, Pieces.NONE);
-						board.setPiece(toIdx, piece * mul);
+						int oldFrom = b.pieces[fromIdx];
+						b.setPiece(fromIdx, Pieces.NONE);
+						b.setPiece(toIdx, piece * mul);
 						
 						if (oldFrom != 0) {
 							nextLastCapture = 0;
@@ -335,9 +339,9 @@ public class ChessGenerator {
 			}
 		}
 		
-		board.lastCapture = nextLastCapture;
-		board.lastPawn = nextLastPawn;
-		board.halfMove = nextHalfMove;
+		b.lastCapture = nextLastCapture;
+		b.lastPawn = nextLastPawn;
+		b.halfMove = nextHalfMove;
 		return true;
 	}
 	

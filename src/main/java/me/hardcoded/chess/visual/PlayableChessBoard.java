@@ -1,8 +1,8 @@
 package me.hardcoded.chess.visual;
 
-import me.hardcoded.chess.advanced.ChessBoard;
 import me.hardcoded.chess.advanced.ChessGenerator;
 import me.hardcoded.chess.advanced.ChessPieceManager;
+import me.hardcoded.chess.api.ChessBoard;
 import me.hardcoded.chess.api.ChessMove;
 import me.hardcoded.chess.open.Pieces;
 import me.hardcoded.chess.utils.ReadReset;

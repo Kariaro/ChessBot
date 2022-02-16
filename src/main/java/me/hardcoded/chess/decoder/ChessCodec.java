@@ -1,6 +1,7 @@
 package me.hardcoded.chess.decoder;
 
-import me.hardcoded.chess.advanced.ChessBoard;
+import me.hardcoded.chess.advanced.ChessBoardImpl;
+import me.hardcoded.chess.api.ChessBoard;
 import me.hardcoded.chess.api.ChessMove;
 
 import java.util.List;
@@ -14,15 +15,15 @@ public interface ChessCodec {
 	/** FEN utility namespace */
 	class FEN {
 		public static ChessBoard from(String text) {
-			return ChessFEN.load(new ChessBoard(), text);
+			return ChessFEN.load(new ChessBoardImpl(), text);
 		}
 		
 		public static ChessBoard load(ChessBoard board, String text) {
-			return ChessFEN.load(board, text);
+			return ChessFEN.load((ChessBoardImpl)board, text);
 		}
 		
 		public static String get(ChessBoard board) {
-			return ChessFEN.get(board);
+			return ChessFEN.get((ChessBoardImpl)board);
 		}
 	}
 	

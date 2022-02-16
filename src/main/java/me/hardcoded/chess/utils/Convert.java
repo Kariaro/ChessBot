@@ -1,7 +1,7 @@
 package me.hardcoded.chess.utils;
 
 import me.hardcoded.chess.advanced.CastlingFlags;
-import me.hardcoded.chess.advanced.ChessBoard;
+import me.hardcoded.chess.advanced.ChessBoardImpl;
 import me.hardcoded.chess.open.Action;
 import me.hardcoded.chess.open.Flags;
 import me.hardcoded.chess.open.Pieces;
@@ -9,8 +9,8 @@ import me.hardcoded.chess.open2.Chess;
 
 @Deprecated(forRemoval = true)
 public class Convert {
-	public static ChessBoard toChessBoard(Chess chess) {
-		ChessBoard board = new ChessBoard();
+	public static ChessBoardImpl toChessBoard(Chess chess) {
+		ChessBoardImpl board = new ChessBoardImpl();
 		me.hardcoded.chess.open.Move chess_move = chess.last_move;
 		int[] pieces = new int[64];
 		int lastPawn = 0;
@@ -33,7 +33,7 @@ public class Convert {
 		return board;
 	}
 	
-	public static Chess toChess(ChessBoard chessBoard) {
+	public static Chess toChess(ChessBoardImpl chessBoard) {
 		boolean isWhite = chessBoard.isWhite();
 		
 		Chess chess = new Chess();

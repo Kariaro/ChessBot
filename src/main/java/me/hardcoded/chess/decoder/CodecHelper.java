@@ -1,6 +1,6 @@
 package me.hardcoded.chess.decoder;
 
-import me.hardcoded.chess.advanced.ChessBoard;
+import me.hardcoded.chess.advanced.ChessBoardImpl;
 import me.hardcoded.chess.advanced.ChessGenerator;
 import me.hardcoded.chess.advanced.ChessPieceManager;
 import me.hardcoded.chess.api.ChessMove;
@@ -22,7 +22,7 @@ class CodecHelper {
 	 * pieces also have the same type we need to calculate what values are needed
 	 * for them to be read correctly.
 	 */
-	public static String getUniquePiecePosition(ChessBoard board, ChessMove move) {
+	public static String getUniquePiecePosition(ChessBoardImpl board, ChessMove move) {
 		// First calculate all moves and filter them for the target square and piece type
 		Set<ChessMove> moves = ChessGenerator.generateGuiMoves(board).stream()
 			.filter(m -> m.to == move.to && m.piece == move.piece && m.from != move.from)
@@ -48,14 +48,14 @@ class CodecHelper {
 	/**
 	 * Returns if the last move played checked the king.
 	 */
-	public static boolean isKingChecked(ChessBoard board) {
+	public static boolean isKingChecked(ChessBoardImpl board) {
 		return ChessPieceManager.isKingAttacked(board, board.isWhite());
 	}
 	
 	/**
 	 * Returns if the last move played resulted in a checkmate.
 	 */
-	public static boolean isGameCheckmate(ChessBoard board) {
+	public static boolean isGameCheckmate(ChessBoardImpl board) {
 		if (!ChessPieceManager.isKingAttacked(board, board.isWhite())) {
 			return false;
 		}

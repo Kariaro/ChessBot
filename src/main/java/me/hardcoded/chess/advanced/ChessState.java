@@ -4,7 +4,7 @@ public class ChessState {
 	private long[] longs;
 	private int[] pieces;
 	
-	public void read(ChessBoard board) {
+	public void read(ChessBoardImpl board) {
 		if (longs == null) {
 			longs = new long[6];
 		}
@@ -23,7 +23,7 @@ public class ChessState {
 		System.arraycopy(board.pieces, 0, pieces, 0, 64);
 	}
 	
-	public void write(ChessBoard board) {
+	public void write(ChessBoardImpl board) {
 		board.whiteMask = longs[0];
 		board.blackMask = longs[1];
 		board.pieceMask = board.whiteMask | board.blackMask;
@@ -31,10 +31,12 @@ public class ChessState {
 		board.halfMove = (int)longs[3];
 		board.lastPawn = (int)longs[4];
 		board.flags = (int)longs[5];
+		
+		// We could optimize this with the masks?
 		System.arraycopy(pieces, 0, board.pieces, 0, 64);
 	}
 	
-	public static ChessState of(ChessBoard board) {
+	public static ChessState of(ChessBoardImpl board) {
 		ChessState state = new ChessState();
 		state.read(board);
 		return state;

@@ -1,5 +1,6 @@
 package me.hardcoded.chess.advanced;
 
+import me.hardcoded.chess.api.ChessBoard;
 import me.hardcoded.chess.decoder.ChessCodec;
 
 import static me.hardcoded.chess.open.Pieces.*;
@@ -10,17 +11,17 @@ import static me.hardcoded.chess.open.Pieces.*;
  * 
  * @author HardCoded
  */
-public class ChessBoard {
-	final int[] pieces;
-	long pieceMask;
-	long whiteMask;
-	long blackMask;
-	int lastCapture;
-	int halfMove;
-	int lastPawn;
-	int flags;
+public class ChessBoardImpl implements ChessBoard {
+	public final int[] pieces;
+	public long pieceMask;
+	public long whiteMask;
+	public long blackMask;
+	public int lastCapture;
+	public int halfMove;
+	public int lastPawn;
+	public int flags;
 	
-	public ChessBoard() {
+	public ChessBoardImpl() {
 		this.pieces = new int[] {
 			 ROOK,  KNIGHT,  BISHOP,  KING,  QUEEN,  BISHOP,  KNIGHT,  ROOK,
 			 PAWN,    PAWN,    PAWN,  PAWN,   PAWN,    PAWN,    PAWN,  PAWN,
@@ -42,7 +43,7 @@ public class ChessBoard {
 		lastPawn = 0;
 	}
 	
-	public ChessBoard(String fen) {
+	public ChessBoardImpl(String fen) {
 		this.pieces = new int[64];
 		ChessCodec.FEN.load(this, fen);
 	}
@@ -62,20 +63,20 @@ public class ChessBoard {
 		}
 	}
 	
-	/**
-	 * Returns if white has the current move
-	 */
+	@Override
 	public boolean isWhite() {
 		return (halfMove & 1) == 0;
 	}
 	
+	@Override
 	public boolean hasFlags(int flags) {
 		return (this.flags & flags) != 0;
 	}
 	
+	@Override
 	public void setPiece(int idx, int piece) {
 		int old = pieces[idx];
-		long mask = 1L << (long)idx;
+		long mask = 1L << idx;
 		
 		pieces[idx] = piece;
 		if (old < 0 && piece >= 0) {
@@ -95,9 +96,9 @@ public class ChessBoard {
 	}
 	
 	@Deprecated
-	public ChessBoard creteCopy() {
+	public ChessBoardImpl creteCopy() {
 		// TODO: Fill a class instead of cloning it
-		ChessBoard copy = new ChessBoard();
+		ChessBoardImpl copy = new ChessBoardImpl();
 		System.arraycopy(pieces, 0, copy.pieces, 0, 64);
 		copy.lastPawn = lastPawn;
 		copy.whiteMask = whiteMask;
@@ -109,6 +110,7 @@ public class ChessBoard {
 		return copy;
 	}
 	
+	@Override
 	public int getPiece(int i) {
 		return pieces[i];
 	}

@@ -1,7 +1,7 @@
 package me.hardcoded.chess.decoder;
 
 import me.hardcoded.chess.advanced.CastlingFlags;
-import me.hardcoded.chess.advanced.ChessBoard;
+import me.hardcoded.chess.advanced.ChessBoardImpl;
 import me.hardcoded.chess.advanced.ChessGenerator;
 import me.hardcoded.chess.advanced.ChessPieceManager;
 import me.hardcoded.chess.api.ChessMove;
@@ -22,7 +22,7 @@ public class ChessPGN {
 	// TODO: This method should follow the
 	static String get(PGNGame game) {
 		String fen = game.getTag(PGNTag.FEN);
-		ChessBoard board = new ChessBoard(fen == null ? "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0" : fen);
+		ChessBoardImpl board = new ChessBoardImpl(fen == null ? "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0" : fen);
 		List<ChessMove> moves = game.moves;
 		
 		StringBuilder sb = new StringBuilder();

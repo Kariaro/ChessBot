@@ -14,11 +14,11 @@ import me.hardcoded.chess.visual.ChessBoardPanel;
 public class ChessPieceManager {
 	public static final ChessBoardPanel BOARD_PANEL = new ChessBoardPanel();
 	
-	public static long piece_move(ChessBoard board, int piece, int idx) {
+	public static long piece_move(ChessBoardImpl board, int piece, int idx) {
 		return piece_move(board, piece, board.isWhite(), idx);
 	}
 	
-	protected static long piece_move(ChessBoard board, int piece, boolean isWhite, int idx) {
+	protected static long piece_move(ChessBoardImpl board, int piece, boolean isWhite, int idx) {
 		if (isWhite) {
 			return switch (piece) {
 				case KNIGHT -> knight_move(board, idx) & ~board.whiteMask;
@@ -42,7 +42,7 @@ public class ChessPieceManager {
 		}
 	}
 	
-	public static long special_piece_move(ChessBoard board, int piece, boolean isWhite, int idx) {
+	public static long special_piece_move(ChessBoardImpl board, int piece, boolean isWhite, int idx) {
 		if (isWhite) {
 			return switch (piece) {
 				case PAWN -> white_pawn_special_move(board, idx);
@@ -58,15 +58,16 @@ public class ChessPieceManager {
 		}
 	}
 	
-	private static long knight_move(ChessBoard board, int idx) {
+	private static long knight_move(ChessBoardImpl board, int idx) {
 		return PrecomputedTable.KNIGHT_MOVES[idx];
 	}
 	
-	private static long rook_move(ChessBoard board, int idx) {
+	private static long rook_move(ChessBoardImpl board, int idx) {
 		int ypos = idx >> 3;
 		int xpos = idx & 7;
 		
 		long result = 0;
+		// TODO: Precompute this somehow
 		for (int j = 0; j < 4; j++) {
 			int dr = 1 - (j & 2);
 			int dx = ((j    ) & 1) * dr;
@@ -92,7 +93,7 @@ public class ChessPieceManager {
 		return result;
 	}
 	
-	private static long bishop_move(ChessBoard board, int idx) {
+	private static long bishop_move(ChessBoardImpl board, int idx) {
 		int ypos = idx >> 3;
 		int xpos = idx & 7;
 		long result = 0;
@@ -121,7 +122,7 @@ public class ChessPieceManager {
 		return result;
 	}
 	
-	private static long white_pawn_move(ChessBoard board, int idx) {
+	private static long white_pawn_move(ChessBoardImpl board, int idx) {
 		long pawn = 1L << idx;
 		long step = pawn << 8;
 		long result = 0;
@@ -132,7 +133,7 @@ public class ChessPieceManager {
 		if (ypos < 6) {
 			result |= step & ~board.pieceMask;
 			if (result != 0 && ypos == 1) { // Pawn jump
-				result |= (step << 8L) & ~board.pieceMask;
+				result |= (step << 8) & ~board.pieceMask;
 			}
 			
 			if (xpos > 0) { // Takes
@@ -147,7 +148,7 @@ public class ChessPieceManager {
 		return result;
 	}
 	
-	private static long black_pawn_move(ChessBoard board, int idx) {
+	private static long black_pawn_move(ChessBoardImpl board, int idx) {
 		long pawn = 1L << idx;
 		long step = pawn >>> 8;
 		long result = 0;
@@ -161,7 +162,7 @@ public class ChessPieceManager {
 		if (ypos > 1) {
 			result |= step & ~board.pieceMask;
 			if (result != 0 && ypos == 6) { // Pawn jump
-				result |= (step >>> 8L) & ~board.pieceMask;
+				result |= (step >>> 8) & ~board.pieceMask;
 			}
 			
 			if (xpos > 0) { // Takes
@@ -185,7 +186,7 @@ public class ChessPieceManager {
 	public static final int PROMOTION_RIGHT  = 0b010;
 	public static final int PROMOTION_MIDDLE = 0b100;
 //	public static final int PROMOTION_TYPE   = 0b111000;
-	private static int white_pawn_special_move(ChessBoard board, int idx) {
+	private static int white_pawn_special_move(ChessBoardImpl board, int idx) {
 		int ypos = idx >> 3;
 		int xpos = idx & 7;
 		
@@ -239,7 +240,7 @@ public class ChessPieceManager {
 		return 0;
 	}
 	
-	private static int black_pawn_special_move(ChessBoard board, int idx) {
+	private static int black_pawn_special_move(ChessBoardImpl board, int idx) {
 		int ypos = idx >> 3;
 		int xpos = idx & 7;
 		
@@ -293,7 +294,7 @@ public class ChessPieceManager {
 		return 0;
 	}
 	
-	private static long king_move(ChessBoard board, int idx) {
+	private static long king_move(ChessBoardImpl board, int idx) {
 		return PrecomputedTable.KING_MOVES[idx];
 	}
 	
@@ -301,7 +302,7 @@ public class ChessPieceManager {
 	private static final long WHITE_Q = 0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_01110000L;
 	private static final long BLACK_K = 0b00000110_00000000_00000000_00000000_00000000_00000000_00000000_00000000L;
 	private static final long BLACK_Q = 0b01110000_00000000_00000000_00000000_00000000_00000000_00000000_00000000L;
-	private static long king_special_move(ChessBoard board, int idx) {
+	private static long king_special_move(ChessBoardImpl board, int idx) {
 		long result = 0;
 		if (board.isWhite()) {
 			if ((board.pieceMask & WHITE_K) == 0 && board.hasFlags(CastlingFlags.WHITE_CASTLE_K)) {
@@ -324,7 +325,7 @@ public class ChessPieceManager {
 		return result;
 	}
 	
-	private static long pawn_attack(ChessBoard board, boolean isWhite, int idx) {
+	private static long pawn_attack(ChessBoardImpl board, boolean isWhite, int idx) {
 		return isWhite
 			? PrecomputedTable.PAWN_ATTACK_BLACK[idx]
 			: PrecomputedTable.PAWN_ATTACK_WHITE[idx];
@@ -338,7 +339,7 @@ public class ChessPieceManager {
 	 * TODO: This might be slow
 	 * TODO: Inline functions
 	 */
-	public static boolean isAttacked(ChessBoard board, int idx) {
+	public static boolean isAttacked(ChessBoardImpl board, int idx) {
 		boolean isWhite = board.isWhite();
 		
 		if (isWhite) {
@@ -390,7 +391,7 @@ public class ChessPieceManager {
 		}
 	}
 	
-	public static boolean isKingAttacked(ChessBoard board, boolean isWhite) {
+	public static boolean isKingAttacked(ChessBoardImpl board, boolean isWhite) {
 		int old = board.halfMove;
 		int idx;
 		board.halfMove = isWhite ? 0 : 1;
@@ -402,22 +403,33 @@ public class ChessPieceManager {
 			idx = getFirst(board, board.blackMask, -Pieces.KING);
 		}
 		
-		if (idx == -1) {
-			// If the king does not exist we will allow this?
-			// ChessGenerator.debug("Invalid", board.pieces);
-			return false;
-		}
+//		if (idx == -1) {
+//			// If the king does not exist we will allow this?
+//			// ChessGenerator.debug("Invalid", board.pieces);
+//			return false;
+//		}
 		
-		if (isAttacked(board, idx)) {
+		if (idx != -1 && isAttacked(board, idx)) {
 			board.halfMove = old;
 			return true;
 		}
+		
+//		if (idx == -1) {
+//			// If the king does not exist we will allow this?
+//			// ChessGenerator.debug("Invalid", board.pieces);
+//			return false;
+//		}
+//
+//		if (isAttacked(board, idx)) {
+//			board.halfMove = old;
+//			return true;
+//		}
 		
 		board.halfMove = old;
 		return false;
 	}
 	
-	private static boolean hasTwoPiece(ChessBoard board, long mask, int findA, int findB) {
+	private static boolean hasTwoPiece(ChessBoardImpl board, long mask, int findA, int findB) {
 		// the mask only contains pieces that belongs to the correct team
 		mask &= (findA < 0 ? board.blackMask : board.whiteMask);
 		
@@ -435,7 +447,7 @@ public class ChessPieceManager {
 		return false;
 	}
 	
-	private static boolean hasPiece(ChessBoard board, long mask, int find) {
+	private static boolean hasPiece(ChessBoardImpl board, long mask, int find) {
 		// the mask only contains pieces that belongs to the correct team
 		mask &= (find < 0 ? board.blackMask : board.whiteMask);
 		
@@ -452,7 +464,7 @@ public class ChessPieceManager {
 		return false;
 	}
 	
-	private static int getFirst(ChessBoard board, long mask, int find) {
+	private static int getFirst(ChessBoardImpl board, long mask, int find) {
 		// the mask only contains pieces that belongs to the correct team
 		mask &= (find < 0 ? board.blackMask :board.whiteMask);
 		

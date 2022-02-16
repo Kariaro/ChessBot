@@ -1,7 +1,7 @@
 package me.hardcoded.chess.decoder;
 
 import me.hardcoded.chess.advanced.CastlingFlags;
-import me.hardcoded.chess.advanced.ChessBoard;
+import me.hardcoded.chess.advanced.ChessBoardImpl;
 import me.hardcoded.chess.open.Pieces;
 import me.hardcoded.chess.utils.ChessUtils;
 
@@ -11,7 +11,7 @@ import me.hardcoded.chess.utils.ChessUtils;
  * @author HardCoded
  */
 class ChessFEN {
-	static ChessBoard load(ChessBoard board, String text) {
+	static ChessBoardImpl load(ChessBoardImpl board, String text) {
 		String[] parts = text.split(" ");
 		if (parts.length != 6) {
 			throw new RuntimeException("Invalid FEN: The input string did not have 6 parts");
@@ -71,7 +71,7 @@ class ChessFEN {
 		return board;
 	}
 	
-	static String get(ChessBoard board) {
+	static String get(ChessBoardImpl board) {
 		int[] pieces = board.getPieces();
 		
 		StringBuilder sb = new StringBuilder();

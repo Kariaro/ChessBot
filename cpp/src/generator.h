@@ -11,6 +11,7 @@ using std::vector;
 
 namespace Generator {
 	extern vector<Move> generate_moves(Chessboard& board);
+	extern vector<Move> generateValidMoves(Chessboard& board);
 
 	extern bool isValid(Chessboard& board, uint fromIdx, uint toIdx, uint special);
 	extern bool isValid(Chessboard& board, Move& move);

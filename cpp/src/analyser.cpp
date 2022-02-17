@@ -8,10 +8,11 @@
 #include "piece_manager.h"
 #include "chessboard.h"
 #include "generator.h"
+#include "pieces.h"
 #include "serial.h"
 #include <chrono>
 
-#define DEPTH 7
+#define DEPTH 6
 #define NEGATIVE_INFINITY -1000000000.0
 #define POSITIVE_INFINITY  1000000000.0
 #define max(a, b) (a > b ? a : b)

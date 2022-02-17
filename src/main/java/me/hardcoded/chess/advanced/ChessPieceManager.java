@@ -63,63 +63,35 @@ public class ChessPieceManager {
 	}
 	
 	private static long rook_move(ChessBoardImpl board, int idx) {
-		int ypos = idx >> 3;
-		int xpos = idx & 7;
+		long moveMask = PrecomputedTable.ROOK_MOVES[idx];
+		long checkMask = board.pieceMask & moveMask;
 		
-		long result = 0;
-		// TODO: Precompute this somehow
-		for (int j = 0; j < 4; j++) {
-			int dr = 1 - (j & 2);
-			int dx = ((j    ) & 1) * dr;
-			int dy = ((j + 1) & 1) * dr;
-			
-			for (int i = 1; i < 8; i++) {
-				int xp = xpos + dx * i;
-				int yp = ypos + dy * i;
-				
-				if (xp < 0 || xp > 7 || yp < 0 || yp > 7) {
-					break;
-				}
-				
-				final long mask = 1L << (xp + (yp << 3));
-				result |= mask;
-				
-				if ((mask & board.pieceMask) != 0) {
-					break;
-				}
-			}
+		long[] SHADOW = PrecomputedTable.ROOK_SHADOW_MOVES[idx];
+		while (checkMask != 0) {
+			long pick = Long.lowestOneBit(checkMask);
+			checkMask &= ~pick;
+			long shadowMask = SHADOW[Long.numberOfTrailingZeros(pick)];
+			moveMask &= shadowMask;
+			checkMask &= shadowMask;
 		}
 		
-		return result;
+		return moveMask;
 	}
 	
 	private static long bishop_move(ChessBoardImpl board, int idx) {
-		int ypos = idx >> 3;
-		int xpos = idx & 7;
-		long result = 0;
+		long moveMask = PrecomputedTable.BISHOP_MOVES[idx];
+		long checkMask = board.pieceMask & moveMask;
 		
-		for (int j = 0; j < 4; j++) {
-			int dx = (j   & 1) * 2 - 1;
-			int dy = (j >>> 1) * 2 - 1;
-			
-			for (int i = 1; i < 8; i++) {
-				int xp = xpos + dx * i;
-				int yp = ypos + dy * i;
-				
-				if (xp < 0 || xp > 7 || yp < 0 || yp > 7) {
-					break;
-				}
-				
-				final long mask = 1L << (xp + (yp << 3));
-				result |= mask;
-				
-				if ((mask & board.pieceMask) != 0) {
-					break;
-				}
-			}
+		long[] SHADOW = PrecomputedTable.BISHOP_SHADOW_MOVES[idx];
+		while (checkMask != 0) {
+			long pick = Long.lowestOneBit(checkMask);
+			checkMask &= ~pick;
+			long shadowMask = SHADOW[Long.numberOfTrailingZeros(pick)];
+			moveMask &= shadowMask;
+			checkMask &= shadowMask;
 		}
 		
-		return result;
+		return moveMask;
 	}
 	
 	private static long white_pawn_move(ChessBoardImpl board, int idx) {

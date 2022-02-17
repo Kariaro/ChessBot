@@ -63,74 +63,59 @@ uint64 white_pawn_move(Chessboard& board, uint idx) {
 }
 
 uint64 bishop_move(uint64 board_pieceMask, uint idx) {
-	int ypos = idx >> 3;
-	int xpos = idx & 7;
-
-	uint64 result = 0;
-	for (int j = 0; j < 4; j++) {
-		int dx = (j  & 1) * 2 - 1;
-		int dy = (j >> 1) * 2 - 1;
-		
-		for (int i = 1; i < 8; i++) {
-			int xp = xpos + dx * i;
-			int yp = ypos + dy * i;
-			
-			if (xp < 0 || xp > 7 || yp < 0 || yp > 7) {
-				break;
-			}
-
-			uint64 mask = (uint64)(1) << (xp + (yp << 3));
-			result |= mask;
-			
-			if ((mask & board_pieceMask) != 0) {
-				break;
-			}
-		}
-	}
+	uint64 moveMask = PrecomputedTable::BISHOP_MOVES[idx];
+	uint64 checkMask = board_pieceMask & moveMask;
 	
-	return result;
+	const uint64* SHADOW = PrecomputedTable::BISHOP_SHADOW_MOVES[idx];
+	while (checkMask != 0) {
+		uint64 pick = Utils::lowestOneBit(checkMask);
+		checkMask &= ~pick;
+		uint64 shadowMask = SHADOW[Utils::numberOfTrailingZeros(pick)];
+		moveMask &= shadowMask;
+		checkMask &= shadowMask;
+	}
+
+	return moveMask;
 }
 
 uint64 rook_move(uint64 board_pieceMask, uint idx) {
-	int ypos = idx >> 3;
-	int xpos = idx & 7;
-	
-	uint64 result = 0;
-	for (int j = 0; j < 4; j++) {
-		int dr = 1 - (j & 2);
-		int dx = ((j    ) & 1) * dr;
-		int dy = ((j + 1) & 1) * dr;
-		
-		for (int i = 1; i < 8; i++) {
-			int xp = xpos + dx * i;
-			int yp = ypos + dy * i;
+	uint64 moveMask = PrecomputedTable::ROOK_MOVES[idx];
+	uint64 checkMask = board_pieceMask & moveMask;
 			
-			if (xp < 0 || xp > 7 || yp < 0 || yp > 7) {
-				break;
-			}
-			
-			uint64 mask = (uint64)(1) << (xp + (yp << 3));
-			result |= mask;
-			
-			if ((mask & board_pieceMask) != 0) {
-				break;
-			}
-		}
+	const uint64* SHADOW = PrecomputedTable::ROOK_SHADOW_MOVES[idx];
+	while (checkMask != 0) {
+		uint64 pick = Utils::lowestOneBit(checkMask);
+		checkMask &= ~pick;
+		uint64 shadowMask = SHADOW[Utils::numberOfTrailingZeros(pick)];
+		moveMask &= shadowMask;
+		checkMask &= shadowMask;
 	}
-	
-	return result;
+
+	return moveMask;
 }
 
-uint64 queen_move(uint64 board_pieceMask, uint idx) {
+inline uint64 queen_move(uint64 board_pieceMask, uint idx) {
 	return bishop_move(board_pieceMask, idx) | rook_move(board_pieceMask, idx);
 }
 
-uint64 king_move(uint idx) {
+inline uint64 king_move(uint idx) {
 	return PrecomputedTable::KING_MOVES[idx];
 }
 
-uint64 knight_move(uint idx) {
+inline uint64 knight_move(uint idx) {
 	return PrecomputedTable::KNIGHT_MOVES[idx];
+}
+
+inline uint64 pawn_attack(bool isWhite, uint idx) {
+	return isWhite ? PrecomputedTable::PAWN_ATTACK_BLACK[idx] : PrecomputedTable::PAWN_ATTACK_WHITE[idx];
+}
+
+inline uint64 white_pawn_attack(uint idx) {
+	return PrecomputedTable::PAWN_ATTACK_WHITE[idx];
+}
+
+inline uint64 black_pawn_attack(uint idx) {
+	return PrecomputedTable::PAWN_ATTACK_BLACK[idx];
 }
 
 namespace PieceManager {
@@ -153,7 +138,7 @@ namespace PieceManager {
 		}
 	}
 
-	uint white_pawn_special_move(Chessboard board, uint idx) {
+	uint white_pawn_special_move(Chessboard& board, uint idx) {
 		int ypos = idx >> 3;
 		int xpos = idx & 7;
 		
@@ -285,18 +270,6 @@ namespace PieceManager {
 			case Pieces::B_KING: return king_special_move(board, idx);
 			default: return 0;
 		}
-	}
-
-	inline uint64 pawn_attack(bool isWhite, uint idx) {
-		return isWhite ? PrecomputedTable::PAWN_ATTACK_BLACK[idx] : PrecomputedTable::PAWN_ATTACK_WHITE[idx];
-	}
-
-	inline uint64 white_pawn_attack(uint idx) {
-		return PrecomputedTable::PAWN_ATTACK_WHITE[idx];
-	}
-
-	inline uint64 black_pawn_attack(uint idx) {
-		return PrecomputedTable::PAWN_ATTACK_BLACK[idx];
 	}
 	
 	bool hasTwoPiece(Chessboard& board, uint64 mask, int findA, int findB) {

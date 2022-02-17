@@ -28,37 +28,11 @@ const int const VALUES[13] = { -100, -500, -300, -300, -900, 0, 0, 0, 900, 300, 
 
 namespace Serial {
 	inline int get_piece_value(int i) {
-		if (i > -7 && i < 7) {
-			return VALUES[i + 6];
-		}
-
-		return 0;
+		return (i > -7 && i < 7) ? (VALUES[i + 6]) : (0);
 	}
 
 	inline char get_piece_character(int i) {
-		if (i > -7 && i < 7) {
-			return "prnbqk\0KQBNRP"[i + 6];
-		}
-
-		return '\0';
-
-		/*
-		switch (piece) {
-			case B_ROOK:   return 'r';
-			case B_KNIGHT: return 'n';
-			case B_BISHOP: return 'b';
-			case B_QUEEN:  return 'q';
-			case B_KING:   return 'k';
-			case B_PAWN:   return 'p';
-			case W_ROOK:   return 'R';
-			case W_KNIGHT: return 'N';
-			case W_BISHOP: return 'B';
-			case W_QUEEN:  return 'Q';
-			case W_KING:   return 'K';
-			case W_PAWN:   return 'P';
-			default: return '\0';
-		}
-		*/
+		return (i > -7 && i < 7) ? ("prnbqk\0KQBNRP"[i + 6]) : ('\0');
 	}
 
 	char* get_square_string(int square) {

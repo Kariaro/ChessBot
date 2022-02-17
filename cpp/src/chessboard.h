@@ -4,7 +4,6 @@
 #define __CHESSBOARD_H__
 
 #include "utils_type.h"
-#include "pieces.h"
 
 namespace Board {
 	inline bool isWhite(Chessboard& board) {

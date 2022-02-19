@@ -161,13 +161,13 @@ public class AnalyserV1_AlphaBetaPruning implements ChessAnalyser {
 		
 		// Default state of the board
 		ChessState state = ChessState.of(board);
-		Move[] moves = getAllMoves(board, depth);
+		Move[] moves = getAllMoves(board, depth - 1);
 		double value;
 		
 		BranchResult result = new BranchResult(0);
 		
 		if (white) {
-			value = Double.NEGATIVE_INFINITY;
+			value = -100000 * (depth + 1); //Double.NEGATIVE_INFINITY;
 			
 			for (Move move : moves) {
 				if (move == null) {
@@ -192,7 +192,7 @@ public class AnalyserV1_AlphaBetaPruning implements ChessAnalyser {
 				alpha = Math.max(alpha, value);
 			}
 		} else {
-			value = Double.POSITIVE_INFINITY;
+			value = 100000 * (depth + 1); //Double.POSITIVE_INFINITY;
 			
 			for (Move move : moves) {
 				if (move == null) {
@@ -242,13 +242,12 @@ public class AnalyserV1_AlphaBetaPruning implements ChessAnalyser {
 			
 			long now = System.nanoTime();
 			nodes = 0;
-			BranchResult branchResult = analyseBranches(board, move, DEPTH - 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, board.isWhite());
+			BranchResult branchResult = analyseBranches(board, move, DEPTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, board.isWhite());
 			long time = System.nanoTime() - now;
 			double scannedResult = branchResult.value;
 			move.material = scannedResult;
 			
-//			System.out.printf("move: %s, (%.2f)\n", move, scannedResult);
-			System.out.printf("move: %s, (%.2f), %s\t%d nodes / sec\n", move, scannedResult, Arrays.toString(branchResult.moves), (long)(nodes / (time / 1000000000.0)));
+			System.out.printf("move: %-5s, (%.2f), %s\t%d nodes / sec\n", move, scannedResult / 100.0, Arrays.toString(branchResult.moves), (long)(nodes / (time / 1000000000.0)));
 			
 			if (scan.white) {
 				if (scan.best == null || scan.best.material < scannedResult) {
@@ -259,31 +258,6 @@ public class AnalyserV1_AlphaBetaPruning implements ChessAnalyser {
 					scan.best = move;
 				}
 			}
-//			double boardMaterial = getMaterial(board);
-//
-//			Scanner branch;
-//			if (depth < 1) {
-//				branch = new Scanner(board, boardMaterial);
-//			} else {
-//				branch = analyseBranchMoves(board, depth - 1, boardMaterial);
-//			}
-//
-//			double scannedResult = ((branch.material()) * 80 + boardMaterial * 20) / 100.0;
-//			scannedResult += un_developing(move) + non_developing(board);
-//			if (move.castle) {
-//				scannedResult += 30 * (board.isWhite() ? -1 : 1);
-//			}
-//
-//			// Add this move to the evaluation set
-//			if (scan.white) {
-//				if (scan.best == null || scan.best.material < scannedResult) {
-//					scan.best = move;
-//				}
-//			} else {
-//				if (scan.best == null || scan.best.material > scannedResult) {
-//					scan.best = move;
-//				}
-//			}
 			
 			// Undo the move and continue
 			state.write(board);

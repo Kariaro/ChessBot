@@ -60,15 +60,10 @@ void updateMoves(Move& move, BranchResult& result, BranchResult& branch) {
 Move* get_all_moves(Chessboard& board, int depth) {
 	Move* moves = MOVES[depth];
 
-	vector<Move> vector_moves = Generator::generate_moves(board);
+	vector<Move> vector_moves = Generator::generateValidMoves(board);
 	int j = 0;
 	for (int i = 0, len = vector_moves.size(); i < len; i++) {
-		Move move = vector_moves[i];
-		if (!Generator::isValid(board, move)) {
-			continue;
-		}
-
-		moves[j++] = move;
+		moves[j++] = vector_moves[i];
 	}
 
 	moves[j].piece = 0;
@@ -82,10 +77,6 @@ int get_material(Chessboard& board) {
 	
 	material -= 6 * (Board::hasFlags(board, CastlingFlags::BLACK_CASTLE_K) + Board::hasFlags(board, CastlingFlags::BLACK_CASTLE_Q));
 	material += 6 * (Board::hasFlags(board, CastlingFlags::WHITE_CASTLE_K) + Board::hasFlags(board, CastlingFlags::WHITE_CASTLE_Q));
-	// if (Board::hasFlags(board, CastlingFlags::BLACK_CASTLE_K)) material -= 6;
-	// if (Board::hasFlags(board, CastlingFlags::BLACK_CASTLE_Q)) material -= 6;
-	// if (Board::hasFlags(board, CastlingFlags::WHITE_CASTLE_K)) material += 6;
-	// if (Board::hasFlags(board, CastlingFlags::WHITE_CASTLE_Q)) material += 6;
 	
 	while (mask != 0) {
 		uint64 pick = Utils::lowestOneBit(mask);
@@ -186,7 +177,7 @@ BranchResult analyseBranches_prune(Chessboard& parent, Move& lastMove, int depth
 	}
 	
 	Chessboard board = parent;
-	Move* moves = get_all_moves(board, depth);
+	Move* moves = get_all_moves(board, depth - 1);
 	double value;
 	
 	BranchResult result { 0 };
@@ -276,15 +267,15 @@ void evaluate(Chessboard& board, Scanner scan) {
 	}
 }
 
-Scanner analyseBranchMoves(Chessboard& board) {
+Scanner analyseBranchMoves(Chessboard& parent) {
 	Scanner scan { };
-	scan.base = get_material(board);
+	scan.base = get_material(parent);
 	scan.best.piece = 0;
 	// scan.best.piece = = new Scanner(board, get_material(board));
 	
-	Chessboard copy = board;
+	Chessboard board = parent;
 	// ChessState state = ChessState.of(board);
-	Move* moves = get_all_moves(board, DEPTH);
+	Move* moves = get_all_moves(parent, DEPTH);
 	
 	for (int i = 0; i < 1024; i++) {
 		Move move = moves[i];
@@ -298,14 +289,14 @@ Scanner analyseBranchMoves(Chessboard& board) {
 
 		auto start = std::chrono::high_resolution_clock::now();
 		nodes = 0;
-		BranchResult branchResult = analyseBranches_prune(board, move, DEPTH - 1, NEGATIVE_INFINITY, POSITIVE_INFINITY, Board::isWhite(board));
+		BranchResult branchResult = analyseBranches_prune(board, move, DEPTH, NEGATIVE_INFINITY, POSITIVE_INFINITY, Board::isWhite(board));
 		auto finish = std::chrono::high_resolution_clock::now();
 		double scannedResult = branchResult.value;
 		// move.material = scannedResult;
 		
 		{
 			char* buffer = Serial::getMoveString(move.piece, move.from, move.to, move.special);
-			printf("move: %s, (%.2f), [", buffer, scannedResult);
+			printf("move: %-5s, (%.2f), [", buffer, scannedResult / 100.0);
 			free(buffer);
 
 			for (int i = 0; i < branchResult.numMoves; i++) {
@@ -335,13 +326,11 @@ Scanner analyseBranchMoves(Chessboard& board) {
 			}
 		}
 
-		board = copy;
-		// state.write(board);
+		board = parent;
 	}
 	
-	evaluate(board, scan);
-	// state.write(board);
-	board = copy;
+	evaluate(parent, scan);
+	// board = copy;
 	return scan;
 }
 

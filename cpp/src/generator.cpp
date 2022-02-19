@@ -21,7 +21,7 @@ uint const PROMOTION_PIECES[4] {
 };
 
 namespace Generator {
-	vector<Move> generate_moves(Chessboard& board) {
+	vector<Move> generateUnvalidatedMoves(Chessboard& board) {
 		vector<Move> vector_moves;
 		vector_moves.reserve(96);
 

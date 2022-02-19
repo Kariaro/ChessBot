@@ -1,63 +1,68 @@
 package me.hardcoded.chess.decoder;
 
+import me.hardcoded.chess.advanced.ChessBoardImpl;
+import me.hardcoded.chess.advanced.ChessGenerator;
+import me.hardcoded.chess.api.ChessBoard;
 import me.hardcoded.chess.api.ChessMove;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PGNGame {
-	Map<String, String> tags;
-	List<ChessMove> moves;
+	final Map<String, String> tags;
+	final List<ChessMove> moves;
 	
 	public PGNGame() {
-		this.tags = new HashMap<>();
+		this.tags = new LinkedHashMap<>();
 		this.moves = new ArrayList<>();
 	}
 	
 	public PGNGame setTag(PGNTag type, String value) {
-		tags.put(type.name(), value);
-		return this;
-	}
-	
-	public PGNGame removeTag(PGNTag type) {
-		tags.remove(type.name());
-		return this;
-	}
-	
-	public PGNGame addTag(PGNTag type, String value) {
-		return addCustomTag(type.name(), value);
+		return setTag(type.name(), value);
 	}
 	
 	public String getTag(PGNTag type) {
-		return getCustomTag(type.name());
+		return getTag(type.name());
 	}
 	
 	public String getTagOrDefault(PGNTag type, String defaultValue) {
-		return getCustomTagOrDefault(type.name(), defaultValue);
+		return getTagOrDefault(type.name(), defaultValue);
 	}
 	
-	public PGNGame addCustomTag(String name, String value) {
-		if (value == null) {
-			tags.remove(name);
-		} else {
-			tags.put(name, value);
-		}
+	public PGNGame setTag(String name, String value) {
+		tags.put(name, value);
 		return this;
 	}
 	
-	public String getCustomTag(String name) {
+	public String getTag(String name) {
 		return tags.get(name);
 	}
 	
-	public String getCustomTagOrDefault(String name, String defaultValue) {
+	public String getTagOrDefault(String name, String defaultValue) {
 		return tags.getOrDefault(name, defaultValue);
 	}
 	
 	public void setMoves(List<ChessMove> moves) {
 		this.moves.clear();
 		this.moves.addAll(moves);
+	}
+	
+	public ChessBoard getBoard(int moves) {
+		String fen = getTag(PGNTag.FEN);
+		ChessBoardImpl board;
+		if (fen != null) {
+			board = new ChessBoardImpl(fen);
+		} else {
+			board = new ChessBoardImpl();
+		}
+		
+		for (int i = 0; i < Math.min(this.moves.size(), moves); i++) {
+			ChessMove move = this.moves.get(i);
+			if (!ChessGenerator.playMove(board,move.from, move.to, move.special)) {
+				return null;
+			}
+		}
+		
+		return board;
 	}
 	
 	public List<ChessMove> getMoves() {

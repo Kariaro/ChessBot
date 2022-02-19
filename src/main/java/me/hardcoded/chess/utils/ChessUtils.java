@@ -50,6 +50,8 @@ public final class ChessUtils {
 		return (char)(i + '1');
 	}
 	
+	// TODO: We need to flip the board so that the values print correctly when converting between values
+	@Deprecated(forRemoval = true)
 	public static char toFileChar(int i) {
 		return (char)('h' - i);
 	}

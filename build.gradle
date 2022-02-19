@@ -11,3 +11,11 @@ java.sourceCompatibility = JavaVersion.VERSION_16
 application {
     mainClass = 'me.hardcoded.chess.main.Main'
 }
+
+dependencies {
+    implementation 'junit:junit:4.13.2'
+}
+
+repositories {
+    mavenCentral()
+}

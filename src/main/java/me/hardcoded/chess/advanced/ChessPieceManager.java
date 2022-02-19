@@ -128,9 +128,6 @@ public class ChessPieceManager {
 		int ypos = idx >> 3;
 		int xpos = idx & 7;
 		
-		// TODO: Do not give any move suggestions for the eights or first rank because that's where the promotion bit
-		//       will be set
-		
 		if (ypos > 1) {
 			result |= step & ~board.pieceMask;
 			if (result != 0 && ypos == 6) { // Pawn jump

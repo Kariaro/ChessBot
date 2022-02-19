@@ -45,6 +45,18 @@ namespace Serial {
 		return result;
 	}
 
+	char* getMoveString(uint from, uint to) {
+		char* result = (char*)calloc(5, sizeof(char));
+		if (!result) return 0;
+
+		*(result    ) = 'h' - (from & 7);
+		*(result + 1) = '1' + ((from >> 3) & 7);
+		*(result + 2) = 'h' - (to & 7);
+		*(result + 3) = '1' + ((to >> 3) & 7);
+		*(result + 4) = '\0';
+		return result;
+	}
+
 	char* getMoveString(int piece, uint from, uint to, uint special) {
 		char* buffer = (char*)calloc(32, sizeof(char));
 		if (!buffer) {

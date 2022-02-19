@@ -51,7 +51,7 @@ public class ChessMove {
 			case ChessPieceManager.SM_NORMAL -> Pieces.printable(piece) + "" + ChessUtils.toSquare(from) + "" + ChessUtils.toSquare(to);
 			case ChessPieceManager.SM_CASTLING -> ((special & CastlingFlags.ANY_CASTLE_K) != 0) ? "O-O" : "O-O-O";
 			case ChessPieceManager.SM_EN_PASSANT -> ChessUtils.toSquare(from) + "" + ChessUtils.toSquare(to) + " (en passant)";
-			case ChessPieceManager.SM_PROMOTION -> ChessUtils.toSquare(to) + " (promotion)";
+			case ChessPieceManager.SM_PROMOTION -> ChessUtils.toSquare(to) + "=" + Pieces.printable((special >> 3) & 7) + " (promotion)";
 			
 			// This branch should be impossible to reach because we can only get four different paths.
 			// If the engine breaks in the future we will print all internal values to make it easier to debug.

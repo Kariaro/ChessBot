@@ -10,7 +10,8 @@ namespace Serial {
 	extern inline char get_piece_character(int piece);
 
 	extern char* get_square_string(int square);
-
+	
+	extern char* getMoveString(uint from, uint to);
 	extern char* getMoveString(int piece, uint from, uint to, uint special);
 
 	extern char* getBoardString(Chessboard* board);

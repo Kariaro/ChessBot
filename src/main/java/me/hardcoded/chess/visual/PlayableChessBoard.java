@@ -76,7 +76,7 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 	/**
 	 * This field contains the position of the currently dragged piece.
 	 */
-	private Point draggedPosition;
+	private final Point draggedPosition;
 	
 	/**
 	 * This field contains the index of the piece on the board that is currently dragged.
@@ -388,6 +388,38 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 			g.setColor(new Color(0, 0, 0, value / 300.0f));
 			g.fillRect(x, y, checkerSize, checkerSize);
 		}
+		
+		g.setColor(Color.white);
+		// TODO: Cache and make sure this font exist
+		g.setFont(new Font("Calibri", Font.BOLD, 14));
+		
+		// Drawing the rows and ranks
+		Rectangle rect;
+		for (int i = 0; i < 8; i++) {
+			String row;
+			String rank;
+			
+			if (whitePov) {
+				row = String.valueOf((char)('a' + i));
+				rank = String.valueOf(8 - i);
+			} else {
+				row = String.valueOf((char)('h' - i));
+				rank = String.valueOf(i + 1);
+			}
+			
+			rect = new Rectangle(borderSize + checkerSize * i, borderSize + checkerSize * 8 + 2, checkerSize, 15);
+			drawCenteredString(g, row, rect);
+			
+			rect = new Rectangle(borderSize + checkerSize * 8, borderSize + checkerSize * i + 3, 15, checkerSize);
+			drawCenteredString(g, rank, rect);
+		}
+	}
+	
+	private void drawCenteredString(Graphics2D g, String text, Rectangle rect) {
+		FontMetrics metrics = g.getFontMetrics(g.getFont());
+		int x = rect.x + (rect.width - metrics.stringWidth(text)) / 2;
+		int y = rect.y + ((rect.height - metrics.getHeight()) / 2) + metrics.getAscent();
+		g.drawString(text, x, y);
 	}
 	
 	public void setCheckerSize(int size) {

@@ -5,7 +5,7 @@ import me.hardcoded.chess.api.ChessAnalyser;
 import me.hardcoded.chess.api.ChessAnalysis;
 import me.hardcoded.chess.api.ChessBoard;
 import me.hardcoded.chess.api.ChessMove;
-import me.hardcoded.chess.open.Pieces;
+import me.hardcoded.chess.uci.Pieces;
 
 import java.util.Arrays;
 

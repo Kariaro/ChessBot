@@ -1,5 +1,7 @@
-package me.hardcoded.chess.advanced;
+package me.hardcoded.chess.main;
 
+import me.hardcoded.chess.advanced.ChessBoardImpl;
+import me.hardcoded.chess.advanced.ChessGenerator;
 import me.hardcoded.chess.analysis.*;
 import me.hardcoded.chess.api.ChessAnalysis;
 import me.hardcoded.chess.api.ChessBoard;
@@ -7,8 +9,8 @@ import me.hardcoded.chess.api.ChessPlayer;
 import me.hardcoded.chess.decoder.ChessCodec;
 import me.hardcoded.chess.decoder.PGNGame;
 import me.hardcoded.chess.decoder.PGNTag;
-import me.hardcoded.chess.open.ChessUtilsOld;
 import me.hardcoded.chess.uci.UCIMain;
+import me.hardcoded.chess.utils.ChessUtils;
 import me.hardcoded.chess.visual.PlayableChessBoard;
 
 import javax.swing.*;
@@ -87,7 +89,7 @@ public class Main {
 
 //			System.out.println(ChessCodec.FEN.get(board));
 			System.out.println(ChessCodec.PGN.get(pgnGame));
-			ChessUtilsOld.printBoard(((ChessBoardImpl)board).pieces);
+			ChessUtils.printBoard(((ChessBoardImpl)board).pieces);
 		}
 		
 		System.out.println("-----------------------------------------");

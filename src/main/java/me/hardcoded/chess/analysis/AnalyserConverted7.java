@@ -4,7 +4,7 @@ import me.hardcoded.chess.advanced.*;
 import me.hardcoded.chess.api.ChessAnalysis;
 import me.hardcoded.chess.api.ChessBoard;
 import me.hardcoded.chess.api.ChessMove;
-import me.hardcoded.chess.open.*;
+import me.hardcoded.chess.uci.Pieces;
 
 import java.util.*;
 
@@ -261,7 +261,6 @@ public class AnalyserConverted7 {
 		public final boolean white;
 		public List<MoveConverted> branches = new ArrayList<>();
 		public List<MoveConverted> follow = new ArrayList<>();
-		List<Move> behind = new ArrayList<>();
 		
 		/**
 		 * The predicted best move
@@ -269,11 +268,6 @@ public class AnalyserConverted7 {
 		public MoveConverted best;
 		
 		public ScanConverted(ChessBoardImpl board) {
-			this.base = getMaterial(board);
-			this.white = board.isWhite();
-		}
-		
-		public ScanConverted(ChessBoardImpl board, Set<Move> enemy, Set<Move> moves) {
 			this.base = getMaterial(board);
 			this.white = board.isWhite();
 		}

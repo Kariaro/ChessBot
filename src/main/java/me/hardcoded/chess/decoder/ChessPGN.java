@@ -6,7 +6,7 @@ import me.hardcoded.chess.advanced.ChessGenerator;
 import me.hardcoded.chess.advanced.ChessPieceManager;
 import me.hardcoded.chess.api.ChessBoard;
 import me.hardcoded.chess.api.ChessMove;
-import me.hardcoded.chess.open.Pieces;
+import me.hardcoded.chess.uci.Pieces;
 import me.hardcoded.chess.utils.ChessUtils;
 import me.hardcoded.lexer.GenericLexerContext.LexerToken;
 import me.hardcoded.lexer.PGNLexer;

@@ -1,6 +1,6 @@
 package me.hardcoded.lexer.notation;
 
-import me.hardcoded.chess.open.Pieces;
+import me.hardcoded.chess.uci.Pieces;
 
 public class ChessAN {
 	public static final int CAPTURE = 1,

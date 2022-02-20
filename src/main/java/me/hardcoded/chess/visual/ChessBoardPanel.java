@@ -1,6 +1,6 @@
 package me.hardcoded.chess.visual;
 
-import me.hardcoded.chess.open.Pieces;
+import me.hardcoded.chess.uci.Pieces;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;

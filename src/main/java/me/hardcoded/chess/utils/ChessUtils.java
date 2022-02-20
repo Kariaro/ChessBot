@@ -2,6 +2,7 @@ package me.hardcoded.chess.utils;
 
 import me.hardcoded.chess.advanced.CastlingFlags;
 import me.hardcoded.chess.advanced.ChessPieceManager;
+import me.hardcoded.chess.uci.Pieces;
 
 public final class ChessUtils {
 	public static String toSquare(int a) {
@@ -46,5 +47,22 @@ public final class ChessUtils {
 			case ChessPieceManager.SM_PROMOTION -> "Promotion";
 			default -> "unknown";
 		};
+	}
+	
+	public static void printBoard(int[] board) {
+		StringBuilder sb = new StringBuilder();
+		
+		for (int i = 0; i < 64; i++) {
+			if ((i & 7) == 0) sb.append('\n');
+			
+			char letter = Pieces.printable(board[i]);
+			if (letter == '\0') {
+				sb.append(". ");
+			} else {
+				sb.append(letter).append(' ');
+			}
+		}
+		
+		System.out.println(sb.substring(1));
 	}
 }

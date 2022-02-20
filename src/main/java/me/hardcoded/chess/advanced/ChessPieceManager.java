@@ -1,8 +1,8 @@
 package me.hardcoded.chess.advanced;
 
-import static me.hardcoded.chess.open.Pieces.*;
+import static me.hardcoded.chess.uci.Pieces.*;
 
-import me.hardcoded.chess.open.Pieces;
+import me.hardcoded.chess.uci.Pieces;
 import me.hardcoded.chess.visual.PlayableChessBoard;
 
 /**

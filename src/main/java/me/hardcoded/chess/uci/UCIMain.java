@@ -5,7 +5,6 @@ import me.hardcoded.chess.advanced.ChessGenerator;
 import me.hardcoded.chess.advanced.ChessPieceManager;
 import me.hardcoded.chess.analysis.AlphaBetaPruningV3;
 import me.hardcoded.chess.api.ChessMove;
-import me.hardcoded.chess.open.Pieces;
 import me.hardcoded.chess.utils.ChessUtils;
 
 import java.io.OutputStream;

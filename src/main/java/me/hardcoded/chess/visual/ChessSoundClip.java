@@ -1,6 +1,5 @@
-package me.hardcoded.chess.gui;
+package me.hardcoded.chess.visual;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 

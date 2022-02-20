@@ -3,7 +3,7 @@ package me.hardcoded.chess.advanced;
 import me.hardcoded.chess.api.ChessBoard;
 import me.hardcoded.chess.decoder.ChessCodec;
 
-import static me.hardcoded.chess.open.Pieces.*;
+import static me.hardcoded.chess.uci.Pieces.*;
 
 /**
  * This class contains the information about the current chess board

@@ -2,7 +2,7 @@ package me.hardcoded.chess.decoder;
 
 import me.hardcoded.chess.advanced.CastlingFlags;
 import me.hardcoded.chess.advanced.ChessBoardImpl;
-import me.hardcoded.chess.open.Pieces;
+import me.hardcoded.chess.uci.Pieces;
 import me.hardcoded.chess.utils.ChessUtils;
 
 /**

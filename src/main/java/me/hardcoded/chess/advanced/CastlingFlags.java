@@ -17,10 +17,10 @@ public interface CastlingFlags {
 	int ANY_CASTLE_ANY = WHITE_CASTLE_ANY | BLACK_CASTLE_ANY;
 	
 	// Position
-	int WHITE_KING = 3;
-	int BLACK_KING = 59;
-	int WHITE_ROOK_K = 0;
-	int WHITE_ROOK_Q = 7;
-	int BLACK_ROOK_K = 56;
-	int BLACK_ROOK_Q = 63;
+	int WHITE_KING = 4;
+	int BLACK_KING = 60;
+	int WHITE_ROOK_K = 7;
+	int WHITE_ROOK_Q = 0;
+	int BLACK_ROOK_K = 63;
+	int BLACK_ROOK_Q = 56;
 }

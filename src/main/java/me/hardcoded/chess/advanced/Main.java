@@ -1,14 +1,14 @@
 package me.hardcoded.chess.advanced;
 
-import me.hardcoded.chess.analysis.AnalyserTool4;
-import me.hardcoded.chess.analysis.AnalyserV1_AlphaBetaPruning;
-import me.hardcoded.chess.analysis.AnalyserV2_AlphaBetaPruning;
+import me.hardcoded.chess.analysis.*;
 import me.hardcoded.chess.api.ChessAnalysis;
 import me.hardcoded.chess.api.ChessBoard;
+import me.hardcoded.chess.api.ChessPlayer;
 import me.hardcoded.chess.decoder.ChessCodec;
 import me.hardcoded.chess.decoder.PGNGame;
 import me.hardcoded.chess.decoder.PGNTag;
 import me.hardcoded.chess.open.ChessUtilsOld;
+import me.hardcoded.chess.uci.UCIMain;
 import me.hardcoded.chess.visual.PlayableChessBoard;
 
 import javax.swing.*;
@@ -16,6 +16,14 @@ import javax.swing.*;
 // TODO: http://wbec-ridderkerk.nl/html/UCIProtocol.html
 public class Main {
 	public static void main(String[] args) throws Exception {
+		if (args.length > 0 && args[0].equals("--uci")) {
+			UCIMain.init(args);
+		} else {
+			debugInit();
+		}
+	}
+	
+	public static void debugInit() {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
@@ -35,6 +43,7 @@ public class Main {
 //		""");
 		
 		board = pgnGame.getBoard(Integer.MAX_VALUE);
+//		board = ChessCodec.FEN.from("8/8/RP5P/2Nk4/1P3P2/2K3P1/8/8 w - - 3 58");
 		
 		System.out.println(ChessCodec.PGN.get(pgnGame));
 		
@@ -50,50 +59,32 @@ public class Main {
 		frame.setVisible(true);
 		
 		pgnGame = new PGNGame();
-		pgnGame.setTag(PGNTag.FEN, ChessCodec.FEN.get(board));
-		pgnGame.setTag(PGNTag.White, "AnalyserTool4");
-		pgnGame.setTag(PGNTag.Black, "AnalyserV1_AlphaBetaPruning");
+//		pgnGame.setTag(PGNTag.FEN, ChessCodec.FEN.get(board));
 		
-		ChessAnalysis analysis;
+		ChessPlayer manualPlayer = new ChessPlayer("HardCoded", (b) -> {
+			ChessAnalysis result = new ChessAnalysis();
+			result.setBestMove(panel.awaitMoveNonNull());
+			return result;
+		}, true);
 		
-		boolean delay = true;
+		ChessPlayer whitePlayer = new ChessPlayer("AlphaBetaPruningV3", AlphaBetaPruningV3::analyseTest);
+		pgnGame.setTag(PGNTag.White, whitePlayer.getName());
+		
+		ChessPlayer blackPlayer = manualPlayer; //new ChessPlayer("AnalyserConverted7", AnalyserConverted7::analyse);
+		pgnGame.setTag(PGNTag.Black, blackPlayer.getName());
+		
 		while (true) {
-			if (!delay) {
-				analysis = AnalyserV2_AlphaBetaPruning.analyseTest(board);
-				if(!ChessGenerator.playMove(board, analysis.getBestMove())) {
-					// The game ended
-					break;
-				}
-				pgnGame.addMove(analysis.getBestMove());
-				frame.setTitle(ChessCodec.FEN.get(board));
-				
-//				analysis = AnalyserTool4.analyseTest(board);
-//				if (!ChessGenerator.playMove(board, analysis.getBestMove())) {
-//					// The game ended
-//					break;
-//				}
-//				pgnGame.addMove(analysis.getBestMove());
-			}
-			delay = false;
-//
-//			System.out.println(ChessCodec.FEN.get(board));
-//			System.out.println(ChessCodec.PGN.get(pgnGame));
-//
-//			analysis = AnalyserTool4.analyseTest(board);
-//			if (!ChessGenerator.playMove(board, analysis.getBestMove())) {
-//				// The game ended
-//				break;
-//			}
-//			pgnGame.addMove(analysis.getBestMove());
-//			frame.setTitle(ChessCodec.FEN.get(board));
-//
-//			System.out.println(ChessCodec.FEN.get(board));
-//			System.out.println(ChessCodec.PGN.get(pgnGame));
+			System.out.println("Turn: " + (board.isWhite() ? "White" : "Black"));
 			
-//			System.out.println("\nMaterial: " + analysis.getMaterial());
-			pgnGame.addMove(panel.awaitMoveNonNull());
+			ChessPlayer player = (board.isWhite() ? whitePlayer : blackPlayer);
+			ChessAnalysis analysis = player.apply(board);
+			if (!player.isManual() && !ChessGenerator.playMove(board, analysis.getBestMove())) {
+				// The game ended
+				break;
+			}
+			pgnGame.addMove(analysis.getBestMove());
 			frame.setTitle(ChessCodec.FEN.get(board));
-//
+
 //			System.out.println(ChessCodec.FEN.get(board));
 			System.out.println(ChessCodec.PGN.get(pgnGame));
 			ChessUtilsOld.printBoard(((ChessBoardImpl)board).pieces);

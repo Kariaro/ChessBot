@@ -10,11 +10,11 @@ import me.hardcoded.chess.open.Pieces;
 import java.util.Arrays;
 
 /**
- * This class is version 1 of alpha-beta pruning move checking.
+ * This class is version 2 of alpha-beta pruning move checking.
  *
  * @author HardCoded
  */
-public class AnalyserV2_AlphaBetaPruning implements ChessAnalyser {
+public class AlphaBetaPruningV2 implements ChessAnalyser {
 	private final int DEPTH = 5;
 	private final Move[][] MOVES = new Move[DEPTH + 1][1024];
 	
@@ -131,7 +131,7 @@ public class AnalyserV2_AlphaBetaPruning implements ChessAnalyser {
 	}
 	
 	public static ChessAnalysis analyseTest(ChessBoard board) {
-		return new AnalyserV2_AlphaBetaPruning().analyse((ChessBoardImpl)board);
+		return new AlphaBetaPruningV2().analyse((ChessBoardImpl)board);
 	}
 	
 	@Override

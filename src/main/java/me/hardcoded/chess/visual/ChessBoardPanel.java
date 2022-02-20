@@ -16,7 +16,7 @@ import java.io.InputStream;
  *
  * @author HardCoded
  */
-public class ChessBoardPanel extends JPanel {
+class ChessBoardPanel extends JPanel {
 	private static final Color CHECKER_B = new Color(181, 136, 99);
 	private static final Color CHECKER_D = new Color(181, 136, 99);
 	private static final Color CHECKER_L = new Color(240, 217, 181);

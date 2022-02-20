@@ -14,8 +14,8 @@ import java.util.Arrays;
  *
  * @author HardCoded
  */
-public class AnalyserV1_AlphaBetaPruning implements ChessAnalyser {
-	private final int DEPTH = 6;
+public class AlphaBetaPruningV1 implements ChessAnalyser {
+	private final int DEPTH = 5;
 	private final Move[][] MOVES = new Move[DEPTH + 1][1024];
 	
 	private Move[] getAllMoves(ChessBoardImpl board, int depth) {
@@ -131,7 +131,7 @@ public class AnalyserV1_AlphaBetaPruning implements ChessAnalyser {
 	}
 	
 	public static ChessAnalysis analyseTest(ChessBoard board) {
-		return new AnalyserV1_AlphaBetaPruning().analyse((ChessBoardImpl)board);
+		return new AlphaBetaPruningV1().analyse((ChessBoardImpl)board);
 	}
 	
 	@Override

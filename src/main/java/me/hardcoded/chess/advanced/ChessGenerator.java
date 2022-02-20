@@ -34,6 +34,73 @@ public class ChessGenerator {
 		generate(board, false, consumer);
 	}
 	
+	
+	public static void generateQuiesce(ChessBoard board, ChessConsumer consumer) {
+		final ChessBoardImpl b = (ChessBoardImpl)board;
+		boolean isWhite = b.isWhite();
+		
+		long quiesceMask;
+		long mask;
+		if (isWhite) {
+			mask = b.whiteMask;
+			quiesceMask = b.blackMask;
+		} else {
+			mask = b.blackMask;
+			quiesceMask = b.whiteMask;
+		}
+		
+		boolean stopRunning = false;
+		
+		while (mask != 0) {
+			// If we want to stop checking moves we exit
+			if (stopRunning) {
+				break;
+			}
+			
+			long pick = Long.lowestOneBit(mask);
+			mask &= ~pick;
+			int idx = Long.numberOfTrailingZeros(pick);
+			
+			int piece = b.pieces[idx];
+			// Quiesce moves can only capture other pieces
+			long moves = ChessPieceManager.piece_move(b, piece, idx) & quiesceMask;
+			
+			while (moves != 0) {
+				long move_bit = Long.lowestOneBit(moves);
+				moves &= ~move_bit;
+				int move_idx = Long.numberOfTrailingZeros(move_bit);
+				stopRunning = stopRunning || !consumer.accept(idx, move_idx, 0);
+			}
+			
+			if (piece * piece == 1 || piece * piece == 36) {
+				int special = ChessPieceManager.special_piece_move(b, piece, isWhite, idx);
+				int type = special & 0b11000000;
+				if (type == ChessPieceManager.SM_EN_PASSANT) {
+					stopRunning = stopRunning || !consumer.accept(idx, special & 0b111111, special);
+				} else if (type == ChessPieceManager.SM_PROMOTION) {
+					// Split promotion into multiple moves
+					int specialFlag;
+					int toIdx = idx + (isWhite ? 8 : -8);
+					if ((specialFlag = (special & ChessPieceManager.PROMOTION_LEFT)) != 0) {
+						for (int promotionPiece : Pieces.PROMOTION) {
+							stopRunning = stopRunning || !consumer.accept(idx, toIdx - 1, ChessPieceManager.SM_PROMOTION | specialFlag | promotionPiece << 3);
+						}
+					}
+					if ((specialFlag = (special & ChessPieceManager.PROMOTION_MIDDLE)) != 0) {
+						for (int promotionPiece : Pieces.PROMOTION) {
+							stopRunning = stopRunning || !consumer.accept(idx, toIdx, ChessPieceManager.SM_PROMOTION | specialFlag | promotionPiece << 3);
+						}
+					}
+					if ((specialFlag = (special & ChessPieceManager.PROMOTION_RIGHT)) != 0) {
+						for (int promotionPiece : Pieces.PROMOTION) {
+							stopRunning = stopRunning || !consumer.accept(idx, toIdx + 1, ChessPieceManager.SM_PROMOTION | specialFlag | promotionPiece << 3);
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	/**
 	 * If gui promotion is {@code true} then only one move will be shown for promotion instead of all piece types
 	 */
@@ -71,46 +138,47 @@ public class ChessGenerator {
 			}
 			
 			if (piece * piece == 1 || piece * piece == 36) {
-				int special = (int) ChessPieceManager.special_piece_move(b, piece, isWhite, idx);
+				int special = ChessPieceManager.special_piece_move(b, piece, isWhite, idx);
 				int type = special & 0b11000000;
 				if (type == ChessPieceManager.SM_CASTLING) {
 					// Split the castling moves up into multiple moves
 					int specialFlag;
 					if ((specialFlag = (special & CastlingFlags.ANY_CASTLE_K)) != 0) {
-						stopRunning = stopRunning || !consumer.accept(idx, idx - 2, ChessPieceManager.SM_CASTLING | specialFlag);
+						stopRunning = stopRunning || !consumer.accept(idx, idx + 2, ChessPieceManager.SM_CASTLING | specialFlag);
 					}
 					if ((specialFlag = (special & CastlingFlags.ANY_CASTLE_Q)) != 0) {
-						stopRunning = stopRunning || !consumer.accept(idx, idx + 2, ChessPieceManager.SM_CASTLING | specialFlag);
+						stopRunning = stopRunning || !consumer.accept(idx, idx - 2, ChessPieceManager.SM_CASTLING | specialFlag);
 					}
 				} else if (type == ChessPieceManager.SM_EN_PASSANT) {
 					stopRunning = stopRunning || !consumer.accept(idx, special & 0b111111, special);
 				} else if (type == ChessPieceManager.SM_PROMOTION) {
 					// Split promotion into multiple moves
 					int specialFlag;
+					int toIdx = idx + (isWhite ? 8 : -8);
 					if (guiPromotion) {
 						if ((specialFlag = (special & ChessPieceManager.PROMOTION_LEFT)) != 0) {
-							stopRunning = stopRunning || !consumer.accept(idx, idx + (isWhite ? 8 : -8) - 1, ChessPieceManager.SM_PROMOTION | specialFlag);
+							stopRunning = stopRunning || !consumer.accept(idx, toIdx - 1, ChessPieceManager.SM_PROMOTION | specialFlag);
 						}
 						if ((specialFlag = (special & ChessPieceManager.PROMOTION_MIDDLE)) != 0) {
-							stopRunning = stopRunning || !consumer.accept(idx, idx + (isWhite ? 8 : -8), ChessPieceManager.SM_PROMOTION | specialFlag);
+							stopRunning = stopRunning || !consumer.accept(idx, toIdx, ChessPieceManager.SM_PROMOTION | specialFlag);
 						}
 						if ((specialFlag = (special & ChessPieceManager.PROMOTION_RIGHT)) != 0) {
-							stopRunning = stopRunning || !consumer.accept(idx, idx + (isWhite ? 8 : -8) + 1, ChessPieceManager.SM_PROMOTION | specialFlag);
+							stopRunning = stopRunning || !consumer.accept(idx, toIdx + 1, ChessPieceManager.SM_PROMOTION | specialFlag);
 						}
 					} else {
 						if ((specialFlag = (special & ChessPieceManager.PROMOTION_LEFT)) != 0) {
 							for (int promotionPiece : Pieces.PROMOTION) {
-								stopRunning = stopRunning || !consumer.accept(idx, idx + (isWhite ? 8 : -8) - 1, ChessPieceManager.SM_PROMOTION | specialFlag | promotionPiece << 3);
+								stopRunning = stopRunning || !consumer.accept(idx, toIdx - 1, ChessPieceManager.SM_PROMOTION | specialFlag | promotionPiece << 3);
 							}
 						}
 						if ((specialFlag = (special & ChessPieceManager.PROMOTION_MIDDLE)) != 0) {
 							for (int promotionPiece : Pieces.PROMOTION) {
-								stopRunning = stopRunning || !consumer.accept(idx, idx + (isWhite ? 8 : -8), ChessPieceManager.SM_PROMOTION | specialFlag | promotionPiece << 3);
+								stopRunning = stopRunning || !consumer.accept(idx, toIdx, ChessPieceManager.SM_PROMOTION | specialFlag | promotionPiece << 3);
 							}
 						}
 						if ((specialFlag = (special & ChessPieceManager.PROMOTION_RIGHT)) != 0) {
 							for (int promotionPiece : Pieces.PROMOTION) {
-								stopRunning = stopRunning || !consumer.accept(idx, idx + (isWhite ? 8 : -8) + 1, ChessPieceManager.SM_PROMOTION | specialFlag | promotionPiece << 3);
+								stopRunning = stopRunning || !consumer.accept(idx, toIdx + 1, ChessPieceManager.SM_PROMOTION | specialFlag | promotionPiece << 3);
 							}
 						}
 					}
@@ -147,14 +215,14 @@ public class ChessGenerator {
 				case ChessPieceManager.SM_CASTLING -> {
 					if ((special & CastlingFlags.ANY_CASTLE_K) != 0) {
 						return !(ChessPieceManager.isAttacked(board, fromIdx)
-							|| ChessPieceManager.isAttacked(board, fromIdx - 1)
-							|| ChessPieceManager.isAttacked(board, fromIdx - 2));
+							|| ChessPieceManager.isAttacked(board, fromIdx + 1)
+							|| ChessPieceManager.isAttacked(board, fromIdx + 2));
 					}
 					
 					if ((special & CastlingFlags.ANY_CASTLE_Q) != 0) {
 						return !(ChessPieceManager.isAttacked(board, fromIdx)
-							|| ChessPieceManager.isAttacked(board, fromIdx + 1)
-							|| ChessPieceManager.isAttacked(board, fromIdx + 2));
+							|| ChessPieceManager.isAttacked(board, fromIdx - 1)
+							|| ChessPieceManager.isAttacked(board, fromIdx - 2));
 					}
 				}
 				
@@ -293,17 +361,17 @@ public class ChessGenerator {
 			
 			case ChessPieceManager.SM_CASTLING -> {
 				if ((special & CastlingFlags.ANY_CASTLE_K) != 0) {
-					b.setPiece(fromIdx - 3, Pieces.NONE);
-					b.setPiece(fromIdx - 2, Pieces.KING * mul);
-					b.setPiece(fromIdx - 1, Pieces.ROOK * mul);
+					b.setPiece(fromIdx + 3, Pieces.NONE);
+					b.setPiece(fromIdx + 2, Pieces.KING * mul);
+					b.setPiece(fromIdx + 1, Pieces.ROOK * mul);
 					b.setPiece(fromIdx, Pieces.NONE);
 					b.flags &= isWhite ? ~CastlingFlags.WHITE_CASTLE_ANY : ~CastlingFlags.BLACK_CASTLE_ANY;
 				}
 				
 				if ((special & CastlingFlags.ANY_CASTLE_Q) != 0) {
-					b.setPiece(fromIdx + 4, Pieces.NONE);
-					b.setPiece(fromIdx + 2, Pieces.KING * mul);
-					b.setPiece(fromIdx + 1, Pieces.ROOK * mul);
+					b.setPiece(fromIdx - 4, Pieces.NONE);
+					b.setPiece(fromIdx - 2, Pieces.KING * mul);
+					b.setPiece(fromIdx - 1, Pieces.ROOK * mul);
 					b.setPiece(fromIdx, Pieces.NONE);
 					b.flags &= isWhite ? ~CastlingFlags.WHITE_CASTLE_ANY : ~CastlingFlags.BLACK_CASTLE_ANY;
 				}

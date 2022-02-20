@@ -32,12 +32,20 @@ class CodecHelper {
 		int file = move.from & 7;
 		boolean sameRank = false;
 		boolean sameFile = false;
+		boolean match = false;
 		
 		for (ChessMove m : moves) {
 			int mRank = m.to >> 3;
 			int mFile = m.to & 7;
 			sameRank |= (rank == mRank);
 			sameFile |= (file == mFile);
+			match = true;
+		}
+		
+		// If there are multiple pieces going to the same position and they do not share any rank or file
+		if (match && !sameFile && !sameRank) {
+			// We make sure we print the file
+			sameRank = true;
 		}
 		
 		// If we have a piece on the same file we need to specify the rank

@@ -4,56 +4,26 @@ import me.hardcoded.chess.advanced.CastlingFlags;
 import me.hardcoded.chess.advanced.ChessPieceManager;
 
 public final class ChessUtils {
-	public static String toBitString(long value) {
-		StringBuilder sb = new StringBuilder();
-		
-		for (int i = 0; i < 64; i++) {
-			if ((i & 7) == 0) {
-				sb.append("_");
-			}
-			
-			sb.append(((value >>> (long)i) & 1));
-		}
-		
-		return sb.substring(1);
-	}
-	
-	public static String toBitFancyString(long value) {
-		StringBuilder sb = new StringBuilder();
-		
-		for (int i = 0; i < 64; i++) {
-			if ((i & 7) == 0) {
-				sb.append("\n");
-			}
-			
-			sb.append(((value >>> (long)i) & 1)).append(' ');
-		}
-		
-		return sb.toString();
-	}
-	
 	public static String toSquare(int a) {
 		return toFileChar(a & 7) + "" + toRankChar(a >> 3);
 	}
 	
 	public static char toColumn(int a) {
-		return (char)('h' - (a & 7));
+		return (char)((a & 7) - 'a');
 	}
 	
 	public static int fromSquare(String square) {
 		char a = square.charAt(0);
 		char b = square.charAt(1);
-		return ('h' - a) + ((b - '1') << 3);
+		return (a - 'a') + ((b - '1') << 3);
 	}
 	
 	public static char toRankChar(int i) {
 		return (char)(i + '1');
 	}
 	
-	// TODO: We need to flip the board so that the values print correctly when converting between values
-	@Deprecated(forRemoval = true)
 	public static char toFileChar(int i) {
-		return (char)('h' - i);
+		return (char)(i + 'a');
 	}
 	
 	public static String toCastlingMove(int fields) {

@@ -1,5 +1,6 @@
 package me.hardcoded.chess.visual;
 
+import me.hardcoded.chess.advanced.ChessBoardImpl;
 import me.hardcoded.chess.advanced.ChessGenerator;
 import me.hardcoded.chess.advanced.ChessPieceManager;
 import me.hardcoded.chess.api.ChessBoard;
@@ -240,8 +241,9 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 				int my = (p.y - borderSize) / checkerSize;
 				
 				if (whitePov) {
-					mx = 7 - mx;
 					my = 7 - my;
+				} else {
+					mx = 7 - mx;
 				}
 				
 				if (mx >= 0 && mx < 8 && my >= 0 && my < 8) {
@@ -304,10 +306,10 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 		// Paint dots
 		for (int i = 0; i < 64; i++) {
 			if (((movesMask >> i) & 1L) != 0) {
-				int xp = whitePov ? (7 - (i >> 3)) : (i >> 3);
-				int yp = whitePov ? (7 - (i & 7)) : (i & 7);
-				int y = borderSize + xp * checkerSize;
-				int x = borderSize + yp * checkerSize;
+				int yp = whitePov ? (7 - (i >> 3)) : (i >> 3);
+				int xp = whitePov ? (i & 7) : (7 - (i & 7));
+				int y = borderSize + yp * checkerSize;
+				int x = borderSize + xp * checkerSize;
 				
 				drawPiece(g, x, y, PieceType.GREEN_DOT);
 			}
@@ -320,10 +322,10 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 					continue;
 				}
 				
-				int xp = whitePov ? (7 - (i >> 3)) : (i >> 3);
-				int yp = whitePov ? (7 - (i & 7)) : (i & 7);
-				int y = borderSize + xp * checkerSize;
-				int x = borderSize + yp * checkerSize;
+				int yp = whitePov ? (7 - (i >> 3)) : (i >> 3);
+				int xp = whitePov ? (i & 7) : (7 - (i & 7));
+				int y = borderSize + yp * checkerSize;
+				int x = borderSize + xp * checkerSize;
 				drawPiece(g, x, y, getPiece(board.getPiece(i)));
 			}
 			
@@ -427,8 +429,17 @@ public class PlayableChessBoard extends JPanel implements ActionListener {
 		checkerSize = size;
 	}
 	
-	public void setTargets(long value) {
+	public PlayableChessBoard setTargets(long value) {
 		movesMask = value;
+		return this;
+	}
+	
+	public PlayableChessBoard setTargets(int[] pieces) {
+		ChessBoardImpl board = new ChessBoardImpl();
+		System.arraycopy(pieces, 0, board.pieces, 0, 64);
+		this.board = board;
+		repaint();
+		return this;
 	}
 	
 	public void setDisplayedBoard(ChessBoard board) {

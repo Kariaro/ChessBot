@@ -16,6 +16,12 @@ dependencies {
     implementation 'junit:junit:4.13.2'
 }
 
+jar {
+    manifest {
+        attributes 'Main-Class': "me.hardcoded.chess.advanced.Main"
+    }
+}
+
 repositories {
     mavenCentral()
 }

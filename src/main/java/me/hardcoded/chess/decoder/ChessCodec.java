@@ -41,7 +41,7 @@ public interface ChessCodec {
 		}
 		
 		public static PGNGame from(String text) {
-			return ChessPGN.from(text);
+			return ChessPGN. from(text);
 		}
 	}
 }

@@ -23,14 +23,14 @@ public class ChessBoardImpl implements ChessBoard {
 	
 	public ChessBoardImpl() {
 		this.pieces = new int[] {
-			 ROOK,  KNIGHT,  BISHOP,  KING,  QUEEN,  BISHOP,  KNIGHT,  ROOK,
-			 PAWN,    PAWN,    PAWN,  PAWN,   PAWN,    PAWN,    PAWN,  PAWN,
-			    0,       0,       0,     0,      0,       0,       0,     0,
-			    0,       0,       0,     0,      0,       0,       0,     0,
-			    0,       0,       0,     0,      0,       0,       0,     0,
-			    0,       0,       0,     0,      0,       0,       0,     0,
-			-PAWN,   -PAWN,   -PAWN, -PAWN,  -PAWN,   -PAWN,   -PAWN, -PAWN,
-			-ROOK, -KNIGHT, -BISHOP, -KING, -QUEEN, -BISHOP, -KNIGHT, -ROOK,
+			 ROOK,  KNIGHT,  BISHOP,  QUEEN,  KING,  BISHOP,  KNIGHT,  ROOK,
+			 PAWN,    PAWN,    PAWN,   PAWN,  PAWN,    PAWN,    PAWN,  PAWN,
+			    0,       0,       0,      0,     0,       0,       0,     0,
+			    0,       0,       0,      0,     0,       0,       0,     0,
+			    0,       0,       0,      0,     0,       0,       0,     0,
+			    0,       0,       0,      0,     0,       0,       0,     0,
+			-PAWN,   -PAWN,   -PAWN,  -PAWN, -PAWN,   -PAWN,   -PAWN, -PAWN,
+			-ROOK, -KNIGHT, -BISHOP, -QUEEN, -KING, -BISHOP, -KNIGHT, -ROOK,
 		};
 		
 		// Fast init

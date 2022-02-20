@@ -34,7 +34,7 @@ class ChessFEN {
 				int index = 0;
 				for (int j = 0, len = rank.length(); j < len; j++) {
 					char c = rank.charAt(j);
-					int idx = 7 - index + ((7 - i) << 3);
+					int idx = ((7 - i) << 3) + (index);
 					
 					switch (Character.toLowerCase(c)) {
 						case 'p', 'r', 'n', 'b', 'q', 'k' -> {
@@ -77,7 +77,7 @@ class ChessFEN {
 		StringBuilder sb = new StringBuilder();
 		for (int y = 7; y >= 0; y--) {
 			int empty = 0;
-			for (int x = 7; x >= 0; x--) {
+			for (int x = 0; x < 8; x++) {
 				int piece = pieces[x + (y << 3)];
 				char print = Pieces.printable(piece);
 				

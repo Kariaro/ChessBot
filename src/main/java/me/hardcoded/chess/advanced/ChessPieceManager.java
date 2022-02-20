@@ -3,7 +3,7 @@ package me.hardcoded.chess.advanced;
 import static me.hardcoded.chess.open.Pieces.*;
 
 import me.hardcoded.chess.open.Pieces;
-import me.hardcoded.chess.visual.ChessBoardPanel;
+import me.hardcoded.chess.visual.PlayableChessBoard;
 
 /**
  * This is the piece manager for the chess engine.
@@ -12,7 +12,7 @@ import me.hardcoded.chess.visual.ChessBoardPanel;
  * @author HardCoded
  */
 public class ChessPieceManager {
-	public static final ChessBoardPanel BOARD_PANEL = new ChessBoardPanel();
+	public static final PlayableChessBoard BOARD_PANEL = new PlayableChessBoard();
 	
 	public static long piece_move(ChessBoardImpl board, int piece, int idx) {
 		return piece_move(board, piece, board.isWhite(), idx);
@@ -42,7 +42,7 @@ public class ChessPieceManager {
 		}
 	}
 	
-	public static long special_piece_move(ChessBoardImpl board, int piece, boolean isWhite, int idx) {
+	public static int special_piece_move(ChessBoardImpl board, int piece, boolean isWhite, int idx) {
 		if (isWhite) {
 			return switch (piece) {
 				case PAWN -> white_pawn_special_move(board, idx);
@@ -267,12 +267,12 @@ public class ChessPieceManager {
 		return PrecomputedTable.KING_MOVES[idx];
 	}
 	
-	private static final long WHITE_K = 0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000110L;
-	private static final long WHITE_Q = 0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_01110000L;
-	private static final long BLACK_K = 0b00000110_00000000_00000000_00000000_00000000_00000000_00000000_00000000L;
-	private static final long BLACK_Q = 0b01110000_00000000_00000000_00000000_00000000_00000000_00000000_00000000L;
-	private static long king_special_move(ChessBoardImpl board, int idx) {
-		long result = 0;
+	private static final long WHITE_K = 0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_01100000L;
+	private static final long WHITE_Q = 0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_00001110L;
+	private static final long BLACK_K = 0b01100000_00000000_00000000_00000000_00000000_00000000_00000000_00000000L;
+	private static final long BLACK_Q = 0b00001110_00000000_00000000_00000000_00000000_00000000_00000000_00000000L;
+	private static int king_special_move(ChessBoardImpl board, int idx) {
+		int result = 0;
 		if (board.isWhite()) {
 			if ((board.pieceMask & WHITE_K) == 0 && board.hasFlags(CastlingFlags.WHITE_CASTLE_K)) {
 				result |= SM_CASTLING | CastlingFlags.WHITE_CASTLE_K;
@@ -294,10 +294,12 @@ public class ChessPieceManager {
 		return result;
 	}
 	
-	private static long pawn_attack(ChessBoardImpl board, boolean isWhite, int idx) {
-		return isWhite
-			? PrecomputedTable.PAWN_ATTACK_BLACK[idx]
-			: PrecomputedTable.PAWN_ATTACK_WHITE[idx];
+	private static long white_pawn_attack(int idx) {
+		return PrecomputedTable.PAWN_ATTACK_WHITE[idx];
+	}
+	
+	private static long black_pawn_attack(int idx) {
+		return PrecomputedTable.PAWN_ATTACK_BLACK[idx];
 	}
 	
 	/**
@@ -332,7 +334,7 @@ public class ChessPieceManager {
 				return true;
 			}
 			
-			long pawn_move = pawn_attack(board, false, idx) & board.blackMask;
+			long pawn_move = white_pawn_attack(idx) & board.blackMask;
 			return hasPiece(board, pawn_move, -Pieces.PAWN);
 		} else {
 			long rook_move = (rook_move(board, idx) & ~board.blackMask) & board.whiteMask;
@@ -355,7 +357,7 @@ public class ChessPieceManager {
 				return true;
 			}
 			
-			long pawn_move = pawn_attack(board, true, idx) & board.whiteMask;
+			long pawn_move = black_pawn_attack(idx) & board.whiteMask;
 			return hasPiece(board, pawn_move, Pieces.PAWN);
 		}
 	}
@@ -382,17 +384,6 @@ public class ChessPieceManager {
 			board.halfMove = old;
 			return true;
 		}
-		
-//		if (idx == -1) {
-//			// If the king does not exist we will allow this?
-//			// ChessGenerator.debug("Invalid", board.pieces);
-//			return false;
-//		}
-//
-//		if (isAttacked(board, idx)) {
-//			board.halfMove = old;
-//			return true;
-//		}
 		
 		board.halfMove = old;
 		return false;

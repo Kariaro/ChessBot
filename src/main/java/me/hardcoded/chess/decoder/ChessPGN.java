@@ -122,7 +122,7 @@ public class ChessPGN {
 	
 	static ChessMove findChessMove(ChessBoard board, String name) {
 		final ChessAN notation = new ChessAN(name);
-		final int targetIdx = (notation.getTargetRank() << 3) + (7 - notation.getTargetFile());
+		final int targetIdx = (notation.getTargetRank() << 3) + (notation.getTargetFile());
 		
 		final List<ChessMove> matches = new ArrayList<>();
 		ChessGenerator.generate(board, false, (from, to, special) -> {
@@ -172,7 +172,7 @@ public class ChessPGN {
 			int notationFile = notation.getFromFile();
 			int notationRank = notation.getFromRank();
 			for (ChessMove move : matches) {
-				int moveFromFile = 7 - (move.from & 7);
+				int moveFromFile = move.from & 7;
 				int moveFromRank = move.from >> 3;
 				
 				if (notationFile != -1 && moveFromFile != notationFile) {
@@ -307,6 +307,7 @@ public class ChessPGN {
 						moveIndex ++;
 						ChessMove move = findChessMove(board, token.content);
 						if (move == null || !ChessGenerator.playMove(board, move.from, move.to, move.special)) {
+							ChessGenerator.debug("Test", board.pieces);
 							throw new RuntimeException("Invalid move '%s'".formatted(token.content));
 						} else {
 							game.addMove(move);

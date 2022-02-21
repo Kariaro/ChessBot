@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef __FEN_IMPORT_CPP__
-#define __FEN_IMPORT_CPP__
+#ifndef FEN_IMPORT_CPP
+#define FEN_IMPORT_CPP
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -75,20 +75,13 @@ int import_fen(struct Chessboard* board, const char* chars) {
 				break;
 			}
 
-			uint idx = (7 - file) + ((7 - rank) << 3);
+			uint idx = (file) + ((7 - rank) << 3);
 			switch (c) {
-				case 'r': pieces[(++file, idx)] = Pieces::B_ROOK; break;
-				case 'n': pieces[(++file, idx)] = Pieces::B_KNIGHT; break;
-				case 'b': pieces[(++file, idx)] = Pieces::B_BISHOP; break;
-				case 'q': pieces[(++file, idx)] = Pieces::B_QUEEN; break;
-				case 'k': pieces[(++file, idx)] = Pieces::B_KING; break;
-				case 'p': pieces[(++file, idx)] = Pieces::B_PAWN; break;
-				case 'R': pieces[(++file, idx)] = Pieces::W_ROOK; break;
-				case 'N': pieces[(++file, idx)] = Pieces::W_KNIGHT; break;
-				case 'B': pieces[(++file, idx)] = Pieces::W_BISHOP; break;
-				case 'Q': pieces[(++file, idx)] = Pieces::W_QUEEN; break;
-				case 'K': pieces[(++file, idx)] = Pieces::W_KING; break;
-				case 'P': pieces[(++file, idx)] = Pieces::W_PAWN; break;
+				case 'r': case 'n': case 'b': case 'q': case 'k': case 'p':
+				case 'R': case 'N': case 'B': case 'Q': case 'K': case 'P': {
+					pieces[(++file, idx)] = Serial::get_piece_from_character(c);
+					break;
+				}
 
 				case '1':
 				case '2':
@@ -207,7 +200,7 @@ int import_fen(struct Chessboard* board, const char* chars) {
 	board->whiteMask = whiteMask;
 	board->blackMask = blackMask;
 	board->pieceMask = whiteMask | blackMask;
-	return FEN_IMPORT_SUCESSFULL;
+	return FEN_IMPORT_SUCCESSFULL;
 }
 
 static void _writeNumber(char** ptr, int value) {
@@ -239,7 +232,7 @@ char* export_fen(Chessboard* board) {
 	{
 		for (int rank = 7; rank >= 0; rank--) {
 			int empty = 0;
-			for (int file = 7; file >= 0; file--) {
+			for (int file = 0; file < 8; file++) {
 				int idx = file | (rank << 3);
 
 				char c = Serial::get_piece_character(board->pieces[idx]);
@@ -294,4 +287,4 @@ char* export_fen(Chessboard* board) {
 	return chars;
 }
 
-#endif // !__FEN_IMPORT_CPP__
+#endif // !FEN_IMPORT_CPP

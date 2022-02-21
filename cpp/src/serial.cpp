@@ -1,18 +1,12 @@
-#pragma once
-
-#ifndef __SERIAL_CPP__
-#define __SERIAL_CPP__
+#ifndef SERIAL_CPP
+#define SERIAL_CPP
 
 #include "pieces.h"
 #include "serial.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-static inline void appendSquare(char* ptr, uint square) {
-	*(ptr    ) = 'h' - (square & 7);
-	*(ptr + 1) = '1' + ((square >> 3) & 7);
-}
-
+// TODO: Remove
 static void appendChars(char* ptr, const char* val) {
 	for (int i = 0; ; i++) {
 		char c = *(val + i);
@@ -35,6 +29,24 @@ namespace Serial {
 		return (i > -7 && i < 7) ? ("prnbqk\0KQBNRP"[i + 6]) : ('\0');
 	}
 
+	inline int get_piece_from_character(char c) {
+		switch (c) {
+			case 'r': return Pieces::B_ROOK;
+			case 'n': return Pieces::B_KNIGHT;
+			case 'b': return Pieces::B_BISHOP;
+			case 'q': return Pieces::B_QUEEN;
+			case 'k': return Pieces::B_KING;
+			case 'p': return Pieces::B_PAWN;
+			case 'R': return Pieces::W_ROOK;
+			case 'N': return Pieces::W_KNIGHT;
+			case 'B': return Pieces::W_BISHOP;
+			case 'Q': return Pieces::W_QUEEN;
+			case 'K': return Pieces::W_KING;
+			case 'P': return Pieces::W_PAWN;
+			default: return Pieces::NONE;
+		}
+	}
+
 	char* get_square_string(int square) {
 		char* result = (char*)calloc(3, sizeof(char));
 		if (!result) return 0;
@@ -44,20 +56,9 @@ namespace Serial {
 		*(result + 2) = '\0';
 		return result;
 	}
-
-	char* getMoveString(uint from, uint to) {
-		char* result = (char*)calloc(5, sizeof(char));
-		if (!result) return 0;
-
-		*(result    ) = 'h' - (from & 7);
-		*(result + 1) = '1' + ((from >> 3) & 7);
-		*(result + 2) = 'h' - (to & 7);
-		*(result + 3) = '1' + ((to >> 3) & 7);
-		*(result + 4) = '\0';
-		return result;
-	}
-
-	char* getMoveString(int piece, uint from, uint to, uint special) {
+	
+	// TODO: Remove
+	char* getFancyMoveString(int piece, uint from, uint to, uint special) {
 		char* buffer = (char*)calloc(32, sizeof(char));
 		if (!buffer) {
 			return 0;
@@ -73,9 +74,11 @@ namespace Serial {
 					*ptr = pieceChar;
 					ptr++;
 				}
-
-				appendSquare(ptr, from);
-				appendSquare(ptr + 2, to);
+				
+				*(ptr    ) = 'h' - (from & 7);
+				*(ptr + 1) = '1' + ((from >> 3) & 7);
+				*(ptr + 2) = 'h' - (to & 7);
+				*(ptr + 3) = '1' + ((to >> 3) & 7);
 				*(ptr + 4) = '\0';
 				break;
 			}
@@ -84,18 +87,39 @@ namespace Serial {
 				break;
 			}
 			case EN_PASSANT: {
-				appendSquare(ptr, from);
-				appendSquare(ptr + 2, to);
+				*(ptr    ) = 'h' - (from & 7);
+				*(ptr + 1) = '1' + ((from >> 3) & 7);
+				*(ptr + 2) = 'h' - (to & 7);
+				*(ptr + 3) = '1' + ((to >> 3) & 7);
 				appendChars(ptr + 4, " (en passant)\0");
 				break;
 			}
 			case PROMOTION: {
-				appendSquare(ptr, to);
+				*(ptr + 0) = 'h' - (to & 7);
+				*(ptr + 1) = '1' + ((to >> 3) & 7);
 				*(ptr + 2) = '=';
 				*(ptr + 3) = get_piece_character((special >> 3) & 0b111);
 				*(ptr + 4) = '\0';
 				break;
 			}
+		}
+
+		return buffer;
+	}
+
+	char* getMoveString(uint from, uint to, uint special) {
+		char* buffer = (char*)calloc(8, sizeof(char));
+		if (!buffer) {
+			return 0;
+		}
+
+		*(buffer    ) = 'a' + (from & 7);
+		*(buffer + 1) = '1' + ((from >> 3) & 7);
+		*(buffer + 2) = 'a' + (to & 7);
+		*(buffer + 3) = '1' + ((to >> 3) & 7);
+
+		if ((special & 0b11000000) == SM::PROMOTION) {
+			*(buffer + 4) = get_piece_character(-(int)((special >> 3) & 0b111));
 		}
 
 		return buffer;
@@ -124,5 +148,5 @@ namespace Serial {
 	}
 }
 
-#endif // !__SERIAL_CPP__
+#endif // !SERIAL_CPP
 

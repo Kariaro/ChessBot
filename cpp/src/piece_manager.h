@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef __PIECE_MANAGER_H__
-#define __PIECE_MANAGER_H__
+#ifndef PIECE_MANAGER_H
+#define PIECE_MANAGER_H
 
 #include "utils_type.h"
 
@@ -15,5 +15,5 @@ namespace PieceManager {
 	extern bool isKingAttacked(Chessboard& board, bool isWhite);
 }
 
-#endif // !__PIECE_MANAGER_H__
+#endif // !PIECE_MANAGER_H
 

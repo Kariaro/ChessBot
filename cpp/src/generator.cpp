@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef __GENERATOR_CPP__
-#define __GENERATOR_CPP__
+#ifndef GENERATOR_CPP
+#define GENERATOR_CPP
 
 #include "utils_type.h"
 #include "utils.h"
@@ -20,72 +20,91 @@ uint const PROMOTION_PIECES[4] {
 	ROOK,
 };
 
-namespace Generator {
-	vector<Move> generateUnvalidatedMoves(Chessboard& board) {
-		vector<Move> vector_moves;
-		vector_moves.reserve(96);
-
-		bool isWhite = Board::isWhite(board);
-		uint64 mask = isWhite ? board.whiteMask : board.blackMask;
-		
-		while (mask != 0) {
-			uint64 pick = Utils::lowestOneBit(mask);
-			mask &= ~pick;
-			uint idx = Utils::numberOfTrailingZeros(pick);
+/*
+template <int T>
+bool _isValid(Chessboard& board, uint fromIdx, uint toIdx, uint special) {
+	bool isWhite = Board::isWhite(board);
+	
+	if constexpr (T == SM::NORMAL) {
+		int oldFrom = board.pieces[fromIdx];
+		int oldTo = board.pieces[toIdx];
 			
-			int piece = board.pieces[idx];
-			uint64 moves = PieceManager::piece_move(board, piece, idx);
+		Board::setPiece(board, fromIdx, Pieces::NONE);
+		Board::setPiece(board, toIdx, oldFrom);
 			
-			while (moves != 0) {
-				uint64 move_bit = Utils::lowestOneBit(moves);
-				moves &= ~move_bit;
-				uint move_idx = Utils::numberOfTrailingZeros(move_bit);
-				vector_moves.push_back(Move{ piece, idx, move_idx, 0 });
-			}
+		bool isValid = !PieceManager::isKingAttacked(board, isWhite);
 			
-			if (piece * piece == 1 || piece * piece == 36) {
-				uint special = PieceManager::special_piece_move(board, piece, idx);
-				int type = special & 0b11000000;
-				if (type == SM::CASTLING) {
-					// Split the castling moves up into multiple moves
-					uint specialFlag;
-					if ((specialFlag = (special & CastlingFlags::ANY_CASTLE_K)) != 0) {
-						vector_moves.push_back(Move{ piece, idx, idx - 2, SM::CASTLING | specialFlag });
-					}
-					if ((specialFlag = (special & CastlingFlags::ANY_CASTLE_Q)) != 0) {
-						vector_moves.push_back(Move{ piece, idx, idx + 2, SM::CASTLING | specialFlag });
-					}
+		Board::setPiece(board, fromIdx, oldFrom);
+		Board::setPiece(board, toIdx, oldTo);
 
-				} else if (type == SM::EN_PASSANT) {
-					vector_moves.push_back(Move{ piece, idx, special & 0b111111, special });
-
-				} else if (type == SM::PROMOTION) {
-					// Split promotion into multiple moves
-					uint specialFlag;
-					if ((specialFlag = (special & Promotion::LEFT)) != 0) {
-						for (uint promotionPiece : PROMOTION_PIECES) {
-							vector_moves.push_back(Move{ piece, idx, idx + (isWhite ? 8 : -8) - 1, SM::PROMOTION | specialFlag | promotionPiece << 3 });
-						}
-					}
-					if ((specialFlag = (special & Promotion::MIDDLE)) != 0) {
-						for (uint promotionPiece : PROMOTION_PIECES) {
-							vector_moves.push_back(Move{ piece, idx, idx + (isWhite ? 8 : -8), SM::PROMOTION | specialFlag | promotionPiece << 3 });
-						}
-					}
-					if ((specialFlag = (special & Promotion::RIGHT)) != 0) {
-						for (uint promotionPiece : PROMOTION_PIECES) {
-							vector_moves.push_back(Move{ piece, idx, idx + (isWhite ? 8 : -8) + 1, SM::PROMOTION | specialFlag | promotionPiece << 3 });
-						}
-					}
-
-				}
-			}
+		return isValid;
+	}
+	
+	if constexpr (T == SM::CASTLING) {
+		if ((special & CastlingFlags::ANY_CASTLE_K) != 0) {
+			return !(PieceManager::isAttacked(board, fromIdx)
+				|| PieceManager::isAttacked(board, fromIdx + 1)
+				|| PieceManager::isAttacked(board, fromIdx + 2));
+		}
+					
+		if ((special & CastlingFlags::ANY_CASTLE_Q) != 0) {
+			return !(PieceManager::isAttacked(board, fromIdx)
+				|| PieceManager::isAttacked(board, fromIdx - 1)
+				|| PieceManager::isAttacked(board, fromIdx - 2));
 		}
 
-		return vector_moves;
+		return false;
+	}
+	
+	if constexpr (T == SM::EN_PASSANT) {
+		int oldFrom = board.pieces[fromIdx];
+		int remIdx = toIdx + (isWhite ? -8 : 8);
+		int oldRem = board.pieces[remIdx];
+		int oldTo = board.pieces[toIdx];
+					
+		Board::setPiece(board, fromIdx, Pieces::NONE);
+		Board::setPiece(board, remIdx, Pieces::NONE);
+		Board::setPiece(board, toIdx, oldFrom);
+					
+		bool isValid = !PieceManager::isKingAttacked(board, isWhite);
+					
+		Board::setPiece(board, fromIdx, oldFrom);
+		Board::setPiece(board, remIdx, oldRem);
+		Board::setPiece(board, toIdx, oldTo);
+		
+		return isValid;
+	}
+	
+	if constexpr (T == SM::PROMOTION) {
+		int oldFrom = board.pieces[fromIdx];
+		int oldTo = board.pieces[toIdx];
+					
+		Board::setPiece(board, fromIdx, Pieces::NONE);
+		// Because the promotion just blocks we do not need to calculate what type the piece is
+		Board::setPiece(board, toIdx, oldFrom); //((special >> 3) & 7) * (isWhite ? 1 : -1));
+					
+		bool isValid = !PieceManager::isKingAttacked(board, isWhite);
+					
+		Board::setPiece(board, fromIdx, oldFrom);
+		Board::setPiece(board, toIdx, oldTo);
+		
+		return isValid;
 	}
 
+	return false;
+}
+
+template <int T>
+bool _isValid(Chessboard& board, Move& move) {
+	return _isValid<T>(board, move.from, move.to, move.special);
+}
+*/
+
+namespace Generator {
 	vector<Move> generateValidMoves(Chessboard& board) {
+		// 128 -> ~ 48.3 sec
+		//  96 -> ~ 48.0 sec
+		//  64 -> ~ 53.8 sec
 		vector<Move> vector_moves;
 		vector_moves.reserve(96);
 
@@ -95,7 +114,7 @@ namespace Generator {
 		while (mask != 0) {
 			uint64 pick = Utils::lowestOneBit(mask);
 			mask &= ~pick;
-			uint idx = Utils::numberOfTrailingZeros(pick);
+			uint idx = (uint)Utils::numberOfTrailingZeros(pick);
 			
 			int piece = board.pieces[idx];
 			uint64 moves = PieceManager::piece_move(board, piece, idx);
@@ -103,27 +122,28 @@ namespace Generator {
 			while (moves != 0) {
 				uint64 move_bit = Utils::lowestOneBit(moves);
 				moves &= ~move_bit;
-				uint move_idx = Utils::numberOfTrailingZeros(move_bit);
-
+				uint move_idx = (uint)Utils::numberOfTrailingZeros(move_bit);
+				
 				if (isValid(board, idx, move_idx, 0)) {
-					vector_moves.push_back(Move{ piece, idx, move_idx, 0 });
+					vector_moves.push_back({ idx, move_idx, 0, true });
 				}
 			}
 			
-			if (piece * piece == 1 || piece * piece == 36) {
-				uint special = PieceManager::special_piece_move(board, piece, idx);
+			int pieceSq = piece * piece;
+			if (pieceSq == 1 || pieceSq == 36) {
+				uint special = (uint)PieceManager::special_piece_move(board, piece, idx);
 				int type = special & 0b11000000;
 				if (type == SM::CASTLING) {
 					// Split the castling moves up into multiple moves
 					uint specialFlag;
 					if ((specialFlag = (special & CastlingFlags::ANY_CASTLE_K)) != 0) {
-						Move move = Move{ piece, idx, idx - 2, SM::CASTLING | specialFlag };
+						Move move = { idx, (uint)(idx + 2), (uint)(SM::CASTLING | specialFlag), true };
 						if (isValid(board, move)) {
 							vector_moves.push_back(move);
 						}
 					}
 					if ((specialFlag = (special & CastlingFlags::ANY_CASTLE_Q)) != 0) {
-						Move move = Move{ piece, idx, idx + 2, SM::CASTLING | specialFlag };
+						Move move = { idx, (uint)(idx - 2), (uint)(SM::CASTLING | specialFlag), true };
 						if (isValid(board, move)) {
 							vector_moves.push_back(move);
 						}
@@ -131,16 +151,16 @@ namespace Generator {
 
 				} else if (type == SM::EN_PASSANT) {
 					if (isValid(board, idx, special & 0b111111, special)) {
-						vector_moves.push_back(Move{ piece, idx, special & 0b111111, special });
+						vector_moves.push_back({ idx, (uint)(special & 0b111111), special, true });
 					}
 
 				} else if (type == SM::PROMOTION) {
 					// Split promotion into multiple moves
-					uint toIdx = idx + (isWhite ? 8 : -8);
+					uint toIdx = (uint)(idx + (isWhite ? 8 : -8));
 					uint specialFlag;
 					if ((specialFlag = (special & Promotion::LEFT)) != 0) {
 						for (uint promotionPiece : PROMOTION_PIECES) {
-							Move move = Move{ piece, idx, toIdx - 1, SM::PROMOTION | specialFlag | promotionPiece << 3 };
+							Move move = { idx, (uint)(toIdx - 1), (uint)(SM::PROMOTION | promotionPiece << 3 | specialFlag), true };
 							if (isValid(board, move)) {
 								vector_moves.push_back(move);
 							}
@@ -148,7 +168,7 @@ namespace Generator {
 					}
 					if ((specialFlag = (special & Promotion::MIDDLE)) != 0) {
 						for (uint promotionPiece : PROMOTION_PIECES) {
-							Move move = Move{ piece, idx, toIdx, SM::PROMOTION | specialFlag | promotionPiece << 3 };
+							Move move = { idx, (uint)(toIdx), (uint)(SM::PROMOTION | promotionPiece << 3 | specialFlag), true };
 							if (isValid(board, move)) {
 								vector_moves.push_back(move);
 							}
@@ -156,13 +176,12 @@ namespace Generator {
 					}
 					if ((specialFlag = (special & Promotion::RIGHT)) != 0) {
 						for (uint promotionPiece : PROMOTION_PIECES) {
-							Move move = Move{ piece, idx, toIdx + 1, SM::PROMOTION | specialFlag | promotionPiece << 3 };
+							Move move = { idx, (uint)(toIdx + 1), (uint)(SM::PROMOTION | promotionPiece << 3 | specialFlag), true };
 							if (isValid(board, move)) {
 								vector_moves.push_back(move);
 							}
 						}
 					}
-
 				}
 			}
 		}
@@ -179,15 +198,11 @@ namespace Generator {
 			
 			Board::setPiece(board, fromIdx, Pieces::NONE);
 			Board::setPiece(board, toIdx, oldFrom);
-			// board.setPiece(fromIdx, Pieces.NONE);
-			// board.setPiece(toIdx, oldFrom);
 			
 			bool isValid = !PieceManager::isKingAttacked(board, isWhite);
 			
 			Board::setPiece(board, fromIdx, oldFrom);
 			Board::setPiece(board, toIdx, oldTo);
-			// board.setPiece(fromIdx, oldFrom);
-			// board.setPiece(toIdx, oldTo);
 			
 			return isValid;
 		} else {
@@ -197,15 +212,17 @@ namespace Generator {
 				case SM::CASTLING: {
 					if ((special & CastlingFlags::ANY_CASTLE_K) != 0) {
 						return !(PieceManager::isAttacked(board, fromIdx)
-							|| PieceManager::isAttacked(board, fromIdx - 1)
-							|| PieceManager::isAttacked(board, fromIdx - 2));
+							|| PieceManager::isAttacked(board, fromIdx + 1)
+							|| PieceManager::isAttacked(board, fromIdx + 2));
 					}
 					
 					if ((special & CastlingFlags::ANY_CASTLE_Q) != 0) {
 						return !(PieceManager::isAttacked(board, fromIdx)
-							|| PieceManager::isAttacked(board, fromIdx + 1)
-							|| PieceManager::isAttacked(board, fromIdx + 2));
+							|| PieceManager::isAttacked(board, fromIdx - 1)
+							|| PieceManager::isAttacked(board, fromIdx - 2));
 					}
+
+					return false;
 				}
 				
 				case SM::EN_PASSANT: {
@@ -217,18 +234,12 @@ namespace Generator {
 					Board::setPiece(board, fromIdx, Pieces::NONE);
 					Board::setPiece(board, remIdx, Pieces::NONE);
 					Board::setPiece(board, toIdx, oldFrom);
-					// board.setPiece(fromIdx, Pieces.NONE);
-					// board.setPiece(remIdx, Pieces.NONE);
-					// board.setPiece(toIdx, oldFrom);
 					
 					bool isValid = !PieceManager::isKingAttacked(board, isWhite);
 					
 					Board::setPiece(board, fromIdx, oldFrom);
 					Board::setPiece(board, remIdx, oldRem);
 					Board::setPiece(board, toIdx, oldTo);
-					// board.setPiece(fromIdx, oldFrom);
-					// board.setPiece(remIdx, oldRem);
-					// board.setPiece(toIdx, oldTo);
 					
 					return isValid;
 				}
@@ -238,16 +249,13 @@ namespace Generator {
 					int oldTo = board.pieces[toIdx];
 					
 					Board::setPiece(board, fromIdx, Pieces::NONE);
+					// We do not need this piece to have the correct value here because it would not change the outcome
 					Board::setPiece(board, toIdx, oldFrom);
-					// board.setPiece(fromIdx, Pieces.NONE);
-					// board.setPiece(toIdx, oldFrom);
 					
 					bool isValid = !PieceManager::isKingAttacked(board, isWhite);
 					
 					Board::setPiece(board, fromIdx, oldFrom);
 					Board::setPiece(board, toIdx, oldTo);
-					// board.setPiece(fromIdx, oldFrom);
-					// board.setPiece(toIdx, oldTo);
 					
 					return isValid;
 				}
@@ -315,7 +323,7 @@ namespace Generator {
 						
 						// Because double pawns jump two rows they will always have a distance of 256
 						if (distance == 256) {
-							nextLastPawn = toIdx + (isWhite ? -8 : 8);
+							nextLastPawn = toIdx - 8 * mul; // + (isWhite ? -8 : 8);
 						}
 						
 						nextLastCapture = 0;
@@ -351,33 +359,23 @@ namespace Generator {
 				
 				Board::setPiece(board, fromIdx, Pieces::NONE);
 				Board::setPiece(board, toIdx, oldFrom);
-				// board.setPiece(fromIdx, Pieces.NONE);
-				// board.setPiece(toIdx, oldFrom);
 				break;
 			}
 			
 			case SM::CASTLING: {
 				if ((special & CastlingFlags::ANY_CASTLE_K) != 0) {
-					Board::setPiece(board, fromIdx - 3, Pieces::NONE);
-					Board::setPiece(board, fromIdx - 2, Pieces::KING * mul);
-					Board::setPiece(board, fromIdx - 1, Pieces::ROOK * mul);
+					Board::setPiece(board, fromIdx + 3, Pieces::NONE);
+					Board::setPiece(board, fromIdx + 2, Pieces::KING * mul);
+					Board::setPiece(board, fromIdx + 1, Pieces::ROOK * mul);
 					Board::setPiece(board, fromIdx, Pieces::NONE);
-					// board.setPiece(fromIdx - 3, Pieces.NONE);
-					// board.setPiece(fromIdx - 2, Pieces.KING * mul);
-					// board.setPiece(fromIdx - 1, Pieces.ROOK * mul);
-					// board.setPiece(fromIdx, Pieces.NONE);
 					board.flags &= isWhite ? ~CastlingFlags::WHITE_CASTLE_ANY : ~CastlingFlags::BLACK_CASTLE_ANY;
 				}
 				
 				if ((special & CastlingFlags::ANY_CASTLE_Q) != 0) {
-					Board::setPiece(board, fromIdx + 4, Pieces::NONE);
-					Board::setPiece(board, fromIdx + 2, Pieces::KING * mul);
-					Board::setPiece(board, fromIdx + 1, Pieces::ROOK * mul);
+					Board::setPiece(board, fromIdx - 4, Pieces::NONE);
+					Board::setPiece(board, fromIdx - 2, Pieces::KING * mul);
+					Board::setPiece(board, fromIdx - 1, Pieces::ROOK * mul);
 					Board::setPiece(board, fromIdx, Pieces::NONE);
-					// board.setPiece(fromIdx + 4, Pieces.NONE);
-					// board.setPiece(fromIdx + 2, Pieces.KING * mul);
-					// board.setPiece(fromIdx + 1, Pieces.ROOK * mul);
-					// board.setPiece(fromIdx, Pieces.NONE);
 					board.flags &= isWhite ? ~CastlingFlags::WHITE_CASTLE_ANY : ~CastlingFlags::BLACK_CASTLE_ANY;
 				}
 
@@ -386,15 +384,12 @@ namespace Generator {
 			
 			case SM::EN_PASSANT: {
 				int oldFrom = board.pieces[fromIdx];
-				int remIdx = toIdx + (isWhite ? -8 : 8);
+				int remIdx = toIdx - 8 * mul; // + (isWhite ? -8 : 8);
 				
 				nextLastCapture = 0;
 				Board::setPiece(board, fromIdx, Pieces::NONE);
 				Board::setPiece(board, remIdx, Pieces::NONE);
 				Board::setPiece(board, toIdx, oldFrom);
-				// board.setPiece(fromIdx, Pieces.NONE);
-				// board.setPiece(remIdx, Pieces.NONE);
-				// board.setPiece(toIdx, oldFrom);
 				break;
 			}
 			
@@ -409,8 +404,6 @@ namespace Generator {
 						int oldFrom = board.pieces[fromIdx];
 						Board::setPiece(board, fromIdx, Pieces::NONE);
 						Board::setPiece(board, toIdx, piece * mul);
-						// b.setPiece(fromIdx, Pieces.NONE);
-						// b.setPiece(toIdx, piece * mul);
 						
 						if (oldFrom != 0) {
 							nextLastCapture = 0;
@@ -437,6 +430,6 @@ namespace Generator {
 	}
 }
 
-#endif // !__GENERATOR_CPP__
+#endif // !GENERATOR_CPP
 
 

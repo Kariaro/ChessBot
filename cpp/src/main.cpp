@@ -46,7 +46,7 @@ long computePreft(Chessboard& parent, int depth) {
 			continue;
 		}
 
-		char* chars = Serial::getMoveString(move.from, move.to);
+		char* chars = Serial::getMoveString(move.from, move.to, move.special);
 		long count = goDepth(board, depth);
 		printf("%s: %d\n", chars, count);
 		free(chars);
@@ -66,8 +66,8 @@ long computePreft(Chessboard& parent, int depth) {
 }
 
 int main(int argc, char** argv) {
-	int result = import_fen(&board, "r6r/pp1k1p1p/4pq2/2ppnn2/1b3Q2/2N1P2N/PPPP1PPP/R1B1K2R w KQ - 0 12");
-	// int result = import_fen(&board, "r2qkb1r/1Q3pp1/pN1p3p/3P1P2/3pP3/4n3/PP4PP/1R3RK1 b - - 0 0");
+	//int result = import_fen(&board, "r6r/pp1k1p1p/4pq2/2ppnn2/1b3Q2/2N1P2N/PPPP1PPP/R1B1K2R w KQ - 0 12");
+	int result = import_fen(&board, "r2qkb1r/1Q3pp1/pN1p3p/3P1P2/3pP3/4n3/PP4PP/1R3RK1 b - - 0 0");
 	// int result = import_fen(&board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
 
 	{
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
 	free(chars);
 	*/
 
-	computePreft(board, 4);
+	computePreft(board, 6);
 
 	/*
 	for (Move move : Generator::generateValidMoves(board)) {

@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef __ANALYSER_CPP__
-#define __ANALYSER_CPP__
+#ifndef ANALYSER_CPP
+#define ANALYSER_CPP
 
 #include "utils_type.h"
 #include "utils.h"
@@ -12,7 +12,7 @@
 #include "serial.h"
 #include <chrono>
 
-#define DEPTH 6
+#define DEPTH 5
 #define NEGATIVE_INFINITY -1000000000.0
 #define POSITIVE_INFINITY  1000000000.0
 #define max(a, b) (a > b ? a : b)
@@ -39,7 +39,7 @@ static double get_scanner_material(Scanner& scanner) {
 		return 0;
 	}
 
-	if (scanner.best.piece == 0) {
+	if (!scanner.best.valid) {
 		return scanner.base;
 	}
 
@@ -47,14 +47,9 @@ static double get_scanner_material(Scanner& scanner) {
 }
 
 void updateMoves(Move& move, BranchResult& result, BranchResult& branch) {
-	// int idx = branch.numMoves + 1;
-
 	result.numMoves = branch.numMoves + 1;
 	result.moves[0] = move;
 	memcpy(result.moves + 1, branch.moves, sizeof(Move) * branch.numMoves);
-	//for (int i = 0; i < branch.numMoves; i++) {
-	//	result.moves[1 + i] = branch.moves[i];
-	//}
 }
 
 Move* get_all_moves(Chessboard& board, int depth) {
@@ -66,7 +61,7 @@ Move* get_all_moves(Chessboard& board, int depth) {
 		moves[j++] = vector_moves[i];
 	}
 
-	moves[j].piece = 0;
+	moves[j].valid = false;
 
 	return moves;
 }
@@ -85,13 +80,14 @@ int get_material(Chessboard& board) {
 		int piece = board.pieces[idx];
 		int val = Serial::get_piece_value(piece);
 		
-		/*
 		if (piece == Pieces::W_PAWN) {
-			val += (int)(((idx >> 3) / 24.0) * 5);
-		} else if (piece == Pieces::B_PAWN) {
-			val -= (int)(((8 - (idx >> 3)) / 24.0) * 5);
+			val += (idx >> 3) * 5;
 		}
-		*/
+		
+		if (piece == Pieces::B_PAWN) {
+			val -= (8 - (idx >> 3)) * 5;
+		}
+
 		material += val;
 	}
 	
@@ -119,11 +115,11 @@ int non_developing(Chessboard& board) {
 	return result * 3;
 }
 
-int un_developing(Move& move) {
+int un_developing(int piece, Move& move) {
 	int move_to = move.to;
 	int result = 0;
-		
-	switch (move.piece) {
+	
+	switch (piece) {
 		case Pieces::W_KNIGHT: {
 			if (move_to == 1 || move_to == 6) result -= 10;
 			break;
@@ -163,7 +159,7 @@ int un_developing(Move& move) {
 
 double get_advanced_material(Chessboard& board, Move& lastMove) {
 	double material = get_material(board);
-	material += un_developing(lastMove);
+	material += un_developing(board.pieces[lastMove.from], lastMove);
 	material += non_developing(board);
 	return material;
 }
@@ -173,7 +169,7 @@ long nodes;
 BranchResult analyseBranches_prune(Chessboard& parent, Move& lastMove, int depth, double alpha, double beta, bool white) {
 	nodes++;
 	if (depth == 0) {
-		return BranchResult{ get_advanced_material(parent, lastMove) };
+		return { get_advanced_material(parent, lastMove) };
 	}
 	
 	Chessboard board = parent;
@@ -183,11 +179,11 @@ BranchResult analyseBranches_prune(Chessboard& parent, Move& lastMove, int depth
 	BranchResult result { 0 };
 	
 	if (white) {
-		value = alpha;
+		value = -10000.0 * (depth + 1.0);
 
 		for (int i = 0; i < 1024; i++) {
 			Move move = moves[i];
-			if (move.piece == 0) {
+			if (!move.valid) {
 				break;
 			}
 		
@@ -205,16 +201,15 @@ BranchResult analyseBranches_prune(Chessboard& parent, Move& lastMove, int depth
 				break;
 			}
 			
-			// state.write(board);
 			board = parent;
 			alpha = max(alpha, value);
 		}
 	} else {
-		value = beta;
+		value = 10000.0 * (depth + 1.0);
 		
 		for (int i = 0; i < 1024; i++) {
 			Move move = moves[i];
-			if (move.piece == 0) {
+			if (!move.valid) {
 				break;
 			}
 		
@@ -232,14 +227,12 @@ BranchResult analyseBranches_prune(Chessboard& parent, Move& lastMove, int depth
 				break;
 			}
 			
-			// state.write(board);
 			board = parent;
 			beta = min(beta, value);
 		}
 	}
 	result.value = value;
 	
-// 	state.write(board);
 	return result;
 }
 
@@ -249,12 +242,12 @@ void evaluate(Chessboard& board, Scanner scan) {
 		double delta = isWhite ? -1 : 1;
 		scan.base += 10 * delta;
 		
-		if (scan.best.piece == 0) {
+		if (!scan.best.valid) {
 			// Checkmate
 			scan.base = 10000 * delta;
 		}
 	} else {
-		if (scan.best.piece == 0) {
+		if (!scan.best.valid) {
 			// Stalemate
 			scan.base = 0;
 		}
@@ -262,15 +255,14 @@ void evaluate(Chessboard& board, Scanner scan) {
 	
 	if (board.lastCapture >= 50) {
 		// The game should end
-		scan.base = 0;
-		scan.best.piece = 0;
+		scan.best.valid = false;
 	}
 }
 
 Scanner analyseBranchMoves(Chessboard& parent) {
 	Scanner scan { };
 	scan.base = get_material(parent);
-	scan.best.piece = 0;
+	scan.best.valid = false;
 	// scan.best.piece = = new Scanner(board, get_material(board));
 	
 	Chessboard board = parent;
@@ -279,7 +271,7 @@ Scanner analyseBranchMoves(Chessboard& parent) {
 	
 	for (int i = 0; i < 1024; i++) {
 		Move move = moves[i];
-		if (move.piece == 0) {
+		if (!move.valid) {
 			break;
 		}
 		
@@ -295,7 +287,7 @@ Scanner analyseBranchMoves(Chessboard& parent) {
 		// move.material = scannedResult;
 		
 		{
-			char* buffer = Serial::getMoveString(move.piece, move.from, move.to, move.special);
+			char* buffer = Serial::getMoveString(move.from, move.to, move.special);
 			printf("move: %-5s, (%.2f), [", buffer, scannedResult / 100.0);
 			free(buffer);
 
@@ -305,15 +297,14 @@ Scanner analyseBranchMoves(Chessboard& parent) {
 				}
 
 				Move m = branchResult.moves[i];
-				buffer = Serial::getMoveString(m.piece, m.from, m.to, m.special);
+				buffer = Serial::getMoveString(m.from, m.to, m.special);
 				printf("%s", buffer);
 				free(buffer);
 			}
 			auto timeTook = std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count();
 			printf("]\t%d nodes / sec\n", (long)(nodes / (timeTook / 1000000000.0)));
 		}
-		// System.out.printf("move: %s, (%.2f), %s\t%d nodes / sec\n", move, scannedResult, Arrays.toString(branchResult.moves), (long)(nodes / (time / 1000000000.0)));
-		
+
 		if (scan.white) {
 			if (scan.bestMaterial < scannedResult) {
 				scan.best = move;
@@ -330,13 +321,12 @@ Scanner analyseBranchMoves(Chessboard& parent) {
 	}
 	
 	evaluate(parent, scan);
-	// board = copy;
 	return scan;
 }
 
 Move analyse(Chessboard& board) {
 	Scanner scanner = analyseBranchMoves(board);
-	return Move { scanner.best.piece, scanner.best.from, scanner.best.to, scanner.best.special };
+	return Move { scanner.best.from, scanner.best.to, scanner.best.special, true };
 }
 
-#endif // !__ANALYSER_CPP__
+#endif // !ANALYSER_CPP

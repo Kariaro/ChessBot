@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef __CHESSBOARD_H__
-#define __CHESSBOARD_H__
+#ifndef CHESSBOARD_H
+#define CHESSBOARD_H
 
 #include "utils_type.h"
 
@@ -28,5 +28,5 @@ namespace Board {
 	}
 }
 
-#endif // !__CHESSBOARD_H__
+#endif // !CHESSBOARD_H
 

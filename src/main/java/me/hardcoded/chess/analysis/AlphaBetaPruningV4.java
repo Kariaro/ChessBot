@@ -7,15 +7,20 @@ import me.hardcoded.chess.api.ChessBoard;
 import me.hardcoded.chess.api.ChessMove;
 import me.hardcoded.chess.uci.Pieces;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
- * This class is version 3 of alpha-beta pruning move checking.
+ * This class is version 4 of alpha-beta pruning move checking.
  *
  * @author HardCoded
  */
-public class AlphaBetaPruningV3 implements ChessAnalyser {
-	private final int DEPTH = 5;
+public class AlphaBetaPruningV4 implements ChessAnalyser {
+	// Maximum of 45 seconds for a move
+	private static final int MAX_TIME = 45000;
+	
+	private final int DEPTH = 6;
 	private final int QUIESCE_DEPTH = 2;
 	private final Move[][] MOVES = new Move[DEPTH + 1][1024];
 	private final Move[][] QUIESCE_MOVES = new Move[QUIESCE_DEPTH][1024];
@@ -69,10 +74,10 @@ public class AlphaBetaPruningV3 implements ChessAnalyser {
 		long mask = board.pieceMask;
 		int material = 0;
 		
-		if (board.hasFlags(CastlingFlags.BLACK_CASTLE_K)) material -= 6;
-		if (board.hasFlags(CastlingFlags.BLACK_CASTLE_Q)) material -= 6;
-		if (board.hasFlags(CastlingFlags.WHITE_CASTLE_K)) material += 6;
-		if (board.hasFlags(CastlingFlags.WHITE_CASTLE_Q)) material += 6;
+		if (board.hasFlags(CastlingFlags.BLACK_CASTLE_K)) material -= 30;
+		if (board.hasFlags(CastlingFlags.BLACK_CASTLE_Q)) material -= 30;
+		if (board.hasFlags(CastlingFlags.WHITE_CASTLE_K)) material += 30;
+		if (board.hasFlags(CastlingFlags.WHITE_CASTLE_Q)) material += 30;
 		
 		while (mask != 0) {
 			long pick = Long.lowestOneBit(mask);
@@ -139,15 +144,17 @@ public class AlphaBetaPruningV3 implements ChessAnalyser {
 					result += 10;
 				}
 			}
-			case Pieces.QUEEN, Pieces.KING -> result -= 5;
-			case -Pieces.QUEEN, -Pieces.KING -> result += 5;
+			case Pieces.QUEEN -> result -= 5;
+			case -Pieces.QUEEN -> result += 5;
+			case Pieces.KING -> result -= 15;
+			case -Pieces.KING -> result += 15;
 		}
 		
 		return result * 3;
 	}
 	
 	public static ChessAnalysis analyseTest(ChessBoard board) {
-		return new AlphaBetaPruningV3().analyse((ChessBoardImpl)board);
+		return new AlphaBetaPruningV4().analyse((ChessBoardImpl)board);
 	}
 	
 	@Override
@@ -322,63 +329,90 @@ public class AlphaBetaPruningV3 implements ChessAnalyser {
 		ChessState state = ChessState.of(board);
 		Move[] moves = getAllMoves(board, DEPTH);
 		
+		List<Move> moves_list = new ArrayList<>();
 		for (Move move : moves) {
 			if (move == null) {
 				break;
 			}
 			
-			if (!ChessGenerator.playMove(board, move)) {
-				// This should never happen
-				continue;
+			moves_list.add(move);
+		}
+		
+		if (moves_list.isEmpty()) {
+			return scan;
+		}
+		
+		long startTime = System.currentTimeMillis();
+		boolean isWhite = board.isWhite();
+		int mul = (isWhite ? -1 : 1);
+		
+		for (int i = 4; i < DEPTH; i++) {
+			int div = ((i - 4) * 2);
+			int max_moves = Math.min(moves_list.size(), Math.max(4, moves_list.size() / (div == 0 ? 1 : div)));
+			
+			boolean keep_trying;
+			do {
+				keep_trying = false;
+				
+				for (int j = 0; j < max_moves; j++) {
+					Move move = moves_list.get(j);
+					if (move.scanned) {
+						continue;
+					}
+					
+					move.scanned = true;
+					
+					if (!ChessGenerator.playMove(board, move)) {
+						// This should never happen
+						moves_list.remove(j--);
+						continue;
+					}
+					
+					long now = System.nanoTime();
+					nodes = 0;
+					BranchResult branchResult = analyseBranches(board, move, i, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, board.isWhite());
+					long time = System.nanoTime() - now;
+					move.material = branchResult.value;
+					move.moves = branchResult.moves;
+					move.nps = (long)(nodes / (time / 1000000000.0));
+//					if (System.currentTimeMillis() - startTime > MAX_TIME) {
+//						break;
+//					}
+					
+//					if (scan.white) {
+//						if (scan.best == null || scan.best.material < scannedResult) {
+//							scan.best = move;
+//						}
+//					} else {
+//						if (scan.best == null || scan.best.material > scannedResult) {
+//							scan.best = move;
+//						}
+//					}
+					// Undo the move and continue
+					state.write(board);
+				}
+				
+				moves_list.sort((a, b) -> Double.compare(a.material, b.material) * mul);
+				for (int j = 0; j < max_moves; j++) {
+					if (!moves_list.get(j).scanned) {
+						keep_trying = true;
+						break;
+					}
+				}
+			} while (keep_trying);
+			
+			scan.best = moves_list.get(0);
+			System.out.printf("Depth: %d, best=%s\n", i, scan.best);
+			for (int j = 0; j < max_moves; j++) {
+				Move move = moves_list.get(j);
+				System.out.printf("move: %-5s, (%.2f), %s\t%d nodes / sec\n", move, move.material / 100.0, Arrays.toString(move.moves), move.nps);
 			}
 			
-			long now = System.nanoTime();
-			nodes = 0;
-			BranchResult branchResult = analyseBranches(board, move, DEPTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, board.isWhite());
-			long time = System.nanoTime() - now;
-			double scannedResult = branchResult.value;
-			move.material = scannedResult;
-			
-//			System.out.printf("move: %s, (%.2f)\n", move, scannedResult);
-			// System.out.printf("move: %-5s, (%.2f), %s\t%d nodes / sec\n", move, scannedResult / 100.0, Arrays.toString(branchResult.moves), (long)(nodes / (time / 1000000000.0)));
-			
-			if (scan.white) {
-				if (scan.best == null || scan.best.material < scannedResult) {
-					scan.best = move;
-				}
-			} else {
-				if (scan.best == null || scan.best.material > scannedResult) {
-					scan.best = move;
-				}
+			for (Move move : moves_list) {
+				move.scanned = false;
 			}
-//			double boardMaterial = getMaterial(board);
-//
-//			Scanner branch;
-//			if (depth < 1) {
-//				branch = new Scanner(board, boardMaterial);
-//			} else {
-//				branch = analyseBranchMoves(board, depth - 1, boardMaterial);
-//			}
-//
-//			double scannedResult = ((branch.material()) * 80 + boardMaterial * 20) / 100.0;
-//			scannedResult += un_developing(move) + non_developing(board);
-//			if (move.castle) {
-//				scannedResult += 30 * (board.isWhite() ? -1 : 1);
-//			}
-//
-//			// Add this move to the evaluation set
-//			if (scan.white) {
-//				if (scan.best == null || scan.best.material < scannedResult) {
-//					scan.best = move;
-//				}
-//			} else {
-//				if (scan.best == null || scan.best.material > scannedResult) {
-//					scan.best = move;
-//				}
-//			}
 			
-			// Undo the move and continue
-			state.write(board);
+			System.out.println();
 		}
 		
 		evaluate(board, scan);
@@ -414,6 +448,9 @@ public class AlphaBetaPruningV3 implements ChessAnalyser {
 		
 		// Material value
 		double material;
+		long nps;
+		Move[] moves;
+		boolean scanned;
 		
 		public Move(int piece, int from, int to, int special) {
 			super(piece, from, to, special);

@@ -4,6 +4,7 @@ import me.hardcoded.chess.advanced.ChessBoardImpl;
 import me.hardcoded.chess.advanced.ChessGenerator;
 import me.hardcoded.chess.advanced.ChessPieceManager;
 import me.hardcoded.chess.analysis.AlphaBetaPruningV3;
+import me.hardcoded.chess.analysis.AlphaBetaPruningV4;
 import me.hardcoded.chess.api.ChessMove;
 import me.hardcoded.chess.utils.ChessUtils;
 
@@ -64,7 +65,7 @@ public class UCIMain {
 			}
 			
 			if (command.startsWith("go")) {
-				ChessMove move = AlphaBetaPruningV3.analyseTest(board).getBestMove();
+				ChessMove move = AlphaBetaPruningV4.analyseTest(board).getBestMove();
 				output.print("info [" + move + "]\n");
 				
 				if (move != null) {

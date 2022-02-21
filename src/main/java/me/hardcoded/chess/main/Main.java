@@ -43,6 +43,26 @@ public class Main {
 //
 //			1. e3 e5 2. Nc3 Nf6 3. Nf3 d6 4. d3 Nc6 5. Be2 Be6 6. Bd2 d5 7. Qc1 e4 8. Nd4 Nxd4 9. exd4 Qd7 10. dxe4 dxe4 11. Bg5 Qxd4 12. O-O Bd6 13. Rd1 Qe5 14. Bb5+ c6 15. g3 cxb5 16. Bf4 Qh5 17. Bxd6 e3 18. fxe3 Ng4 19. Qd2 O-O-O 20. Nxb5 Qxb5 21. Qd4 Qc6 22. Qxa7 Rxd6 23. h3 Rxd1+ 24. Rxd1 Qxc2 25. Qa8+ Kc7 26. Qa5+ Kc6 27. Qd2 Qxd2 28. Rxd2 Nxe3 29. Kf2 Nd5 30. Kg1 Bxh3 31. Kh1 Be6 32. Kg1 b5 33. a3 Ra8 34. Rd1 h5 35. Rf1 Ne3 36. Re1 Nc4 37. Kh1 Nxb2 38. Kh2 Rxa3 39. Rc1+ Nc4 40. Rc2 b4 41. Kg2 b3 42. Rc1 b2 43. Rb1 Ra1 44. Rxb2 Nxb2 45. Kf2 Kd5 46. Kg2 Ke4 47. g4 Kf4 48. Kf2 Nc4 49. gxh5 Ra2+ 50. Kg1 Kg3 51. Kf1 Bg4 52. Kg1 Ra1#
 //		""");
+//		pgnGame = ChessCodec.PGN.from("""
+//			[Event "Import"]
+//			[Site "https://lichess.org/hIVcvd8o"]
+//			[Date "2022.02.21"]
+//			[White "AlphaBetaPruningV4"]
+//			[Black "AlphaBetaPruningV3"]
+//			[Result "*"]
+//			[UTCDate "2022.02.21"]
+//			[UTCTime "20:18:59"]
+//			[WhiteElo "?"]
+//			[BlackElo "?"]
+//			[Variant "Standard"]
+//			[TimeControl "-"]
+//			[ECO "C01"]
+//			[Opening "French Defense: Exchange Variation"]
+//			[Termination "Unterminated"]
+//			[Annotator "lichess.org"]
+//
+//			1. e4 e6 2. d4 d5 3. exd5 { C01 French Defense: Exchange Variation } exd5 4. Nc3 Nc6 5. Bb5 a6 6. Bxc6+ bxc6 7. Be3 Bb7 8. Nge2 f5 9. Ng3 g6 10. Nxf5 gxf5 11. Qh5+ Ke7 12. Qxf5 Qd6 13. Bf4 Qe6+ 14. Qxe6+ Kxe6 15. Bxc7 Bg7 16. Bb6 a5 17. a4 Nf6 18. Ne2 Nd7 19. Bc7 Rhc8 20. Bg3 c5 21. c3 c4 22. h4 h6 23. h5 Bc6 24. Rh4 Nb6 25. Rg4 Kf7 26. Be5 Bxe5 27. dxe5 Nxa4 28. Rg6 Nxb2 29. Kf1 a4 30. Rxh6 Nd3 31. f4 Nc5 32. g4 a3 33. g5 Nb3 34. Ra2 Bb5 35. f5 Bc6 36. Kg1 Rg8 37. Rf6+ Ke7 38. g6 Rgc8 39. Rd6 Kf8 40. f6 Bb7 41. h6 Kg8 42. e6 Rc7 43. f7+ Rxf7 44. exf7+ Kh8 45. Rxa3 Na5 46. Rxa5 Ba6 47. Kf1 Rb8 48. Kf2 d4 49. Rad5 Bb5
+//		""");
 		
 		board = pgnGame.getBoard(Integer.MAX_VALUE);
 //		board = ChessCodec.FEN.from("8/8/RP5P/2Nk4/1P3P2/2K3P1/8/8 w - - 3 58");
@@ -69,10 +89,11 @@ public class Main {
 			return result;
 		}, true);
 		
-		ChessPlayer whitePlayer = new ChessPlayer("AlphaBetaPruningV3", AlphaBetaPruningV3::analyseTest);
+		ChessPlayer whitePlayer = new ChessPlayer("AlphaBetaPruningV4", AlphaBetaPruningV4::analyseTest);;
 		pgnGame.setTag(PGNTag.White, whitePlayer.getName());
 		
-		ChessPlayer blackPlayer = manualPlayer; //new ChessPlayer("AnalyserConverted7", AnalyserConverted7::analyse);
+		ChessPlayer blackPlayer = new ChessPlayer("AlphaBetaPruningV3", AlphaBetaPruningV3::analyseTest);
+		//manualPlayer; //new ChessPlayer("AnalyserConverted7", AnalyserConverted7::analyse);
 		pgnGame.setTag(PGNTag.Black, blackPlayer.getName());
 		
 		while (true) {

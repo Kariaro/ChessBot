@@ -10,7 +10,6 @@
 using std::vector;
 
 namespace Generator {
-	extern vector<Move> generateUnvalidatedMoves(Chessboard& board);
 	extern vector<Move> generateValidMoves(Chessboard& board);
 
 	extern bool isValid(Chessboard& board, uint fromIdx, uint toIdx, uint special);

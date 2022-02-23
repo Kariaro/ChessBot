@@ -12,9 +12,9 @@ namespace Serial {
 
 	extern char* get_square_string(int square);
 	
-	char* getFancyMoveString(int piece, uint from, uint to, uint special);
+	char* getFancyMoveString(int piece, uint32_t from, uint32_t to, uint32_t special);
 
-	extern char* getMoveString(uint from, uint to, uint special);
+	extern char* getMoveString(uint32_t from, uint32_t to, uint32_t special);
 
 	extern char* getBoardString(Chessboard* board);
 }

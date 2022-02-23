@@ -14,11 +14,11 @@ namespace Board {
 		return (board.flags & flags) != 0;
 	}
 
-	inline void setPiece(Chessboard& board, uint idx, int piece) {
+	inline void setPiece(Chessboard& board, uint32_t idx, int piece) {
 		int old = board.pieces[idx];
 		board.pieces[idx] = piece;
 		
-		uint64 mask = (uint64)(1) << idx;
+		uint64_t mask = (uint64_t)(1) << idx;
 		if (old < 0 && piece >= 0) board.blackMask &= ~mask;
 		if (old > 0 && piece <= 0) board.whiteMask &= ~mask;
 		if (piece > 0) board.whiteMask |= mask;

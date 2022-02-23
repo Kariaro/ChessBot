@@ -12,10 +12,10 @@ using std::vector;
 namespace Generator {
 	extern vector<Move> generateValidMoves(Chessboard& board);
 
-	extern bool isValid(Chessboard& board, uint fromIdx, uint toIdx, uint special);
+	extern bool isValid(Chessboard& board, uint32_t fromIdx, uint32_t toIdx, uint32_t special);
 	extern bool isValid(Chessboard& board, Move& move);
 
-	extern bool playMove(Chessboard& board, uint fromIdx, uint toIdx, uint special);
+	extern bool playMove(Chessboard& board, uint32_t fromIdx, uint32_t toIdx, uint32_t special);
 	extern bool playMove(Chessboard& board, Move& move);
 }
 

@@ -1,15 +1,12 @@
 #pragma once
-typedef unsigned long long uint64;
-typedef signed long long int64;
-typedef unsigned int uint;
-typedef signed char int8;
-typedef unsigned char uint8;
+#include <cinttypes>
 
+// TODO: We could maybe split this into multiple boards
 struct Chessboard {
-	int8 pieces[64];
-	uint64 pieceMask;
-	uint64 whiteMask;
-	uint64 blackMask;
+	int8_t pieces[64];
+	uint64_t pieceMask;
+	uint64_t whiteMask;
+	uint64_t blackMask;
 	int lastCapture;
 	int lastPawn;
 	int halfMove;
@@ -17,8 +14,8 @@ struct Chessboard {
 };
 
 struct Move {
-	uint from;
-	uint to;
-	uint special;
+	uint32_t from;
+	uint32_t to;
+	uint32_t special;
 	bool valid;
 };

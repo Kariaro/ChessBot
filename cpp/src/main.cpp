@@ -4,6 +4,7 @@
 #include "serial.h"
 #include "generator.h"
 #include "analyser.h"
+#include "uci.h"
 #include <chrono>
 
 Chessboard board;
@@ -76,6 +77,9 @@ int main(int argc, char** argv) {
 		free(buffer);
 	}
 	
+	// TODO: Get this working
+	UCI::StartUCI();
+
 	/*
 	char* chars = Serial::getBoardString(&board);
 	printf("result: %d\n", result);

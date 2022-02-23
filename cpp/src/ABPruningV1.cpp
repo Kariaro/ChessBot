@@ -67,16 +67,16 @@ Move* get_all_moves(Chessboard& board, int depth) {
 }
 
 int get_material(Chessboard& board) {
-	uint64 mask = board.pieceMask;
+	uint64_t mask = board.pieceMask;
 	int material = 0;
 	
 	material -= 6 * (Board::hasFlags(board, CastlingFlags::BLACK_CASTLE_K) + Board::hasFlags(board, CastlingFlags::BLACK_CASTLE_Q));
 	material += 6 * (Board::hasFlags(board, CastlingFlags::WHITE_CASTLE_K) + Board::hasFlags(board, CastlingFlags::WHITE_CASTLE_Q));
 	
 	while (mask != 0) {
-		uint64 pick = Utils::lowestOneBit(mask);
+		uint64_t pick = Utils::lowestOneBit(mask);
 		mask &= ~pick;
-		uint idx = Utils::numberOfTrailingZeros(pick);
+		uint32_t idx = Utils::numberOfTrailingZeros(pick);
 		int piece = board.pieces[idx];
 		int val = Serial::get_piece_value(piece);
 		

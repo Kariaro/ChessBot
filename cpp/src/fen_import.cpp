@@ -42,7 +42,7 @@ int _readSquare(const char* chars) {
 }
 
 int import_fen(struct Chessboard* board, const char* chars) {
-	int8* pieces = board->pieces;
+	int8_t* pieces = board->pieces;
 	int lastCapture;
 	int lastPawn;
 	int halfMove;
@@ -75,7 +75,7 @@ int import_fen(struct Chessboard* board, const char* chars) {
 				break;
 			}
 
-			uint idx = (file) + ((7 - rank) << 3);
+			uint32_t idx = (file) + ((7 - rank) << 3);
 			switch (c) {
 				case 'r': case 'n': case 'b': case 'q': case 'k': case 'p':
 				case 'R': case 'N': case 'B': case 'Q': case 'K': case 'P': {
@@ -179,17 +179,17 @@ int import_fen(struct Chessboard* board, const char* chars) {
 	
 	halfMove = halfMove + 2 * _readNumber(&chars);
 
-	uint64 whiteMask = 0;
-	uint64 blackMask = 0;
+	uint64_t whiteMask = 0;
+	uint64_t blackMask = 0;
 	for (int i = 0; i < 64; i++) {
 		int piece = pieces[i];
 
 		if (piece < 0) {
-			blackMask |= (uint64)(1) << i;
+			blackMask |= (uint64_t)(1) << i;
 		}
 
 		if (piece > 0) {
-			whiteMask |= (uint64)(1) << i;
+			whiteMask |= (uint64_t)(1) << i;
 		}
 	}
 	

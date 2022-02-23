@@ -58,14 +58,14 @@ namespace Serial {
 	}
 	
 	// TODO: Remove
-	char* getFancyMoveString(int piece, uint from, uint to, uint special) {
+	char* getFancyMoveString(int piece, uint32_t from, uint32_t to, uint32_t special) {
 		char* buffer = (char*)calloc(32, sizeof(char));
 		if (!buffer) {
 			return 0;
 		}
 		char* ptr = buffer;
 
-		uint type = special & 0b11000000;
+		uint32_t type = special & 0b11000000;
 
 		switch (type) {
 			case NORMAL: {
@@ -107,7 +107,7 @@ namespace Serial {
 		return buffer;
 	}
 
-	char* getMoveString(uint from, uint to, uint special) {
+	char* getMoveString(uint32_t from, uint32_t to, uint32_t special) {
 		char* buffer = (char*)calloc(8, sizeof(char));
 		if (!buffer) {
 			return 0;

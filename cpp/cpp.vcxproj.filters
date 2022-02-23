@@ -48,6 +48,9 @@
     <ClInclude Include="src\analyser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\uci.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -67,6 +70,9 @@
     </ClCompile>
     <ClCompile Include="src\ABPruningV1.cpp">
       <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\uci.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

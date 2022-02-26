@@ -7,86 +7,12 @@
 #include <string>
 #include <array>
 #include <iostream>
-
-enum class UciOptionType : int {
-	CHECK,
-	SPIN,
-	COMBO,
-	BUTTON,
-	STRING,
-};
-
-struct _UciSpin {
-	const int min;
-	const int max;
-	const int def;
-	int val = def;
-};
-
-struct _UciCheck {
-	const bool def;
-	bool val = def;
-};
-
-struct _UciCombo {
-	const char** values;
-	int val = 0;
-};
-
-struct _UciString {
-	const char* def;
-	char* val = (char*)def;
-};
-
-struct UciOption {
-	const char* key;
-	const UciOptionType type;
-	union {
-		_UciSpin spin;
-		_UciCheck check;
-		_UciCombo combo;
-		_UciString string;
-	};
-
-#pragma warning( push )
-#pragma warning( disable: 26495 )
-	UciOption(const char* _key, _UciSpin _val) : key(_key), type(UciOptionType::SPIN), spin(_val) {}
-	UciOption(const char* _key, _UciCheck _val) : key(_key), type(UciOptionType::CHECK), check(_val) {}
-	UciOption(const char* _key, _UciCombo _val) : key(_key), type(UciOptionType::COMBO), combo(_val) {}
-	UciOption(const char* _key, _UciString _val) : key(_key), type(UciOptionType::STRING), string(_val) {}
-	UciOption(const char* _key) : key(_key), type(UciOptionType::BUTTON) {}
-#pragma warning( pop )
-};
-
-using std::string;
+#include <uci/uci_option.h>
+#include <analyser/chess_analyser.h>
+#include "./ab_pruning_v2.h"
 
 constexpr auto ENGINE_AUTHOR = "HardCoded";
-constexpr auto ENGINE_NAME   = "HardCodedBot 1.0";
-
-const char* COMBO_OPTIONS[5] = { "Alpha", "Beta", "Gamma", "Delta", nullptr };
-const UciOption options[] = {
-	{ "Skill Level", _UciSpin { 0, 20, 20 } },
-	{ "Move Overhead", _UciSpin { 1, 4096, 1 } },
-	{ "Threads", _UciSpin { 1, 512, 1 } },
-	{ "Hash", _UciSpin { 1, 4096, 256 } },
-	{ "String", _UciString { "Testing this tool" } },
-	{ "Combo", _UciCombo { COMBO_OPTIONS } },
-
-/*
-	{ "NalimovPath", _UciString { "" } },
-	{ "NalimovCache", _UciSpin { 0, 10, 10 } },
-	{ "Ponder", _UciCheck { false } },
-	{ "OwnBook", _UciCheck { false } },
-	{ "MultiPV", _UciSpin { 1, 1, 1 } },
-	{ "UCI_ShowCurrLine", _UciCheck { false } },
-	{ "UCI_ShowRefutations", _UciCheck { false } },
-	{ "UCI_LimitStrength", _UciCheck { false } },
-	{ "UCI_Elo", _UciSpin { 100, 5000, 1500 } },
-	{ "UCI_AnalyseMode", _UciCheck { false } },
-	{ "UCI_Opponent", _UciString { "" } },
-*/
-	{ nullptr }
-};
+constexpr auto ENGINE_NAME = "HardCodedBot 1.0";
 
 namespace UCI {
 	std::string GetUciCommandAlias(std::string& command) {
@@ -98,29 +24,68 @@ namespace UCI {
 			: command.substr(0, position - begin);
 	}
 
-	void PrintUciOptions() {
-		const UciOption* option = &(options[0]);
-		while (option->key != nullptr) {
-			std::cout << "option name " << option->key << " type ";
+	void DebugUciOptions(ChessAnalyser* analyser) {
+		for (UciOption* option : analyser->get_options()) {
+			std::cerr << "into string [" << option->get_key() << "] ";
 
-			switch (option->type) {
+			switch (option->get_type()) {
 				case UciOptionType::CHECK: {
-					std::cout << "check default " << option->check.def << std::endl;
+					UciOption::Check* opt = (UciOption::Check*)option;
+					std::cerr << "[check] = " << (opt->get_value() ? "true" : "false") << std::endl;
 					break;
 				}
 				case UciOptionType::SPIN: {
-					std::cout << "spin default " << option->spin.def
-							  << " min " << option->spin.min
-							  << " max " << option->spin.max << std::endl;
+					UciOption::Spin* opt = (UciOption::Spin*)option;
+					std::cerr << "[spin] = " << opt->get_value() << std::endl;
 					break;
 				}
 				case UciOptionType::COMBO: {
-					std::cout << "combo default " << option->combo.values[option->combo.val];
+					UciOption::Combo* opt = (UciOption::Combo*)option;
+					std::cerr << "[combo] = " << opt->get_list()[opt->get_value()] << std::endl;
+					break;
+				}
+				case UciOptionType::BUTTON: {
+					std::cerr << "[button]" << std::endl;
+					break;
+				}
+				case UciOptionType::STRING: {
+					UciOption::String* opt = (UciOption::String*)option;
+					std::cerr << "[string] = " << opt->get_value() << std::endl;
+					break;
+				}
+				default: {
+					std::cerr << "Undefined UciOptionType ( " << (int)option->get_type() << " )" << std::endl;
+					break;
+				}
+			}
 
-					const char** name = option->combo.values;
-					while (*name != nullptr) {
-						std::cout << " var " << *name;
-						name ++;
+			option++;
+		}
+	}
+
+	void PrintUciOptions(ChessAnalyser* analyser) {
+		for (UciOption* option : analyser->get_options()) {
+			std::cout << "option name " << option->get_key() << " type ";
+
+			switch (option->get_type()) {
+				case UciOptionType::CHECK: {
+					UciOption::Check* opt = (UciOption::Check*)option;
+					std::cout << "check default " << opt->get_default() << std::endl;
+					break;
+				}
+				case UciOptionType::SPIN: {
+					UciOption::Spin* opt = (UciOption::Spin*)option;
+					std::cout << "spin default " << opt->get_default()
+							  << " min " << opt->get_minimum()
+							  << " max " << opt->get_maximum() << std::endl;
+					break;
+				}
+				case UciOptionType::COMBO: {
+					UciOption::Combo* opt = (UciOption::Combo*)option;
+					std::cout << "combo default " << opt->get_list()[opt->get_value()];
+					
+					for (const std::string& str : opt->get_list()) {
+						std::cout << " var " << str;
 					}
 
 					std::cout << std::endl;
@@ -131,11 +96,8 @@ namespace UCI {
 					break;
 				}
 				case UciOptionType::STRING: {
-					std::cout << "string default " << option->string.def << std::endl;
-					break;
-				}
-				default: {
-					std::cerr << "Undefined UciOptionType ( " << (int)option->type << " )" << std::endl;
+					UciOption::String* opt = (UciOption::String*)option;
+					std::cout << "string default " << opt->get_default() << std::endl;
 					break;
 				}
 			}
@@ -144,10 +106,10 @@ namespace UCI {
 		}
 	}
 
-	void SetUciOption(std::string command) {
+	bool SetUciOption(ChessAnalyser* analyser, std::string command) {
 		if (!command._Starts_with("setoption name ")) {
 			std::cerr << "Invalid usage of 'setoption' [" << command << "]" << std::endl;
-			return;
+			return false;
 		}
 
 		// Remove the alias from the command
@@ -155,98 +117,39 @@ namespace UCI {
 
 		// Match the longest command
 		UciOption* option = nullptr;
-		int matchedLength = 0;
-		const UciOption* iter = &(options[0]);
-		while (iter->key != nullptr) {
-			if (command._Starts_with(iter->key)) {
-				int len = std::strlen(iter->key);
-				if (len > matchedLength) {
-					matchedLength = len;
-					option = (UciOption*)iter;
-				}
+		for (UciOption* item : analyser->get_options()) {
+			if (command._Starts_with(item->get_key()) && (option == nullptr || (item->get_key().length() > option->get_key().length()))) {
+				option = item;
 			}
-
-			iter++;
 		}
 
 		if (option == nullptr) {
-			std::cerr << "Invalid usage of 'setoption'. The option does not exist [" << command << "]" << std::endl;
-			return;
+			std::cerr << "Invalid usage of 'setoption'. The option [" << command << "] does not exist" << std::endl;
+			return false;
 		}
-
+		
 		// Removed the matched name from the command
-		command = command.substr(matchedLength);
+		command = command.substr(option->get_key().length());
 
-		std::string value = (command._Starts_with(" value ")) ? command.substr(7) : command;
-
-		switch (option->type) {
-			case UciOptionType::CHECK: {
-				if (value == "true") {
-					option->check.val = true;
-				} else if (value == "false") {
-					option->check.val = false;
-				} else {
-					std::cerr << "Invalid usage of 'setoption'. UciOptionType::CHECK does not allow the value [" << value << "]" << std::endl;
-					return;
-				}
-				break;
+		if (option->get_type() != UciOptionType::BUTTON) {
+			if (!command._Starts_with(" value ")) {
+				std::cerr << "Invalid usage of 'setoption'. Value tag was missing" << std::endl;
+				return false;
 			}
-			case UciOptionType::SPIN: {
-				char* endPos;
-				int num = std::strtol(value.c_str(), &endPos, 10);
-
-				if ((value.c_str() + value.length()) != endPos) {
-					std::cerr << "Invalid usage of 'setoption'. UciOptionType::SPIN not all characters was a number [" << value << "]" << std::endl;
-					return;
-				}
-
-				if (num < option->spin.min || num > option->spin.max) {
-					std::cerr << "Invalid usage of 'setoption'. UciOptionType::SPIN number is outside ranges ["
-							  << option->spin.min << ", " << option->spin.max << "],  [" << value << "]" << std::endl;
-					return;
-				}
-
-				option->spin.val = num;
-				break;
-			}
-			case UciOptionType::COMBO: {
-				const char** values = &(options->combo.values[0]);
-				int idx = 0;
-				while (*values != nullptr) {
-					if (value == *values) {
-						option->combo.val = idx;
-						return;
-					}
-					idx++;
-					values++;
-				}
-
-				std::cerr << "Invalid usage of 'setoption'. UciOptionType::COMBO element does not exist [" << value << "]" << std::endl;
-				return;
-			}
-			case UciOptionType::BUTTON: {
-				// Callback
-				break;
-			}
-			case UciOptionType::STRING: {
-				if (option->string.val != option->string.def) {
-					delete option->string.val;
-				}
-
-				// Allocate a new string and make sure that the old one is deleted
-				char* copy = new char[value.length() + 1];
-				std::copy(value.begin(), value.end(), copy);
-				copy[value.size()] = '\0';
-				option->string.val = copy;
-				break;
-			}
+			
+			// Remove ' value ' text
+			command = command.substr(7);
 		}
+
+		return analyser->set_option(option->get_key(), command);
 	}
 
 	// http://wbec-ridderkerk.nl/html/UCIProtocol.html
 	void StartUCI() {
 		std::string line;
 		std::string alias;
+		bool hasUCI = false;
+		ChessAnalyser* analyser = new ABPruningV2();
 
 		// While true keep looping
 		while (true) {
@@ -261,15 +164,25 @@ namespace UCI {
 						  << std::endl;
 				
 				// Print information about the currently available options
-				PrintUciOptions();
+				PrintUciOptions(analyser);
 				
+				hasUCI = true;
 				std::cout << "uciok" << std::endl;
 				continue;
 			}
 
+			if (alias == "@debugoptions") {
+				DebugUciOptions(analyser);
+				continue;
+			}
+
+			// If we do not have uci we continue
+			if (!hasUCI) {
+				continue;
+			}
+
 			if (alias == "setoption") {
-				// Update an option
-				SetUciOption(line);
+				SetUciOption(analyser, line);
 				continue;
 			}
 

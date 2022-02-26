@@ -19,15 +19,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="include\uci\uci_option.h" />
     <ClCompile Include="src\ABPruningV1.cpp" />
+    <ClCompile Include="src\analyser\ab_pruning_v2.cpp" />
     <ClCompile Include="src\fen_import.cpp" />
     <ClCompile Include="src\generator.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\piece_manager.cpp" />
     <ClCompile Include="src\serial.cpp" />
     <ClCompile Include="src\uci.cpp" />
+    <ClCompile Include="src\uci\uci_option_button.cpp" />
+    <ClCompile Include="src\uci\uci_option_check.cpp" />
+    <ClCompile Include="src\uci\uci_option_combo.cpp" />
+    <ClCompile Include="src\uci\uci_option_spin.cpp" />
+    <ClCompile Include="src\uci\uci_option_string.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\analyser\chess_analyser.h" />
+    <ClInclude Include="include\uci\uci_debug.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="src\ab_pruning_v2.h" />
     <ClInclude Include="src\analyser.h" />
     <ClInclude Include="src\chessboard.h" />
     <ClInclude Include="src\fen_import.h" />
@@ -103,6 +115,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>C:\Users\Admin\git\ChessBot\cpp\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

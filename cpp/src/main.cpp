@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
 	free(chars);
 	*/
 
-	computePreft(board, 6);
+	// computePreft(board, 6);
 
 	/*
 	for (Move move : Generator::generateValidMoves(board)) {
@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 	}
 	*/
 
-	Move best = analyse(board);
+	// Move best = analyse(board);
 
 	return 0;
 }

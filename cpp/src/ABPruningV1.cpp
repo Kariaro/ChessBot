@@ -57,7 +57,7 @@ Move* get_all_moves(Chessboard& board, int depth) {
 
 	vector<Move> vector_moves = Generator::generateValidMoves(board);
 	int j = 0;
-	for (int i = 0, len = vector_moves.size(); i < len; i++) {
+	for (size_t i = 0, len = vector_moves.size(); i < len; i++) {
 		moves[j++] = vector_moves[i];
 	}
 

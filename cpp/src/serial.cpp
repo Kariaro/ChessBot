@@ -18,7 +18,7 @@ static void appendChars(char* ptr, const char* val) {
 	}
 }
 
-const int const VALUES[13] = { -100, -500, -300, -300, -900, 0, 0, 0, 900, 300, 300, 500, 100 };
+const int VALUES[13] = { -100, -500, -300, -300, -900, 0, 0, 0, 900, 300, 300, 500, 100 };
 
 namespace Serial {
 	inline int get_piece_value(int i) {

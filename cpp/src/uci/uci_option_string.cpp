@@ -27,4 +27,8 @@ bool UciOption::String::set_value(std::string& value) {
 	return true;
 }
 
+std::string UciOption::String::to_string() {
+	return "option name " + m_key + " type string default " + m_def;
+}
+
 #endif // !UCI_OPTION_STRING_CPP

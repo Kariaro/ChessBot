@@ -28,6 +28,7 @@
     <ClCompile Include="src\piece_manager.cpp" />
     <ClCompile Include="src\serial.cpp" />
     <ClCompile Include="src\uci.cpp" />
+    <ClCompile Include="src\uci\uci_manager.cpp" />
     <ClCompile Include="src\uci\uci_option_button.cpp" />
     <ClCompile Include="src\uci\uci_option_check.cpp" />
     <ClCompile Include="src\uci\uci_option_combo.cpp" />
@@ -36,12 +37,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\analyser\chess_analyser.h" />
+    <ClInclude Include="include\codec\fen_codec.h" />
+    <ClInclude Include="include\uci\uci_command.h" />
     <ClInclude Include="include\uci\uci_debug.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="include\uci\uci_manager.h" />
     <ClInclude Include="src\ab_pruning_v2.h" />
     <ClInclude Include="src\analyser.h" />
     <ClInclude Include="src\chessboard.h" />
+    <ClInclude Include="src\codec\fen_codec.cpp">
+      <FileType>CppClass</FileType>
+    </ClInclude>
     <ClInclude Include="src\fen_import.h" />
     <ClInclude Include="src\generator.h" />
     <ClInclude Include="src\pieces.h" />

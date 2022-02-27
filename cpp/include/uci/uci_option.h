@@ -17,7 +17,7 @@ enum class UciOptionType : int {
 
 /// This class contains information about uci options
 class UciOption {
-private:
+protected:
 	const std::string m_key;
 public:
 	// Forward declare option classes
@@ -36,22 +36,25 @@ public:
 		return m_key;
 	}
 
+	/// Returns the type of this uci option
+	virtual UciOptionType get_type() = 0;
+
 	/// Returns the key value of this uci option
 	const std::string& get_key() const {
 		return m_key;
 	}
 
 	/// Returns the type of this uci option
-	virtual UciOptionType get_type() = 0;
-	
-	/// Returns the type of this uci option
 	const UciOptionType get_type() const {
 		return const_cast<UciOption*>(this)->get_type();
 	}
-
+	
 	/// Change the value of this uci option
 	/// @return `false` if the method failed
 	virtual bool set_value(std::string& value) = 0;
+
+	/// Returns the string value of this option
+	virtual std::string to_string() = 0;
 };
 
 /// UciCheckOption definition
@@ -67,6 +70,7 @@ public:
 
 	virtual UciOptionType get_type();
 	virtual bool set_value(std::string& value);
+	virtual std::string to_string();
 };
 
 /// UciSpinOption definition
@@ -86,6 +90,7 @@ public:
 
 	virtual UciOptionType get_type();
 	virtual bool set_value(std::string& value);
+	virtual std::string to_string();
 };
 
 /// UciComboOption definition
@@ -103,6 +108,7 @@ public:
 
 	virtual UciOptionType get_type();
 	virtual bool set_value(std::string& value);
+	virtual std::string to_string();
 };
 
 /// UciStringOption definition
@@ -118,6 +124,7 @@ public:
 
 	virtual UciOptionType get_type();
 	virtual bool set_value(std::string& value);
+	virtual std::string to_string();
 };
 
 /// UciButtonOption definition
@@ -127,6 +134,7 @@ public:
 
 	virtual UciOptionType get_type();
 	virtual bool set_value(std::string& value);
+	virtual std::string to_string();
 };
 
 #endif // !UCI_OPTION_H

@@ -23,4 +23,8 @@ bool UciOption::Button::set_value(std::string& value) {
 	return true;
 }
 
+std::string UciOption::Button::to_string() {
+	return "option name " + m_key + " type button";
+}
+
 #endif // !UCI_OPTION_BUTTON_CPP

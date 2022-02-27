@@ -5,6 +5,7 @@
 
 #include <uci/uci_debug.h>
 #include <uci/uci_option.h>
+#include <sstream>
 
 UciOption::Combo::Combo(const std::string& key, std::initializer_list<std::string> list, int64_t def) : UciOption(key), m_def(def), m_val(def) {
 	for (const std::string& str : list) {
@@ -39,6 +40,17 @@ bool UciOption::Combo::set_value(std::string& value) {
 
 	std::cerr << "Invalid usage of 'setoption'. UciOptionType::COMBO element does not exist [" << value << "]" << std::endl;
 	return false;
+}
+
+std::string UciOption::Combo::to_string() {
+	std::stringstream ss;
+	ss << "option name " << m_key << " type combo default " << m_list[m_def];
+
+	for (const std::string& str : m_list) {
+		ss << " var " << str;
+	}
+
+	return ss.str();
 }
 
 #endif // !UCI_OPTION_COMBO_CPP

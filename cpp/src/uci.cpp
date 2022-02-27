@@ -8,6 +8,8 @@
 #include <array>
 #include <iostream>
 #include <uci/uci_option.h>
+#include <codec/fen_codec.h>
+
 #include <analyser/chess_analyser.h>
 #include "./ab_pruning_v2.h"
 
@@ -144,12 +146,61 @@ namespace UCI {
 		return analyser->set_option(option->get_key(), command);
 	}
 
+	bool SetAnalysisPosition(ChessAnalysis& analysis, std::string command) {
+		if (!command._Starts_with("position ")) {
+			std::cerr << "Invalid usage of 'position' [" << command << "]" << std::endl;
+			return false;
+		}
+
+		// Remove the alias from the command
+		command = command.substr(9);
+
+		// startpos, fen
+		if (command._Starts_with("fen ")) {
+			command = command.substr(4);
+			int matched;
+			if (Codec::FEN::import_fen(analysis.board, command, matched) != FEN_CODEC_SUCCESSFUL) {
+				std::cerr << "Invalid usage of 'position fen'. Invalid fen [" << command << "]" << std::endl;
+				return false;
+			}
+
+			command = command.substr(matched);
+		} else if (command._Starts_with("startpos")) {
+			command = command.substr(8);
+			int matched;
+			if (Codec::FEN::import_fen(analysis.board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0", matched) != FEN_CODEC_SUCCESSFUL) {
+				std::cerr << "Invalid usage of 'position fen'. Invalid fen [" << command << "]" << std::endl;
+				return false;
+			}
+
+		} else {
+			std::cerr << "Invalid usage of 'position'. Expected 'fen' or 'startpos' but got [" << command << "]" << std::endl;
+			return false;
+		}
+
+		// Check if there is more data to parse
+		if (command.empty()) {
+			return true;
+		} else if (command[0] != ' ') {
+			std::cerr << "Invalid usage of 'position'. Expected space after fen [" << command << "]" << std::endl;
+			return false;
+		}
+
+		// Remove the space
+		command = command.substr(1);
+
+		std::cerr << "Remaining: [" << command << "]" << std::endl;
+
+		return true;
+	}
+
 	// http://wbec-ridderkerk.nl/html/UCIProtocol.html
 	void StartUCI() {
 		std::string line;
 		std::string alias;
 		bool hasUCI = false;
 		ChessAnalyser* analyser = new ABPruningV2();
+		ChessAnalysis analysis{};
 
 		// While true keep looping
 		while (true) {
@@ -188,6 +239,16 @@ namespace UCI {
 
 			if (alias == "isready") {
 				std::cout << "readyok";
+				continue;
+			}
+
+			if (alias == "position") {
+				SetAnalysisPosition(analysis, line);
+				continue;
+			}
+
+			if (alias == "go") {
+				analyser->start_analysis(analysis);
 				continue;
 			}
 

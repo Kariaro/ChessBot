@@ -31,6 +31,12 @@
     <Filter Include="Source Files\analyser">
       <UniqueIdentifier>{de3dc6e8-a262-425e-95ca-01391d8d87c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\codec">
+      <UniqueIdentifier>{2740afae-cc2d-4cce-b347-88f66b9ee4e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codec">
+      <UniqueIdentifier>{57a8dcb9-d66d-47ca-afb0-697529419ce4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\piece_manager.h">
@@ -75,6 +81,18 @@
     <ClInclude Include="src\ab_pruning_v2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\codec\fen_codec.h">
+      <Filter>include\codec</Filter>
+    </ClInclude>
+    <ClInclude Include="src\codec\fen_codec.cpp">
+      <Filter>Source Files\codec</Filter>
+    </ClInclude>
+    <ClInclude Include="include\uci\uci_manager.h">
+      <Filter>include\uci</Filter>
+    </ClInclude>
+    <ClInclude Include="include\uci\uci_command.h">
+      <Filter>include\uci</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -118,6 +136,9 @@
     </ClCompile>
     <ClCompile Include="src\analyser\ab_pruning_v2.cpp">
       <Filter>Source Files\analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\uci\uci_manager.cpp">
+      <Filter>Source Files\uci</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -35,4 +35,8 @@ bool UciOption::Check::set_value(std::string& value) {
 	return true;
 }
 
+std::string UciOption::Check::to_string() {
+	return "option name " + m_key + " type check default " + (m_def ? "true" : "false");
+}
+
 #endif // !UCI_OPTION_CHECK_CPP

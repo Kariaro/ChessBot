@@ -33,6 +33,7 @@ ABPruningV2::ABPruningV2() {
 		*/
 	});
 
+	// Start the thread
 	m_thread = std::thread(&ABPruningV2::thread_loop, this);
 }
 

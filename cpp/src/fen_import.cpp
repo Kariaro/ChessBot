@@ -32,8 +32,8 @@ int _readSquare(const char* chars) {
 		return -1;
 	}
 
-	if (file >= '1' && file <= '8') {
-		idx += (file - '1') << 3;
+	if (rank >= '1' && rank <= '8') {
+		idx += (rank - '1') << 3;
 	} else {
 		return -1;
 	}

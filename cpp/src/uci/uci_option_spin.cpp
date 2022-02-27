@@ -49,4 +49,8 @@ bool UciOption::Spin::set_value(std::string& value) {
 	return true;
 }
 
+std::string UciOption::Spin::to_string() {
+	return "option name " + m_key + " type spin default " + std::to_string(m_def) + " min " + std::to_string(m_min) + " max " + std::to_string(m_max);
+}
+
 #endif // !UCI_OPTION_SPIN_CPP

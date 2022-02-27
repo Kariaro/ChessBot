@@ -9,7 +9,7 @@
 #include "../../src/utils.h"
 
 struct ChessAnalysis {
-	Chessboard& board;
+	Chessboard board{};
 	Move bestmove{};
 	Move ponder{};
 };
@@ -59,10 +59,10 @@ public:
 	// virtual bool stop_thread() = 0;
 
 	/// Stop analyse the position
-	//virtual bool stop_analysis() = 0;
+	virtual bool stop_analysis() = 0;
 
 	/// Start analyse the position
-	//virtual bool start_analysis(ChessAnalysis& analysis) = 0;
+	virtual bool start_analysis(ChessAnalysis& analysis) = 0;
 };
 
 #endif // !CHESS_ANALYSER_H

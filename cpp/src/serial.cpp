@@ -135,7 +135,10 @@ namespace Serial {
 
 		char* ptr = chars;
 		for (int i = 0; i < 64; i++) {
-			char c = get_piece_character(board->pieces[i]);
+			int x = 7 - (i & 7);
+			int y = i >> 3;
+			int idx = x + (y << 3);
+			char c = get_piece_character(board->pieces[idx]);
 
 			if (i > 0) {
 				*(ptr++) = ((i & 7) == 0) ? '\n' : ' ';

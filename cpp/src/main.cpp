@@ -6,6 +6,9 @@
 #include "analyser.h"
 #include "uci.h"
 #include <chrono>
+#include <iostream>
+#include "ab_pruning_v2.h"
+#include <uci/uci_manager.h>
 
 Chessboard board;
 long moveCount;
@@ -66,7 +69,17 @@ long computePreft(Chessboard& parent, int depth) {
 	return totalCount;
 }
 
+// constexpr auto ENGINE_AUTHOR = "HardCoded";
+// constexpr auto ENGINE_NAME = "HardCodedBot 1.0";
+
 int main(int argc, char** argv) {
+	ChessAnalyser* analyser = new ABPruningV2();
+	UciManager manager("HardCoded", "HardCodedBot 1.0", analyser);
+
+	// This will read from cin and only exit when the 'quit' command is called
+	manager.run();
+
+	/*
 	//int result = import_fen(&board, "r6r/pp1k1p1p/4pq2/2ppnn2/1b3Q2/2N1P2N/PPPP1PPP/R1B1K2R w KQ - 0 12");
 	int result = import_fen(&board, "r2qkb1r/1Q3pp1/pN1p3p/3P1P2/3pP3/4n3/PP4PP/1R3RK1 b - - 0 0");
 	// int result = import_fen(&board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
@@ -80,7 +93,6 @@ int main(int argc, char** argv) {
 	// TODO: Get this working
 	UCI::StartUCI();
 
-	/*
 	char* chars = Serial::getBoardString(&board);
 	printf("result: %d\n", result);
 	printf("Board:\n%s\n", chars);
@@ -92,7 +104,6 @@ int main(int argc, char** argv) {
 	printf("pieceMask: %lld\n", board.pieceMask);
 	printf("\n");
 	free(chars);
-	*/
 
 	// computePreft(board, 6);
 
